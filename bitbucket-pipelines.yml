@@ -1,0 +1,22 @@
+image:
+  name: atlassian/default-image:2
+
+
+test: &test
+  parallel:
+    - step:
+        name: Test
+        image: python:3.9
+        script:
+          - pip install -r requirements.txt
+          - pip install -r tests/requirements.txt
+          - flake8 --ignore E501,E125
+          - pytest -p no:cacheprovider tests/test_unit.py --capture=no --verbose
+
+
+pipelines:
+  default:
+    - <<: *test
+  branches:
+    master:
+      - <<: *test
