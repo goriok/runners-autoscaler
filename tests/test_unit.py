@@ -29,7 +29,7 @@ class BitbucketGroupTestCase(TestCase):
             ]},
             200
         )
-        result = runner.get_runners('fake_workspace')
+        result = runner.get_bitbucket_runners('fake_workspace')
         self.assertEqual(
             list(result),
             [
@@ -74,7 +74,7 @@ class BitbucketGroupTestCase(TestCase):
             ]},
             200
         )
-        result = runner.get_runners('fake_workspace')
+        result = runner.get_bitbucket_runners('fake_workspace')
         self.assertEqual(
             list(result),
             [

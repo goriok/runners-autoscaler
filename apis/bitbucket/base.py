@@ -3,18 +3,28 @@
 """
 
 import os
+import enum
 import urllib.parse
 
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib.oauth2_session import OAuth2Session
 from oauthlib.oauth2 import BackendApplicationClient
 
-from apis.base import BaseAPIService, BearerAuth
-from exceptions import NotAuthorized
 from logger import logger
+from exceptions import NotAuthorized
+from apis.base import BaseAPIService, BearerAuth
+from helpers import decorate_with_curly_brackets
 
 
 BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
+
+
+class BitbucketRunnerStatuses(enum.Enum):
+    unregistered = 'UNREGISTERED'
+    online = 'ONLINE'
+    offline = 'OFFLINE'
+    disabled = 'DISABLED'
+    enabled = 'ENABLED'
 
 
 class Auth:
@@ -50,7 +60,7 @@ class BitbucketAPIService(BaseAPIService):
     INTERVAL_BEFORE_REQUESTS = 3
     _auth = None
 
-    def __init__(self, auth=None) -> object:
+    def __init__(self, auth=None):
         if os.getenv('BITBUCKET_OAUTH_CLIENT_ID') and os.getenv('BITBUCKET_OUATH_CLIENT_SECRET'):
             self._auth = auth or Auth.token_oauth()
         elif os.getenv('BITBUCKET_USERNAME') and os.getenv('BITBUCKET_APP_PASSWORD'):
@@ -97,7 +107,7 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
     INTERVAL_BEFORE_REQUESTS = 5
 
     def get_runner(self, workspace_name, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners/{runner_uuid}'
+        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url)
         return runner
 
@@ -114,7 +124,7 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
         return runner
 
     def delete_runner(self, workspace_name, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners/{runner_uuid}'
+        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner
 
@@ -125,7 +135,7 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
     INTERVAL_BEFORE_REQUESTS = 5
 
     def get_runner(self, workspace_name, repo_slug, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners/{runner_uuid}'
+        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url)
         return runner
 
@@ -142,6 +152,6 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
         return runner
 
     def delete_runner(self, workspace_name, repo_slug, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners/{runner_uuid}'
+        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner

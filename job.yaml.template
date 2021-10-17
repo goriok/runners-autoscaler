@@ -8,6 +8,7 @@ items:
       labels:
         accountUuid: <%accountUuid%>
         runnerUuid: <%runnerUuid%>
+        runnerNamespace: <%runnerNamespace%>
     data:
       oauthClientId: <%oauthClientId_base64%>
       oauthClientSecret: <%oauthClientSecret_base64%>
@@ -21,6 +22,7 @@ items:
           labels:
             accountUuid: <%accountUuid%>
             runnerUuid: <%runnerUuid%>
+            runnerNamespace: <%runnerNamespace%>
         spec:
           containers:
             - name: bitbucket-k8s-runner

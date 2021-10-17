@@ -84,3 +84,14 @@ def enable_debug():  # pragma: no cover
 
 def string_to_base64string(string, encoding='utf-8'):
     return base64.b64encode(bytes(string, encoding)).decode(encoding)
+
+
+def decorate_with_curly_brackets(value):
+    return ''.join(['{', value, '}'])
+
+
+# TODO kubernetes labels validator
+def validate_kubernetes_label(label):
+    is_valid = False
+    # logic here
+    return is_valid

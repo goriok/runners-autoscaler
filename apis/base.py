@@ -58,7 +58,7 @@ class BaseSubprocessAPIService:
         logger.info(f"RUN command: {' '.join(command)}")
 
         try:
-            result = subprocess.run(command, capture_output=True, text=True)
+            result = subprocess.run(command, capture_output=True, text=True, timeout=self.MAX_SUBPROCESS_TIMEOUT)
             result.check_returncode()
         except subprocess.CalledProcessError as exc:
             msg = f"Command: {' '.join(command)}.\nOutput: {exc.stderr}"
@@ -77,9 +77,9 @@ class BaseSubprocessAPIService:
 
         output = p2.communicate()[0]
 
-        if p1.returncode == 1:
-            fail(f"Return code: {p1.returncode}")
-        if p2.returncode == 1:
-            fail(f"Subprocess Return code: {p2.returncode}")
+        if p1.returncode != 0:
+            fail(f"Subprocess: Return code for command: {command_1}: {p1.returncode}")
+        if p2.returncode != 0:
+            fail(f"Subprocess: Return code for command: {p2.returncode}")
 
         return output
