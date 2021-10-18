@@ -77,8 +77,6 @@ class BaseSubprocessAPIService:
 
         output = p2.communicate()[0]
 
-        if p1.returncode != 0:
-            fail(f"Subprocess: Return code for command: {command_1}: {p1.returncode}")
         if p2.returncode != 0:
             fail(f"Subprocess: Return code for command: {p2.returncode}")
 

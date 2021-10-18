@@ -1,0 +1,24 @@
+config:
+  - name: Runner group 1
+    workspace: akyrdan
+    labels:
+      - demo1
+    runners_count: 0
+    namespace: rg-1
+  - name: Runner group 2
+    workspace: akyrdan
+    labels:
+      - demo2
+    runners_count: 0
+    namespace: runner-group-2
+  - name: Runner group 3
+    workspace: akyrdan
+    labels:
+      - demo3
+    runners_count: 0
+    namespace: runner-group-3
+  - name: Runner group 4
+    workspace: akyrdan
+    labels:
+      - demo4
+    runners_count: 0

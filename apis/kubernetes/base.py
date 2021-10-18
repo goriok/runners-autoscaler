@@ -45,8 +45,8 @@ class KubernetesBaseAPIService:
         # kubectl create namespace bitbucket-runner --dry-run=client -o yaml | kubectl apply -f -
         logger.info(f"Creating the {namespace} namespace...")
 
-        cmd_create_namespace = f"kubectl create namespace {namespace} --dry-run=client -o yaml"
-        cmd_apply = "kubectl apply -f -"
+        cmd_create_namespace = f"kubectl create namespace {namespace} --dry-run=client -o yaml "
+        cmd_apply = "kubectl apply -f - "
 
         result = self.api.run_piped_command(cmd_create_namespace, cmd_apply)
 

@@ -1,5 +1,8 @@
+import yaml
+
+from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from logger import logger
-from helpers import string_to_base64string
+from helpers import string_to_base64string, fail
 from apis.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService
 from apis.bitbucket.base import BitbucketWorkspace, BitbucketWorkspaceRunner, BitbucketRepositoryRunner
 
@@ -57,7 +60,10 @@ def validate_kubernetes():
     kubernetes_version = kube_base_api.get_kubernetes_version()
     logger.info(f"Your local Kubernetes: {kubernetes_version}")
 
-    kube_base_api.get_or_create_kubernetes_namespace()
+
+def check_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    kube_base_api = KubernetesBaseAPIService()
+    kube_base_api.get_or_create_kubernetes_namespace(namespace=namespace)
 
 
 def setup_job(runner_data):
@@ -65,7 +71,7 @@ def setup_job(runner_data):
 
     kube_spec_file_api = KubernetesSpecFileAPIService()
     runner_spec_filename = kube_spec_file_api.create_kube_spec_file(runner_data)
-    result = kube_spec_file_api.apply_kubernetes_spec_file(runner_spec_filename)
+    result = kube_spec_file_api.apply_kubernetes_spec_file(runner_spec_filename, namespace=runner_data['runnerNamespace'])
 
     logger.info(result)
 
@@ -77,5 +83,11 @@ def delete_job(runner_uuid):
     kube_spec_file_api.delete_kube_spec_file(runner_uuid)
 
 
-def read_from_config():
-    pass
+def read_from_config(config_path):
+    try:
+        with open(config_path, 'r') as f:
+            runner_config = yaml.safe_load(f)
+    except yaml.YAMLError:
+        fail(f"Error in configuration file: {config_path}")
+
+    return runner_config['config']
