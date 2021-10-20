@@ -37,7 +37,7 @@ def main():
 
     runners_data = []  # list of runners to handle
 
-    # TODO read runners parameter from config file
+    # read runners parameter from config file
     if args.config:
         config_file_path = args.config
 
@@ -52,6 +52,7 @@ def main():
 
         runners_data = runner.read_from_config(config_file_path)
     else:
+        # use arguments provided in a shell
         runners_data = [vars(args)]
 
     for runner_data in runners_data:
@@ -65,12 +66,12 @@ def main():
         labels.update(DEFAULT_LABELS)
         labels.update(set(runner_data.get('labels')))
 
-        # TODO add repository runners
+        # TODO optimize GET requests with filters by labels
         runners = runner.get_bitbucket_runners(runner_data.get('workspace'), runner_data.get('repository'))
 
-        msg = f"Found {len(runners)} runners on workspace {runner_data.get('workspace')}."
+        msg = f"Found {len(runners)} runners on workspace {runner_data.get('workspace')}"
         if runner_data.get('repository'):
-            msg = f"{msg} repository {runner_data.get('repository')}"
+            msg = f"{msg} repository: {runner_data.get('repository')}"
         logger.info(msg)
 
         if os.getenv('DEBUG') == 'true':
@@ -118,6 +119,7 @@ def main():
 
         elif runner_data.get('runners_count') < len(online_runners):
             # delete only idle runners
+            # TODO delete logic
             if len(runners_idle) < 1:
                 logger.warning("Nothing to delete... All runners are BUSY (running jobs).")
                 continue
@@ -133,7 +135,11 @@ def main():
                            f" {runners_uuid_to_delete}")
 
             for runner_uuid in runners_uuid_to_delete:
-                runner.delete_bitbucket_runner(runner_data.get('workspace'), runner_uuid=runner_uuid)
+                runner.delete_bitbucket_runner(
+                    runner_data.get('workspace'),
+                    runner_data.get('repository'),
+                    runner_uuid=runner_uuid
+                )
                 runner.delete_job(runner_uuid)
 
                 success(

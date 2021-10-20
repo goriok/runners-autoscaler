@@ -7,6 +7,9 @@ items:
       name: runner-oauth-credentials
       labels:
         accountUuid: <%accountUuid%>
+    {%- if repositoryUuid %}
+        repositoryUuid: <%repositoryUuid%>
+    {%- endif %}
         runnerUuid: <%runnerUuid%>
         runnerNamespace: <%runnerNamespace%>
     data:
@@ -22,6 +25,9 @@ items:
           labels:
             accountUuid: <%accountUuid%>
             runnerUuid: <%runnerUuid%>
+        {%- if repositoryUuid %}
+            repositoryUuid: <%repositoryUuid%>
+        {%- endif %}
             runnerNamespace: <%runnerNamespace%>
         spec:
           containers:
@@ -30,6 +36,10 @@ items:
               env:
                 - name: ACCOUNT_UUID
                   value: "{<%accountUuid%>}"
+            {%- if repositoryUuid %}
+                - name: REPOSITORY_UUID
+                  value: "{<%repositoryUuid%>}"
+            {%- endif %}
                 - name: RUNNER_UUID
                   value: "{<%runnerUuid%>}"
                 - name: OAUTH_CLIENT_ID
