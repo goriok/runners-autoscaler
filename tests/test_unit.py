@@ -96,3 +96,14 @@ class BitbucketGroupTestCase(TestCase):
                 },
             ]
         )
+
+
+class KubernetesGroupTestCase(TestCase):
+
+    @mock.patch('subprocess.run')
+    def test_eks_run_with_role_arn(self, subprocess_mock):
+        subprocess_mock.return_value = mock.Mock(returncode=0)
+
+        api = runner.KubernetesBaseAPIService()
+        api.get_kubernetes_version()
+        subprocess_mock.assert_called_once_with(['kubectl', 'version'], capture_output=True, text=True, timeout=5)
