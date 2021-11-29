@@ -1,11 +1,13 @@
 import os
 import argparse
+from time import sleep
 
 import runner
 from logger import logger
 from count_scaler import BitbucketRunnerCountScaler
+from autoscaler import BitbucketRunnerAutoscaler
 from helpers import required, enable_debug, fail
-from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
+from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE, BITBUCKET_RUNNER_API_POLLING_INTERVAL
 
 DEFAULT_LABELS = {'self.hosted', 'linux'}
 MIN_RUNNERS_COUNT = 0
@@ -49,6 +51,7 @@ def main():
         runner_data['labels'] = labels
 
     manual_runners = [r for r in runners_data['config'] if r['type'] == 'manual']
+    autoscale_runners = [r for r in runners_data['config'] if r['type'] == 'autoscaling']
 
     # handle manual workflow
     for runner_data in manual_runners:
@@ -58,6 +61,21 @@ def main():
 
         count_scaler = BitbucketRunnerCountScaler(runner_data)
         count_scaler.run()
+
+    # handle autoscaling workflow
+    # TODO allow multiple. Now autoscaling limit 1
+    for runner_data in autoscale_runners[:1]:
+        logger.info(f"Working on runners: {runner_data}")
+
+        runner.check_kubernetes_namespace(runner_data['namespace'])
+
+        # TODO add validator for autoscaler parameters
+        # TODO move to k8s pod
+        autoscaler = BitbucketRunnerAutoscaler(runner_data)
+        while True:
+            autoscaler.run()
+            logger.warning(f"AUTOSCALER next attempt in {BITBUCKET_RUNNER_API_POLLING_INTERVAL} seconds...\n")
+            sleep(BITBUCKET_RUNNER_API_POLLING_INTERVAL)
 
 
 if __name__ == '__main__':
