@@ -27,6 +27,12 @@ class KubernetesBaseAPIService:
 
         return result
 
+    def get_kubernetes_config(self):
+        cmd = "kubectl config view"
+        result = self.api.run_command(cmd.split())
+
+        return result
+
     def get_or_create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
         logger.info(f"Checking for the {namespace} namespace...")
 

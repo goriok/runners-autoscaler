@@ -5,3 +5,4 @@ colorlog==6.*
 colorama==0.*
 oauthlib==3.*
 PyYAML~=5.4.1
+python-dateutil==2.*

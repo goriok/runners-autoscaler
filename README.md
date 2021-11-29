@@ -58,14 +58,18 @@ config:
     repository: my-awesome-repository   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
     labels:
       - demo1                           # Labels for the Runner.
-    runners_count: 1                    # Count of Runners to set up. Automatically scale up or scale down runners according to Bitbucket runners with status "ONLINE". If value `0` all idle runners with status "ONLINE" will be deleted. Default: 1.
     namespace: runner-group-1           # Kubernetes namespace to set up the Runner on. The default namespace that is provided in the constants.py file will be used, if you do not create or add a different namespace.
+    type: manual                        # Type of the setup workflow. Will be extended with a new types soon.
+    parameters:
+      runners_count: 1                  # Count of Runners to set up. Automatically scale up or scale down runners according to Bitbucket runners with status "ONLINE". If value `0` all idle runners with status "ONLINE" will be deleted. Default: 1.
   - name: Runner workspace group
     workspace: myworkspace
     labels:
       - demo2
-    runners_count: 0
     namespace: runner-group-2
+    type: manual
+    parameters:
+      runners_count: 0
 ```
 
 
@@ -97,7 +101,7 @@ Before executing the script, make sure it meets the following requirements:
 ## Documentation
 
 This script allows you to automate routines for Bitbucket Pipelines self-hosted Runners.
-With this script you can, create runners on Bitbucket Cloud via API requests, setup Kubernetes jobs on your local host, connect Bitbucket Cloud runners with local Kubernetes jobs, and provide artifacts kubespec files for created Bitbucket Cloud runners.
+With this script you can, create runners on Bitbucket Cloud via API requests, setup Kubernetes jobs on your host, connect Bitbucket Cloud runners with Kubernetes jobs, and provide artifacts kubespec files for created Bitbucket Cloud runners.
 
 ## Scale down logic:
 

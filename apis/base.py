@@ -32,11 +32,11 @@ class BaseAPIService:
     def make_http_request(self, url, method='get', json=None, headers=None, ignore_exc=None, **kwargs):
         with requests.request(method, url, auth=self._auth, json=json, headers=headers,
                               timeout=self.MAX_REQUEST_TIMEOUT, **kwargs) as response:
-            logger.info(f"{method.upper()} request to {url}")
+            logger.debug(f"{method.upper()} request to {url}")
             try:
                 response.raise_for_status()
             except requests.exceptions.HTTPError as exc:
-                logger.info(f"Got {exc}. Status: {response.status_code}")
+                logger.debug(f"Got {exc}. Status: {response.status_code}")
                 if ignore_exc is None or (response.status_code not in ignore_exc):
                     raise PipesHTTPError(response.text, status_code=response.status_code)
 
@@ -52,10 +52,10 @@ class BaseAPIService:
 
 class BaseSubprocessAPIService:
     BASE_CLI = "kubectl"
-    MAX_SUBPROCESS_TIMEOUT = 5
+    MAX_SUBPROCESS_TIMEOUT = 10
 
     def run_command(self, command, fail_if_error=True):
-        logger.info(f"RUN command: {' '.join(command)}")
+        logger.debug(f"RUN command: {' '.join(command)}")
 
         try:
             result = subprocess.run(command, capture_output=True, text=True, timeout=self.MAX_SUBPROCESS_TIMEOUT)

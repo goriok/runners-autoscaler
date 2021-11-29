@@ -92,12 +92,15 @@ def delete_bitbucket_runner(workspace, repository=None, runner_uuid=None):
 
 # local Kubernetes
 def validate_kubernetes():
-    logger.warning("Starting validating local Kubernetes...")
+    logger.info("Starting Kubernetes cluster validation…...")
 
     kube_base_api = KubernetesBaseAPIService()
 
+    kubernetes_config = kube_base_api.get_kubernetes_config()
+    logger.debug(kubernetes_config)
+
     kubernetes_version = kube_base_api.get_kubernetes_version()
-    logger.info(f"Your local Kubernetes: {kubernetes_version}")
+    logger.info(f"Kubernetes details: {kubernetes_version}")
 
 
 def check_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
@@ -106,7 +109,7 @@ def check_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
 
 
 def setup_job(runner_data):
-    logger.info("Starting to setup local kubernetes job ...")
+    logger.info("Starting to setup the Kubernetes job ...")
 
     kube_spec_file_api = KubernetesSpecFileAPIService()
     runner_spec_filename = kube_spec_file_api.create_kube_spec_file(runner_data)
@@ -116,9 +119,9 @@ def setup_job(runner_data):
     logger.info(result)
 
 
-def delete_job(runner_uuid):
+def delete_job(runner_uuid, namespace):
     kube_base_api = KubernetesBaseAPIService()
-    kube_base_api.delete_job(runner_uuid)
+    kube_base_api.delete_job(runner_uuid, namespace=namespace)
     kube_spec_file_api = KubernetesSpecFileAPIService()
     kube_spec_file_api.delete_kube_spec_file(runner_uuid)
 
@@ -130,4 +133,4 @@ def read_from_config(config_path):
     except yaml.YAMLError:
         fail(f"Error in configuration file: {config_path}")
 
-    return runner_config['config']
+    return runner_config

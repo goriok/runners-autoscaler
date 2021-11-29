@@ -10,7 +10,7 @@ test: &test
         script:
           - pip install -r requirements.txt
           - pip install -r tests/requirements.txt
-          - flake8 --ignore E501,E125
+          - flake8 --extend-ignore E501,E125
           - pytest -p no:cacheprovider tests/test_unit.py --capture=no --verbose
 
 
