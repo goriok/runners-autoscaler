@@ -1,0 +1,10 @@
+config:
+
+  - name: Runner repository group
+    workspace: test-workspace
+    repository: test-repo
+    labels:
+      - test-label
+    type: manual
+    parameters:
+      runners_count: 1

@@ -88,7 +88,8 @@ class BitbucketRepository(BitbucketAPIService):
 
     def get_raw_content(self, workspace, repo_slug, path, ref='master', **kwargs):
         url = f'{self.BASE_URL}/{workspace}/{repo_slug}/src/{ref}/{path}'
-        return self.make_http_request(url, **kwargs)
+        raw_content, _ = self.make_http_request(url, **kwargs)
+        return raw_content
 
 
 class BitbucketWorkspace(BitbucketAPIService):
