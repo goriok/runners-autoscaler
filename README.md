@@ -31,10 +31,20 @@ This script sends requests to the BITBUCKET API in scale runners up and down.
 Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API request limits].
 
 
+## Installation
+
+```
+# check available tags here https://bitbucket.org/bitbucketpipelines/runners-autoscaler/downloads/?tab=tags
+curl -L https://bitbucket.org/bitbucketpipelines/runners-autoscaler/get/<tag-version>.zip --output runners-autoscaler.zip
+unzip runners-autoscaler.zip
+cd runners-autoscaler
+```
+
+
 ## Usage
 
 ```
-python3 runner-scale.py --config filepath/config.yaml
+python3 runner_scale.py --config filepath/config.yaml
 ```
 
 
@@ -113,6 +123,23 @@ If the value is set to '0' for the scale down logic, all idle runners with an �
 - https://support.atlassian.com/bitbucket-cloud/docs/runners/
 - https://support.atlassian.com/bitbucket-cloud/docs/configure-your-runner-in-bitbucket-pipelines-yml
 
+
+## Support
+If you’d like help with this tool, or you have an issue or feature request, [let us know on Community][community].
+
+If you’re reporting an issue, please include:
+
+- the version of the tool
+- relevant logs and error messages
+- steps to reproduce
+
+
+## License
+Copyright (c) 2021 Atlassian and others.
+Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
+
+
+[community]: https://community.atlassian.com/t5/forums/postpage/board-id/bitbucket-questions?add-tags=pipelines,pipes,runner,autoscaler
 [runner]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
 [runner-config]: https://support.atlassian.com/bitbucket-cloud/docs/configure-your-runner-in-bitbucket-pipelines-yml
 [BITBUCKET_APP_PASSWORD]: https://support.atlassian.com/bitbucket-cloud/docs/app-passwords
