@@ -1,0 +1,35 @@
+image:
+  name: atlassian/default-image:2
+
+
+test: &test
+  parallel:
+    - step:
+        name: Test
+        image: python:3.9
+        script:
+          - pip install -r requirements.txt
+          - pip install -r tests/requirements.txt
+          - flake8 --extend-ignore E501,E125
+          - pytest -p no:cacheprovider tests/ --verbose --cov apis --cov runner --cov runner_scale --cov count_scaler --cov-fail=90
+
+
+push: &push
+  step:
+    name: Push and Tag
+    image: python:3.9
+    script:
+    - pip install semversioner
+    - chmod a+x ci-scripts/release.sh
+    - ./ci-scripts/release.sh
+    services:
+    - docker
+
+
+pipelines:
+  default:
+    - <<: *test
+  branches:
+    master:
+      - <<: *test
+      - <<: *push
