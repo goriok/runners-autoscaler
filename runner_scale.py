@@ -54,7 +54,7 @@ def main():
 
     # handle manual workflow
     for runner_data in manual_runners:
-        logger.info(f"Working on runners: {runner_data}")
+        logger.info(f"Working on runners data: {runner_data}")
 
         runner.check_kubernetes_namespace(runner_data['namespace'])
 
