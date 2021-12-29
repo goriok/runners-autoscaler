@@ -56,7 +56,7 @@ class BitbucketRunnerAutoscaler:
         )
 
         data['runnerNamespace'] = self.runner_data['namespace']
-        runner.setup_job(data)
+        runner.setup_job(data, incluster=True)
 
         success(
             f"Successfully setup runner UUID {data['runnerUuid']} "
@@ -93,7 +93,7 @@ class BitbucketRunnerAutoscaler:
                 self.runner_data.get('repository'),
                 runner_uuid=runner_uuid
             )
-            runner.delete_job(runner_uuid, self.runner_data.get('namespace'))
+            runner.delete_job(runner_uuid, self.runner_data.get('namespace'), incluster=True)
 
             success(
                 f"Successfully deleted runner UUID {runner_uuid} "

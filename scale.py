@@ -49,7 +49,7 @@ def main():
     for runner_data in autoscale_runners[:1]:
         logger.info(f"Working on runners: {runner_data}")
 
-        runner.check_kubernetes_namespace(runner_data['namespace'])
+        runner.check_kubernetes_namespace(runner_data['namespace'], incluster=True)
 
         # TODO add validator for autoscaler parameters
         # TODO move to k8s pod
