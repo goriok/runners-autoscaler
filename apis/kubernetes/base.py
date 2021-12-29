@@ -3,6 +3,8 @@ import os
 from pathlib import Path
 
 from jinja2 import FileSystemLoader, Environment
+from kubernetes import config as k8s_config, client as k8s_client
+from kubernetes.client import ApiException
 
 from logger import logger
 from apis.base import BaseSubprocessAPIService
@@ -59,7 +61,7 @@ class KubernetesBaseAPIService:
         return result
 
 
-class KubernetesSpecFileAPIService(KubernetesBaseAPIService):
+class KubernetesSpecFileAPIService:
     api = BaseSubprocessAPIService()
 
     def apply_kubernetes_spec_file(self, runner_spec_filename, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
@@ -68,7 +70,7 @@ class KubernetesSpecFileAPIService(KubernetesBaseAPIService):
 
         return result
 
-    def create_kube_spec_file(self, runner_data):
+    def generate_kube_spec_file(self, runner_data, template_filename=TEMPLATE_FILE_NAME):
         # process template to k8s spec
 
         logger.info("Start processing template to create Runners job Kubernetes spec file...")
@@ -79,11 +81,17 @@ class KubernetesSpecFileAPIService(KubernetesBaseAPIService):
             variable_start_string="<%",
             variable_end_string="%>"
         )
-        job_template = template_env.get_template(TEMPLATE_FILE_NAME)
+        job_template = template_env.get_template(template_filename)
 
         output = job_template.render(runner_data)
 
         logger.debug(output)
+
+        return output
+
+    def create_kube_spec_file(self, runner_data):
+
+        output = self.generate_kube_spec_file(runner_data)
 
         runner_spec_filename = os.path.join(
             RUNNER_KUBERNETES_SPECS_DIR, f'runner-{runner_data["runnerUuid"][:DEFAULT_RUNNER_IDENTITY_LENGTH]}.yaml')
@@ -99,3 +107,54 @@ class KubernetesSpecFileAPIService(KubernetesBaseAPIService):
             RUNNER_KUBERNETES_SPECS_DIR, f'runner-{runner_uuid[:DEFAULT_RUNNER_IDENTITY_LENGTH]}.yaml')
         logger.info(f"Deleting runner job kubespec file {runner_spec_filename}")
         Path(runner_spec_filename).unlink(missing_ok=True)
+
+
+class KubernetesPythonAPIService:
+    def __init__(self):
+        self.load_config()
+        self.client = k8s_client
+
+    def load_config(self, incluster=True):
+        if incluster:
+            k8s_config.load_incluster_config()
+        else:
+            raise NotImplementedError()
+
+    def create_secret(self, spec, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        core_v1 = self.client.CoreV1Api()
+        resp = core_v1.create_namespaced_secret(body=spec, namespace=namespace)
+        logger.info(f"Secret created. status={resp.metadata.name}")
+
+    def create_job(self, spec, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        batch_v1 = self.client.BatchV1Api()
+        resp = batch_v1.create_namespaced_job(body=spec, namespace=namespace)
+        logger.info(f"Job created. status={resp.metadata.name}")
+
+    def delete_job(self, runner_uuid, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        batch_v1 = self.client.BatchV1Api()
+        batch_v1.delete_namespaced_job(
+            name=f"runner-{runner_uuid}",
+            namespace=namespace,
+            body=self.client.V1DeleteOptions(
+                propagation_policy='Foreground',
+                grace_period_seconds=5
+            )
+        )
+
+    def get_kubernetes_version(self):
+        pass
+
+    def get_kubernetes_config(self):
+        pass
+
+    def get_or_create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        core_v1 = self.client.CoreV1Api()
+        try:
+            core_v1.create_namespace(
+                k8s_client.V1Namespace(metadata=k8s_client.V1ObjectMeta(name=namespace))
+            )
+        except ApiException as e:
+            logger.info(f"Couldn't create namespace: {namespace}. Error {e}")
+
+    def create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        pass

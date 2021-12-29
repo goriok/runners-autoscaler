@@ -1,0 +1,5 @@
+.git/
+bitbucket-runner-k8s-specs/
+tests/
+.python-version
+bitbucket-pipelines.yml

@@ -1,13 +1,12 @@
 import os
 import argparse
-from time import sleep
 
 import runner
+from apis.kubernetes.base import KubernetesSpecFileAPIService
 from logger import logger
 from count_scaler import BitbucketRunnerCountScaler
-from autoscaler import BitbucketRunnerAutoscaler
-from helpers import required, enable_debug, fail
-from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE, BITBUCKET_RUNNER_API_POLLING_INTERVAL
+from helpers import required, enable_debug, fail, string_to_base64string
+from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 
 DEFAULT_LABELS = {'self.hosted', 'linux'}
 MIN_RUNNERS_COUNT = 0
@@ -17,8 +16,8 @@ MAX_RUNNERS_COUNT = 100
 def main():
     enable_debug()
     # required environment variables BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
-    required('BITBUCKET_USERNAME')
-    required('BITBUCKET_APP_PASSWORD')
+    bitbucket_username = required('BITBUCKET_USERNAME')
+    bitbucket_app_password = required('BITBUCKET_APP_PASSWORD')
     runner.validate_kubernetes()
 
     parser = argparse.ArgumentParser()
@@ -64,18 +63,28 @@ def main():
 
     # handle autoscaling workflow
     # TODO allow multiple. Now autoscaling limit 1
-    for runner_data in autoscale_runners[:1]:
-        logger.info(f"Working on runners: {runner_data}")
-
-        runner.check_kubernetes_namespace(runner_data['namespace'])
-
+    if autoscale_runners:
+        # TODO build Docker and pass config
         # TODO add validator for autoscaler parameters
-        # TODO move to k8s pod
-        autoscaler = BitbucketRunnerAutoscaler(runner_data)
-        while True:
-            autoscaler.run()
-            logger.warning(f"AUTOSCALER next attempt in {BITBUCKET_RUNNER_API_POLLING_INTERVAL} seconds...\n")
-            sleep(BITBUCKET_RUNNER_API_POLLING_INTERVAL)
+
+        runner.check_kubernetes_namespace()
+        # feed controller spec file with BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
+        controller_data = {
+            'bitbucketClientUsername': bitbucket_username,
+            'bitbucketClientSecret_base64': string_to_base64string(bitbucket_app_password)
+        }
+        controller_template_filename = "controller-spec.yml.template"
+
+        kube_spec_file_api = KubernetesSpecFileAPIService()
+        template = kube_spec_file_api.generate_kube_spec_file(controller_data, controller_template_filename)
+        with open("controller-spec.yml", "w") as f:
+            f.write(template)
+
+        result = kube_spec_file_api.apply_kubernetes_spec_file(
+            "controller-spec.yml",
+            namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE
+        )
+        logger.info(result)
 
 
 if __name__ == '__main__':
