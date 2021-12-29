@@ -3,7 +3,7 @@ import yaml
 from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from logger import logger
 from helpers import string_to_base64string, fail
-from apis.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService
+from apis.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService, KubernetesPythonAPIService
 from apis.bitbucket.base import (BitbucketWorkspace, BitbucketRepository, BitbucketWorkspaceRunner,
                                  BitbucketRepositoryRunner)
 
@@ -91,39 +91,76 @@ def delete_bitbucket_runner(workspace, repository=None, runner_uuid=None):
 
 
 # local Kubernetes
-def validate_kubernetes():
+def validate_kubernetes(incluster=False):
     logger.info("Starting Kubernetes cluster validation…...")
 
-    kube_base_api = KubernetesBaseAPIService()
+    if incluster:
+        # TODO refactor it
+        logger.info("Starting Kubernetes cluster validation…...")
+    else:
+        kube_base_api = KubernetesBaseAPIService()
 
-    kubernetes_config = kube_base_api.get_kubernetes_config()
-    logger.debug(kubernetes_config)
+        kubernetes_config = kube_base_api.get_kubernetes_config()
+        logger.debug(kubernetes_config)
 
-    kubernetes_version = kube_base_api.get_kubernetes_version()
-    logger.info(f"Kubernetes details: {kubernetes_version}")
+        kubernetes_version = kube_base_api.get_kubernetes_version()
 
-
-def check_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
-    kube_base_api = KubernetesBaseAPIService()
-    kube_base_api.get_or_create_kubernetes_namespace(namespace=namespace)
+        logger.info(f"Kubernetes details: {kubernetes_version}")
 
 
-def setup_job(runner_data):
+def check_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE, incluster=False):
+    logger.info(f"Checking for the {namespace} namespace...")
+
+    if incluster:
+        # TODO refactor it
+        kube_python_api = KubernetesPythonAPIService()
+        kube_python_api.get_or_create_kubernetes_namespace(namespace=namespace)
+    else:
+        kube_base_api = KubernetesBaseAPIService()
+        kube_base_api.get_or_create_kubernetes_namespace(namespace=namespace)
+
+
+def setup_job(runner_data, incluster=False):
     logger.info("Starting to setup the Kubernetes job ...")
 
-    kube_spec_file_api = KubernetesSpecFileAPIService()
-    runner_spec_filename = kube_spec_file_api.create_kube_spec_file(runner_data)
-    result = kube_spec_file_api.apply_kubernetes_spec_file(runner_spec_filename,
-                                                           namespace=runner_data['runnerNamespace'])
+    if incluster:
+        # TODO refactor it
+        kube_spec_file_api = KubernetesSpecFileAPIService()
+        runner_job_spec = kube_spec_file_api.generate_kube_spec_file(runner_data)
 
-    logger.info(result)
+        # TODO improve workflow with k8s spec template for runner job
+        # runner-config.yaml.template
+        runner_spec = yaml.safe_load(runner_job_spec)
+        job_secret_spec = runner_spec['items'][0]
+        job_spec = runner_spec['items'][1]
+
+        kube_python_api = KubernetesPythonAPIService()
+        kube_python_api.create_secret(job_secret_spec, runner_data['runnerNamespace'])
+        kube_python_api.create_job(job_spec, runner_data['runnerNamespace'])
+
+        logger.info("Job created.")
+    else:
+        kube_spec_file_api = KubernetesSpecFileAPIService()
+        runner_job_spec = kube_spec_file_api.create_kube_spec_file(runner_data)
+        result = kube_spec_file_api.apply_kubernetes_spec_file(runner_job_spec,
+                                                               namespace=runner_data['runnerNamespace'])
+
+        logger.info(result)
 
 
-def delete_job(runner_uuid, namespace):
-    kube_base_api = KubernetesBaseAPIService()
-    kube_base_api.delete_job(runner_uuid, namespace=namespace)
-    kube_spec_file_api = KubernetesSpecFileAPIService()
-    kube_spec_file_api.delete_kube_spec_file(runner_uuid)
+def delete_job(runner_uuid, namespace, incluster=False):
+    if incluster:
+        # TODO refactor it
+        kube_python_api = KubernetesPythonAPIService()
+        kube_python_api.delete_job(runner_uuid, namespace)
+        # TODO delete secrets
+
+        logger.info("Job deleted.")
+    else:
+        kube_base_api = KubernetesBaseAPIService()
+        kube_base_api.delete_job(runner_uuid, namespace=namespace)
+        kube_spec_file_api = KubernetesSpecFileAPIService()
+        kube_spec_file_api.delete_kube_spec_file(runner_uuid)
 
 
 def read_from_config(config_path):

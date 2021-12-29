@@ -4,7 +4,7 @@ items:
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: runner-oauth-credentials
+      name: runner-oauth-credentials-<%runnerUuid%>
       labels:
         accountUuid: <%accountUuid%>
     {%- if repositoryUuid %}
@@ -45,12 +45,12 @@ items:
                 - name: OAUTH_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
-                      name: runner-oauth-credentials
+                      name: runner-oauth-credentials-<%runnerUuid%>
                       key: oauthClientId
                 - name: OAUTH_CLIENT_SECRET
                   valueFrom:
                     secretKeyRef:
-                      name: runner-oauth-credentials
+                      name: runner-oauth-credentials-<%runnerUuid%>
                       key: oauthClientSecret
                 - name: WORKING_DIRECTORY
                   value: "/tmp"

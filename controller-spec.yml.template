@@ -1,0 +1,31 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: runner-bitbucket-credentials
+    data:
+      bitbucketClientSecret: <%bitbucketClientSecret_base64%>
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: runner-controller
+    spec:
+      template:
+        metadata:
+          name: runner-controller-pod
+        spec:
+          containers:
+          - name: runner-controller
+            image: test/autoscaler
+            env:
+              - name: BITBUCKET_USERNAME
+                value: <%bitbucketClientUsername%>
+              - name: BITBUCKET_APP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: runner-bitbucket-credentials
+                    key: bitbucketClientSecret
+            imagePullPolicy: Never
+          restartPolicy: Never

@@ -6,3 +6,4 @@ colorama==0.*
 oauthlib==3.*
 PyYAML~=5.4.1
 python-dateutil==2.*
+kubernetes==19.15.0
