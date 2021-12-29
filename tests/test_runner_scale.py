@@ -48,7 +48,7 @@ class RunnerScaleTestCase(TestCase):
     @mock.patch('subprocess.run')
     @mock.patch('argparse.ArgumentParser.parse_args')
     @mock.patch('runner.check_kubernetes_namespace')
-    @mock.patch('count_scaler.BitbucketRunnerCountScaler.run')
+    @mock.patch('manual.count_scaler.BitbucketRunnerCountScaler.run')
     def test_main(self, mock_run, mock_namespace, mock_args, mock_validate_kubernetes):
         mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
         mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
