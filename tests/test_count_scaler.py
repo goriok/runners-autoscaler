@@ -5,7 +5,7 @@ from unittest import TestCase, mock
 import pytest
 
 import runner
-import count_scaler
+from manual import count_scaler
 from tests.helpers import capture_output
 
 

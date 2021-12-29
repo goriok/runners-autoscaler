@@ -4,7 +4,7 @@ import argparse
 import runner
 from apis.kubernetes.base import KubernetesSpecFileAPIService
 from logger import logger
-from count_scaler import BitbucketRunnerCountScaler
+from manual.count_scaler import BitbucketRunnerCountScaler
 from helpers import required, enable_debug, fail, string_to_base64string
 from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 
