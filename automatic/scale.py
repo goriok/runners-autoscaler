@@ -1,10 +1,11 @@
 import os
+import json
 from time import sleep
 
 import runner
 from logger import logger
 from autoscaler import BitbucketRunnerAutoscaler
-from helpers import required, enable_debug, fail
+from helpers import required, enable_debug
 from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE, BITBUCKET_RUNNER_API_POLLING_INTERVAL
 
 DEFAULT_LABELS = {'self.hosted', 'linux'}
@@ -17,19 +18,11 @@ def main():
     # required environment variables BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
     required('BITBUCKET_USERNAME')
     required('BITBUCKET_APP_PASSWORD')
+    required('AUTOSCALER_CONFIG')
 
-    runners_data = []  # list of runners to handle
+    runners_data = json.loads(os.getenv('AUTOSCALER_CONFIG'))
 
-    # read runners parameter from the config file
-    config_file_path = "/runner-config.yaml"
-
-    logger.info(f"Config file provided {config_file_path}.")
-
-    if not os.path.exists(config_file_path):
-        fail(f'Passed runners configuration file {config_file_path} does not exist.')
-
-    # TODO feature re-read config file
-    runners_data = runner.read_from_config(config_file_path)
+    logger.info(f"Autoscaler config: {runners_data}")
 
     # update runners data with default params
     for runner_data in runners_data['config']:

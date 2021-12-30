@@ -18,10 +18,13 @@ items:
         spec:
           containers:
           - name: runner-controller
-            image: test/autoscaler
+            image: bitbucketpipelines/runners-autoscaler:0.1.0.31-dev
             env:
               - name: BITBUCKET_USERNAME
                 value: <%bitbucketClientUsername%>
+              - name: AUTOSCALER_CONFIG
+                value: |
+                  <%autoscalerConfig%>
               - name: BITBUCKET_APP_PASSWORD
                 valueFrom:
                   secretKeyRef:

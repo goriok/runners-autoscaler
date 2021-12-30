@@ -14,14 +14,28 @@ test: &test
           - pytest -p no:cacheprovider tests/ --verbose --cov apis --cov runner --cov runner_scale --cov count_scaler --cov-fail=80
 
 
+release-dev: &release-dev
+  step:
+    name: Release development version
+    image: python:3.9
+    trigger: manual
+    script:
+      - pip install semversioner
+      - ./ci-scripts/docker-release-dev.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
+      - ./ci-scripts/git-release-dev.sh
+    services:
+    - docker
+
+
 push: &push
   step:
     name: Push and Tag
     image: python:3.9
     script:
-    - pip install semversioner
-    - chmod a+x ci-scripts/release.sh
-    - ./ci-scripts/release.sh
+      - pip install semversioner
+      - ./ci-scripts/bump-version.sh
+      - ./ci-scripts/docker-release.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
+      - ./ci-scripts/git-release.sh
     services:
     - docker
 
@@ -29,6 +43,7 @@ push: &push
 pipelines:
   default:
     - <<: *test
+    - <<: *release-dev
   branches:
     master:
       - <<: *test
