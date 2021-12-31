@@ -18,7 +18,7 @@ items:
         spec:
           containers:
           - name: runner-controller
-            image: bitbucketpipelines/runners-autoscaler:0.1.0.31-dev
+            image: bitbucketpipelines/runners-autoscaler:0.1.0.33-dev
             env:
               - name: BITBUCKET_USERNAME
                 value: <%bitbucketClientUsername%>
