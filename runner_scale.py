@@ -1,4 +1,5 @@
 import os
+import json
 import argparse
 
 import runner
@@ -71,7 +72,8 @@ def main():
         # feed controller spec file with BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
         controller_data = {
             'bitbucketClientUsername': bitbucket_username,
-            'bitbucketClientSecret_base64': string_to_base64string(bitbucket_app_password)
+            'bitbucketClientSecret_base64': string_to_base64string(bitbucket_app_password),
+            'autoscalerConfig': json.dumps(runners_data, default=lambda x: list(x) if isinstance(x, set) else str(x))
         }
         controller_template_filename = "controller-spec.yml.template"
 
@@ -80,6 +82,7 @@ def main():
         with open("controller-spec.yml", "w") as f:
             f.write(template)
 
+        # TODO Think about how to get rid of Can't update Jobs, field is immutable
         result = kube_spec_file_api.apply_kubernetes_spec_file(
             "controller-spec.yml",
             namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE
