@@ -4,13 +4,14 @@ from time import sleep
 
 import runner
 from logger import logger
-from autoscaler import BitbucketRunnerAutoscaler
+from automatic.autoscaler import BitbucketRunnerAutoscaler
 from helpers import required, enable_debug
 from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE, BITBUCKET_RUNNER_API_POLLING_INTERVAL
 
 DEFAULT_LABELS = {'self.hosted', 'linux'}
 MIN_RUNNERS_COUNT = 0
 MAX_RUNNERS_COUNT = 100
+TESTING_BREAK_LOOP = False  # for tests
 
 
 def main():
@@ -51,6 +52,10 @@ def main():
             autoscaler.run()
             logger.warning(f"AUTOSCALER next attempt in {BITBUCKET_RUNNER_API_POLLING_INTERVAL} seconds...\n")
             sleep(BITBUCKET_RUNNER_API_POLLING_INTERVAL)
+
+            # Added for testing.
+            if TESTING_BREAK_LOOP:
+                break
 
 
 if __name__ == '__main__':
