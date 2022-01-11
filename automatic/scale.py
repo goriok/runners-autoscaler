@@ -25,7 +25,7 @@ def main():
     logger.info(f"Autoscaler config: {runners_data}")
 
     # update runners data with default params
-    for runner_data in runners_data['config']:
+    for runner_data in runners_data:
         # TODO validate args
         # TODO optimize this logic
         if runner_data.get('namespace') is None:
@@ -37,7 +37,7 @@ def main():
         labels.update(set(runner_data.get('labels')))
         runner_data['labels'] = labels
 
-    autoscale_runners = [r for r in runners_data['config'] if r['type'] == 'autoscaling']
+    autoscale_runners = [r for r in runners_data if r['type'] == 'autoscaling']
 
     for runner_data in autoscale_runners[:1]:
         logger.info(f"Working on runners: {runner_data}")

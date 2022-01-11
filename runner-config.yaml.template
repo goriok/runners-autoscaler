@@ -1,6 +1,9 @@
-  metadata:
-    - contants:
-        runner_cool_down_perion: 300
+  constants:
+    default_runner_kubernetes_namespace: bitbucket-runner
+    default_sleep_time_runner_setup: 5
+    default_sleep_time_runner_delete: 5
+    runner_api_polling_interval: 600
+    runner_cool_down_period: 300
 
   config:
     - name: Runner group 1
@@ -18,41 +21,40 @@
         scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1
         scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1
 
-  - name: Runner repository group
-    workspace: myworkspace
-    repository: my-awesome-repository
-    labels:
-      - demo1
-    namespace: runner-group-1
-    type: manual
-    parameters:
-      runners_count: 0
+    - name: Runner repository group
+      workspace: myworkspace
+      repository: my-awesome-repository
+      labels:
+        - demo1
+      namespace: runner-group-1
+      type: manual
+      parameters:
+        runners_count: 0
 
-  - name: Runner workspace group
-    workspace: myworkspace
-    labels:
-      - demo2
-    namespace: runner-group-2
-    type: manual
-    parameters:
-      runners_count: 0
+    - name: Runner workspace group
+      workspace: myworkspace
+      labels:
+        - demo2
+      namespace: runner-group-2
+      type: manual
+      parameters:
+        runners_count: 0
 
-  - name: Runner group 3
-    workspace: myworkspace
-    repository: my-repository
-    labels:
-      - demo3
-    namespace: runner-group-3
-    type: manual
-    parameters:
-      runners_count: 0
+    - name: Runner group 3
+      workspace: myworkspace
+      repository: my-repository
+      labels:
+        - demo3
+      namespace: runner-group-3
+      type: manual
+      parameters:
+        runners_count: 0
 
-  - name: Runner group 4
-    workspace: myworkspace
-    repository: repository-name
-    labels:
-      - demo4
-    type: manual
-    parameters:
-      runners_count: 0
-
+    - name: Runner group 4
+      workspace: myworkspace
+      repository: repository-name
+      labels:
+        - demo4
+      type: manual
+      parameters:
+        runners_count: 0

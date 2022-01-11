@@ -7,7 +7,8 @@ from apis.kubernetes.base import KubernetesSpecFileAPIService
 from logger import logger
 from manual.count_scaler import BitbucketRunnerCountScaler
 from helpers import required, enable_debug, fail, string_to_base64string
-from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
+from constants import (DEFAULT_RUNNER_KUBERNETES_NAMESPACE, DEFAULT_SLEEP_TIME_RUNNER_SETUP,
+                       DEFAULT_SLEEP_TIME_RUNNER_DELETE, BITBUCKET_RUNNER_API_POLLING_INTERVAL, RUNNER_COOL_DOWN_PERIOD)
 
 DEFAULT_LABELS = {'self.hosted', 'linux'}
 MIN_RUNNERS_COUNT = 0
@@ -69,12 +70,35 @@ def main():
         # TODO add validator for autoscaler parameters
 
         runner.check_kubernetes_namespace()
-        # feed controller spec file with BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
+        # feed controller spec file with BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD and other environment variables.
         controller_data = {
-            'bitbucketClientUsername': bitbucket_username,
-            'bitbucketClientSecret_base64': string_to_base64string(bitbucket_app_password),
-            'autoscalerConfig': json.dumps(runners_data, default=lambda x: list(x) if isinstance(x, set) else str(x))
+            'bitbucket_client_username': bitbucket_username,
+            'bitbucket_client_secret_base64': string_to_base64string(bitbucket_app_password),
+            'autoscaler_config': json.dumps(runners_data['config'], default=lambda x: list(x) if isinstance(x, set) else str(x))
         }
+
+        if 'constants' in runners_data:
+            # Simple validation. TODO refactor this.
+            constants_data = {
+                'default_runner_kubernetes_namespace': runners_data['constants'].get(
+                    'default_runner_kubernetes_namespace', DEFAULT_RUNNER_KUBERNETES_NAMESPACE
+                ),
+                'default_sleep_time_runner_setup': str(runners_data['constants'].get(
+                    'default_sleep_time_runner_setup', DEFAULT_SLEEP_TIME_RUNNER_SETUP
+                )),
+                'default_sleep_time_runner_delete': str(runners_data['constants'].get(
+                    'default_sleep_time_runner_delete', DEFAULT_SLEEP_TIME_RUNNER_DELETE
+                )),
+                'runner_api_polling_interval': str(runners_data['constants'].get(
+                    'runner_api_polling_interval', BITBUCKET_RUNNER_API_POLLING_INTERVAL
+                )),
+                'runner_cool_down_period': str(runners_data['constants'].get(
+                    'runner_cool_down_period', RUNNER_COOL_DOWN_PERIOD
+                ))
+            }
+
+            controller_data.update(constants_data)
+
         controller_template_filename = "controller-spec.yml.template"
 
         kube_spec_file_api = KubernetesSpecFileAPIService()

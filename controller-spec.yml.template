@@ -6,7 +6,7 @@ items:
     metadata:
       name: runner-bitbucket-credentials
     data:
-      bitbucketClientSecret: <%bitbucketClientSecret_base64%>
+      bitbucketClientSecret: <%bitbucket_client_secret_base64%>
   - apiVersion: batch/v1
     kind: Job
     metadata:
@@ -21,10 +21,24 @@ items:
             image: bitbucketpipelines/runners-autoscaler:0.1.0.33-dev
             env:
               - name: BITBUCKET_USERNAME
-                value: <%bitbucketClientUsername%>
+                value: <%bitbucket_client_username%>
               - name: AUTOSCALER_CONFIG
                 value: |
-                  <%autoscalerConfig%>
+                  <%autoscaler_config%>
+              - name: DEFAULT_RUNNER_KUBERNETES_NAMESPACE
+                value: <%default_runner_kubernetes_namespace%>
+              - name: DEFAULT_SLEEP_TIME_RUNNER_SETUP
+                value: |
+                  <%default_sleep_time_runner_setup%>
+              - name: DEFAULT_SLEEP_TIME_RUNNER_DELETE
+                value: |
+                  <%default_sleep_time_runner_delete%>
+              - name: BITBUCKET_RUNNER_API_POLLING_INTERVAL
+                value: |
+                  <%runner_api_polling_interval%>
+              - name: RUNNER_COOL_DOWN_PERIOD
+                value: |
+                  <%runner_cool_down_period%>
               - name: BITBUCKET_APP_PASSWORD
                 valueFrom:
                   secretKeyRef:
