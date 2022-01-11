@@ -49,10 +49,10 @@ class RunnerScaleTestCase(TestCase):
     @mock.patch('argparse.ArgumentParser.parse_args')
     @mock.patch('runner.check_kubernetes_namespace')
     @mock.patch('manual.count_scaler.BitbucketRunnerCountScaler.run')
-    def test_main(self, mock_run, mock_namespace, mock_args, mock_validate_kubernetes):
+    def test_main_manual(self, mock_run, mock_namespace, mock_args, mock_validate_kubernetes):
         mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
         mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
-        mock_args.return_value = argparse.Namespace(config='tests/test_config.yaml')
+        mock_args.return_value = argparse.Namespace(config='tests/test_config_manual.yaml')
         mock_namespace.return_value = None
         mock_run.return_value = None
 
@@ -63,3 +63,35 @@ class RunnerScaleTestCase(TestCase):
         assert mock_args.called
         assert mock_namespace.called
         assert mock_run.called
+
+    @mock.patch('subprocess.run')
+    @mock.patch('argparse.ArgumentParser.parse_args')
+    @mock.patch('runner.check_kubernetes_namespace')
+    @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.generate_kube_spec_file')
+    @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.apply_kubernetes_spec_file')
+    @mock.patch('runner_scale.open')
+    def test_main_automatic(
+            self,
+            mocked_create,
+            mock_apply,
+            mock_generate_spec,
+            mock_namespace,
+            mock_args,
+            mock_validate_kubernetes
+    ):
+        mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
+        mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
+        mock_args.return_value = argparse.Namespace(config='tests/test_config_automatic.yaml')
+        mock_namespace.return_value = None
+        mock_generate_spec.return_value = None
+        mock_apply.return_value = 'test'
+
+        with self.caplog.at_level(logging.INFO):
+            runner_scale.main()
+
+        assert mock_args.called
+        assert mock_namespace.called
+        assert mock_generate_spec.called
+        assert mock_apply.called
+        mocked_create.assert_called_once_with('controller-spec.yml', 'w')
+        self.assertIn('test', self.caplog.text)

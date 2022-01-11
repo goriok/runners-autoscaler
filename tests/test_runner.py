@@ -269,8 +269,8 @@ class RunnerTestCase(TestCase):
 
         with capture_output() as out:
             with pytest.raises(SystemExit) as pytest_wrapped_e:
-                runner.read_from_config('tests/test_config.yaml')
+                runner.read_from_config('tests/test_config_manual.yaml')
 
         self.assertTrue(mock_config.called)
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Error in configuration file: tests/test_config.yaml', out.getvalue())
+        self.assertIn('Error in configuration file: tests/test_config_manual.yaml', out.getvalue())

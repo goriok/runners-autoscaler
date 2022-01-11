@@ -103,9 +103,6 @@ class BitbucketRunnerAutoscaler:
 
             sleep(DEFAULT_SLEEP_TIME_RUNNER_DELETE)
 
-    def get_desired_count(self, current_runners_count):
-        pass
-
     def run(self):
         runners = self.get_runners()
 
@@ -176,6 +173,10 @@ class BitbucketRunnerAutoscaler:
             else:
                 count_runners_to_create = self.runner_data['parameters']['max'] - len(online_runners)
                 desired_runners_count = self.runner_data['parameters']['max']
+
+            if count_runners_to_create == 0:
+                logger.info(f"Max runners count: {self.runner_data['parameters']['max']} reached.")
+                return
 
             msg_autoscaler = (
                 f"{msg_autoscaler}, "
