@@ -44,5 +44,5 @@ items:
                   secretKeyRef:
                     name: runner-bitbucket-credentials
                     key: bitbucketClientSecret
-            imagePullPolicy: Never
+            imagePullPolicy: IfNotPresent
           restartPolicy: Never
