@@ -1,6 +1,6 @@
 from unittest import TestCase, mock
 
-from constants import RUNNER_KUBERNETES_SPECS_DIR
+from constants import RUNNER_KUBERNETES_SPECS_DIR, DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from apis.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService
 
 
@@ -41,22 +41,43 @@ class KubernetesBaseAPIServiceTestCase(TestCase):
         )
 
     @mock.patch('subprocess.run')
-    def test_get_or_create_kubernetes_namespace(self, subprocess_mock):
+    def test_get_or_create_kubernetes_namespace_not_created(self, subprocess_mock):
         process_mock = mock.Mock('foo', returncode=0, stdout='bar')
 
         subprocess_mock.return_value = process_mock
         subprocess_mock.return_value.check_returncode = mock.Mock('foo', returncode=0, stdout='bar')
 
         api = KubernetesBaseAPIService()
-        result = api.get_or_create_kubernetes_namespace()
-        self.assertEqual('bar', result)
+        result = api.get_or_create_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
+        self.assertEqual(False, result)
+
+    @mock.patch('subprocess.run')
+    @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
+    def test_get_or_create_kubernetes_namespace_created(self, mock_create, subprocess_mock):
+        process_mock = mock.Mock('foo', returncode=1, stdout='bar')
+
+        subprocess_mock.return_value = process_mock
+        subprocess_mock.return_value.check_returncode = mock.Mock('foo', returncode=1, stdout='bar')
+        mock_create.return_value = None
+
+        api = KubernetesBaseAPIService()
+        result = api.get_or_create_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
+        self.assertEqual(True, result)
 
     @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
     def test_create_kubernetes_namespace(self, mock_create):
         mock_create.return_value = 'baz'
 
         api = KubernetesBaseAPIService()
-        result = api.create_kubernetes_namespace()
+        result = api.create_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
+        self.assertEqual('baz', result)
+
+    @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
+    def test_create_config_map(self, mock_create):
+        mock_create.return_value = 'baz'
+
+        api = KubernetesBaseAPIService()
+        result = api.create_config_map('foo', {'bar': 1}, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
         self.assertEqual('baz', result)
 
 
