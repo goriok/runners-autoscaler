@@ -1,5 +1,4 @@
 import os
-import copy
 import json
 import logging
 from unittest import TestCase, mock
@@ -7,7 +6,6 @@ from unittest import TestCase, mock
 import pytest
 
 from automatic import scale
-from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 
 
 test_config = [
@@ -77,24 +75,4 @@ class ScaleTestCase(TestCase):
         self.assertIn(f'Autoscaler config: {test_config}', self.caplog.text)
         assert mock_namespace.called
         self.assertIn('AUTOSCALER next attempt in 0.1 seconds...\n', self.caplog.text)
-        assert mock_autoscaler.called
-
-    @mock.patch.dict(os.environ, {'AUTOSCALER_CONFIG': json.dumps(test_config_no_namespace)})
-    @mock.patch('automatic.scale.TESTING_BREAK_LOOP', True)
-    @mock.patch('automatic.scale.BITBUCKET_RUNNER_API_POLLING_INTERVAL', 0.1)
-    @mock.patch('runner.check_kubernetes_namespace')
-    @mock.patch('automatic.autoscaler.BitbucketRunnerAutoscaler.run')
-    def test_main_no_namespace(self, mock_autoscaler, mock_namespace):
-        mock_namespace.return_value = None
-        mock_autoscaler.return_value = None
-
-        expected_response = copy.deepcopy(test_config_no_namespace)
-        expected_response[0].update({'namespace': DEFAULT_RUNNER_KUBERNETES_NAMESPACE})
-
-        with self.caplog.at_level(logging.INFO):
-            scale.main()
-
-        self.assertIn(f'Autoscaler config: {test_config_no_namespace}', self.caplog.text)
-        assert mock_namespace.called
-        self.assertIn(f"'namespace': '{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}'", self.caplog.text)
         assert mock_autoscaler.called

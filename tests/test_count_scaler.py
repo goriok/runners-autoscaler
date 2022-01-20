@@ -38,7 +38,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             ]},
             200
         )
-        runner_data = {'workspace': 'fake_workspace'}
+        runner_data = {'workspace': 'fake_workspace', 'repository': None}
         runner_count_scaler = count_scaler.BitbucketRunnerCountScaler(runner_data=runner_data)
         result = runner_count_scaler.get_runners()
         self.assertEqual(

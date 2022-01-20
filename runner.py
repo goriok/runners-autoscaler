@@ -25,30 +25,30 @@ def get_bitbucket_runners(workspace, repository=None):
     return runners_data['values']
 
 
-def create_bitbucket_runner(workspace, repository=None, name='test', labels=('test',)):
-    start_msg = f"Starting to setup runner on Bitbucket workspace: {workspace}"
-    create_complete_msg = f"Runner created on Bitbucket workspace: {workspace}"
+def create_bitbucket_runner(workspace_uuid, repository_uuid=None, name='test', labels=('test',)):
+    start_msg = f"Starting to setup runner on Bitbucket workspace: {workspace_uuid}"
+    create_complete_msg = f"Runner created on Bitbucket workspace: {workspace_uuid}"
 
-    if repository:
-        logger.info(f"{start_msg} repository: {repository} ...")
+    if repository_uuid:
+        logger.info(f"{start_msg} repository: {repository_uuid} ...")
 
         repository_runner_api = BitbucketRepositoryRunner()
-        data = repository_runner_api.create_runner(workspace, repository, name, tuple(labels))
+        data = repository_runner_api.create_runner(workspace_uuid, repository_uuid, name, tuple(labels))
 
-        logger.info(f"{create_complete_msg} repository: {repository}")
+        logger.info(f"{create_complete_msg} repository: {repository_uuid}")
     else:
         logger.info(f"{start_msg} ...")
 
         workspace_runner_api = BitbucketWorkspaceRunner()
-        data = workspace_runner_api.create_runner(workspace, name, tuple(labels))
+        data = workspace_runner_api.create_runner(workspace_uuid, name, tuple(labels))
 
         logger.info(f"{create_complete_msg}")
 
     logger.debug(data)
 
     runner_data = {
-        "accountUuid": None,
-        "repositoryUuid": None,
+        "accountUuid": workspace_uuid,
+        "repositoryUuid": repository_uuid,
         "runnerUuid": data["uuid"].strip('{}'),
         "oauthClientId_base64": string_to_base64string(data["oauth_client"]["id"]),
         "oauthClientSecret_base64": string_to_base64string(data["oauth_client"]["secret"]),
@@ -56,37 +56,22 @@ def create_bitbucket_runner(workspace, repository=None, name='test', labels=('te
 
     logger.debug(runner_data)
 
-    workspace_api = BitbucketWorkspace()
-    workspace_data = workspace_api.get_workspace(workspace)
-
-    logger.debug(workspace_data)
-
-    runner_data['accountUuid'] = workspace_data['uuid'].strip('{}')
-
-    if repository:
-        repository_api = BitbucketRepository()
-        repository_data = repository_api.get_repository(workspace, repository)
-
-        logger.debug(repository_data)
-
-        runner_data['repositoryUuid'] = repository_data['uuid'].strip('{}')
-
     return runner_data
 
 
-def delete_bitbucket_runner(workspace, repository=None, runner_uuid=None):
-    msg = f"Starting to delete runner {runner_uuid} from Bitbucket workspace: {workspace}"
+def delete_bitbucket_runner(workspace_uuid, repository_uuid=None, runner_uuid=None):
+    msg = f"Starting to delete runner {runner_uuid} from Bitbucket workspace: {workspace_uuid}"
 
-    if repository:
-        logger.info(f"{msg} repository: {repository} ...")
+    if repository_uuid:
+        logger.info(f"{msg} repository: {repository_uuid} ...")
 
         repository_runner_api = BitbucketRepositoryRunner()
-        repository_runner_api.delete_runner(workspace, repository, runner_uuid)
+        repository_runner_api.delete_runner(workspace_uuid, repository_uuid, runner_uuid)
     else:
         logger.info(f"{msg} ...")
 
         workspace_runner_api = BitbucketWorkspaceRunner()
-        workspace_runner_api.delete_runner(workspace, runner_uuid)
+        workspace_runner_api.delete_runner(workspace_uuid, runner_uuid)
 
 
 # local Kubernetes
@@ -172,3 +157,15 @@ def read_from_config(config_path):
         fail(f"Error in configuration file: {config_path}")
 
     return runner_config
+
+
+def get_bitbucket_workspace_repository_uuids(workspace_name, repository_name):
+    workspace_api = BitbucketWorkspace()
+    workspace_data = workspace_api.get_workspace(workspace_name)['uuid'].strip('{}')
+
+    repository_data = None
+    if repository_name:
+        repository_api = BitbucketRepository()
+        repository_data = repository_api.get_repository(workspace_name, repository_name)['uuid'].strip('{}')
+
+    return workspace_data, repository_data
