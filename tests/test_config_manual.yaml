@@ -3,6 +3,7 @@ config:
   - name: Runner repository group
     workspace: test-workspace
     repository: test-repo
+    namespace: test-namespace
     labels:
       - test-label
     type: manual

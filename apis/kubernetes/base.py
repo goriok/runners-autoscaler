@@ -8,7 +8,8 @@ from kubernetes.client import ApiException
 
 from logger import logger
 from apis.base import BaseSubprocessAPIService
-from constants import TEMPLATE_FILE_NAME, RUNNER_KUBERNETES_SPECS_DIR, DEFAULT_RUNNER_KUBERNETES_NAMESPACE
+from constants import (TEMPLATE_FILE_NAME, RUNNER_KUBERNETES_SPECS_DIR, DEFAULT_RUNNER_KUBERNETES_NAMESPACE,
+                       CONSTANTS_CONFIG_MAP_NAME)
 
 
 DEFAULT_RUNNER_IDENTITY_LENGTH = 8
@@ -35,28 +36,44 @@ class KubernetesBaseAPIService:
 
         return result
 
-    def get_or_create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
-        logger.info(f"Checking for the {namespace} namespace...")
+    def get_or_create_kubernetes_namespace(self, namespace):
 
         cmd = f"kubectl get namespace {namespace}"
 
         # TODO add validate_kubernetes_label(namespace)
 
+        created = False
         result, return_code = self.api.run_command(cmd.split(), fail_if_error=False)
         # check for fails code
         if return_code != 0:
-            result = self.create_kubernetes_namespace(namespace)
+            self.create_kubernetes_namespace(namespace)
+            created = True
 
-        return result
+        msg = "Namespace created." if created else "Namespace found."
+        logger.info(msg)
 
-    def create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        return created
+
+    def create_kubernetes_namespace(self, namespace):
         # kubectl create namespace bitbucket-runner --dry-run=client -o yaml | kubectl apply -f -
         logger.info(f"Creating the {namespace} namespace...")
 
-        cmd_create_namespace = f"kubectl create namespace {namespace} --dry-run=client -o yaml "
-        cmd_apply = "kubectl apply -f - "
+        cmd_create_namespace = ["kubectl", "create", "namespace", namespace, "--dry-run=client",  "-o", "yaml"]
+        cmd_apply = ["kubectl", "apply", "-f", "-"]
 
         result = self.api.run_piped_command(cmd_create_namespace, cmd_apply)
+
+        return result
+
+    def create_config_map(self, name, config_map, namespace):
+        data = [f"--from-literal={k}={v}" for k, v in config_map.items()]
+        cmd_create = ["kubectl", "create", "configmap", name, f"--namespace={namespace}"]
+        cmd_create.extend(data)
+        cmd_create.extend(["--dry-run=client", "-o", "yaml"])
+
+        cmd_apply = ["kubectl", "apply", "-f", "-"]
+
+        result = self.api.run_piped_command(cmd_create, cmd_apply)
 
         return result
 
@@ -147,7 +164,7 @@ class KubernetesPythonAPIService:
     def get_kubernetes_config(self):
         pass
 
-    def get_or_create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    def get_or_create_kubernetes_namespace(self, namespace):
         core_v1 = self.client.CoreV1Api()
         try:
             core_v1.create_namespace(
@@ -156,5 +173,29 @@ class KubernetesPythonAPIService:
         except ApiException as e:
             logger.info(f"Couldn't create namespace: {namespace}. Error {e}")
 
-    def create_kubernetes_namespace(self, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    def create_kubernetes_namespace(self, namespace):
         pass
+
+    def create_config_map_object(self, data, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        # Configure ConfigMap metadata
+        metadata = self.client.V1ObjectMeta(
+            name=CONSTANTS_CONFIG_MAP_NAME,
+            namespace=namespace,
+        )
+        # Instantiate the configmap object
+        configmap = self.client.V1ConfigMap(
+            api_version="v1",
+            kind="ConfigMap",
+            data=data,
+            metadata=metadata
+        )
+        return configmap
+
+    def create_config_map(self, config_map, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+        try:
+            self.client.CoreV1Api().create_namespaced_config_map(
+                namespace=namespace,
+                body=config_map
+            )
+        except ApiException as e:
+            logger.info(f"Couldn't create namespaced_config_map on namespace: {namespace}. Error {e}")

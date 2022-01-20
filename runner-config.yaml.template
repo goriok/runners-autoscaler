@@ -1,5 +1,4 @@
   constants:
-    default_runner_kubernetes_namespace: bitbucket-runner
     default_sleep_time_runner_setup: 5
     default_sleep_time_runner_delete: 5
     runner_api_polling_interval: 600
@@ -55,6 +54,7 @@
       repository: repository-name
       labels:
         - demo4
+      namespace: runner-group-4
       type: manual
       parameters:
         runners_count: 0

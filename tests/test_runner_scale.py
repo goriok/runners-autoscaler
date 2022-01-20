@@ -6,6 +6,7 @@ from unittest import TestCase, mock
 import pytest
 
 import runner_scale
+from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from tests.helpers import capture_output
 
 
@@ -67,6 +68,7 @@ class RunnerScaleTestCase(TestCase):
     @mock.patch('subprocess.run')
     @mock.patch('argparse.ArgumentParser.parse_args')
     @mock.patch('runner.check_kubernetes_namespace')
+    @mock.patch('apis.kubernetes.base.KubernetesBaseAPIService.create_config_map')
     @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.generate_kube_spec_file')
     @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.apply_kubernetes_spec_file')
     @mock.patch('runner_scale.open')
@@ -75,14 +77,16 @@ class RunnerScaleTestCase(TestCase):
             mocked_create,
             mock_apply,
             mock_generate_spec,
-            mock_namespace,
+            mock_create_config_map,
+            mock_namespace_created,
             mock_args,
             mock_validate_kubernetes
     ):
         mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
         mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
         mock_args.return_value = argparse.Namespace(config='tests/test_config_automatic.yaml')
-        mock_namespace.return_value = None
+        mock_namespace_created.return_value = True
+        mock_create_config_map.return_value = None
         mock_generate_spec.return_value = None
         mock_apply.return_value = 'test'
 
@@ -90,8 +94,55 @@ class RunnerScaleTestCase(TestCase):
             runner_scale.main()
 
         assert mock_args.called
-        assert mock_namespace.called
+        assert mock_namespace_created.called
         assert mock_generate_spec.called
         assert mock_apply.called
         mocked_create.assert_called_once_with('controller-spec.yml', 'w')
         self.assertIn('test', self.caplog.text)
+
+    @mock.patch('subprocess.run')
+    @mock.patch('argparse.ArgumentParser.parse_args')
+    @mock.patch('runner.read_from_config')
+    def test_main_namespace_required(
+            self,
+            mock_runner_data,
+            mock_args,
+            mock_validate_kubernetes
+    ):
+        mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
+        mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
+        mock_args.return_value = argparse.Namespace(config='tests/test_config_automatic.yaml')
+        mock_runner_data.return_value = {'config': [{'foo': 'bar'}]}
+
+        with capture_output() as out:
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                runner_scale.main()
+
+        assert mock_args.called
+        self.assertEqual(pytest_wrapped_e.type, SystemExit)
+        self.assertIn('Namespace required for runner.', out.getvalue())
+
+    @mock.patch('subprocess.run')
+    @mock.patch('argparse.ArgumentParser.parse_args')
+    @mock.patch('runner.read_from_config')
+    def test_main_namespace_reserved(
+            self,
+            mock_runner_data,
+            mock_args,
+            mock_validate_kubernetes
+    ):
+        mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
+        mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
+        mock_args.return_value = argparse.Namespace(config='tests/test_config_automatic.yaml')
+        mock_runner_data.return_value = {'config': [{'namespace': DEFAULT_RUNNER_KUBERNETES_NAMESPACE}]}
+
+        with capture_output() as out:
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                runner_scale.main()
+
+        assert mock_args.called
+        self.assertEqual(pytest_wrapped_e.type, SystemExit)
+        self.assertIn(
+            f'Namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
+            out.getvalue()
+        )

@@ -23,22 +23,30 @@ items:
               - name: BITBUCKET_USERNAME
                 value: <%bitbucket_client_username%>
               - name: AUTOSCALER_CONFIG
-                value: |
-                  <%autoscaler_config%>
-              - name: DEFAULT_RUNNER_KUBERNETES_NAMESPACE
-                value: <%default_runner_kubernetes_namespace%>
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%autoscaler_config_map_name%>
+                    key: autoscaler.config
               - name: DEFAULT_SLEEP_TIME_RUNNER_SETUP
-                value: |
-                  <%default_sleep_time_runner_setup%>
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.default_sleep_time_runner_setup
               - name: DEFAULT_SLEEP_TIME_RUNNER_DELETE
-                value: |
-                  <%default_sleep_time_runner_delete%>
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.default_sleep_time_runner_delete
               - name: BITBUCKET_RUNNER_API_POLLING_INTERVAL
-                value: |
-                  <%runner_api_polling_interval%>
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.runner_api_polling_interval
               - name: RUNNER_COOL_DOWN_PERIOD
-                value: |
-                  <%runner_cool_down_period%>
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.runner_cool_down_period
               - name: BITBUCKET_APP_PASSWORD
                 valueFrom:
                   secretKeyRef:

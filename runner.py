@@ -1,6 +1,5 @@
 import yaml
 
-from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from logger import logger
 from helpers import string_to_base64string, fail
 from apis.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService, KubernetesPythonAPIService
@@ -108,16 +107,18 @@ def validate_kubernetes(incluster=False):
         logger.info(f"Kubernetes details: {kubernetes_version}")
 
 
-def check_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE, incluster=False):
+def check_kubernetes_namespace(namespace, incluster=False):
     logger.info(f"Checking for the {namespace} namespace...")
 
     if incluster:
         # TODO refactor it
         kube_python_api = KubernetesPythonAPIService()
-        kube_python_api.get_or_create_kubernetes_namespace(namespace=namespace)
+        created = kube_python_api.get_or_create_kubernetes_namespace(namespace=namespace)
     else:
         kube_base_api = KubernetesBaseAPIService()
-        kube_base_api.get_or_create_kubernetes_namespace(namespace=namespace)
+        created = kube_base_api.get_or_create_kubernetes_namespace(namespace=namespace)
+
+    return created
 
 
 def setup_job(runner_data, incluster=False):
