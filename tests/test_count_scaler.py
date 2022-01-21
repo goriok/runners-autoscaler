@@ -101,7 +101,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
-            'type': 'manual',
+            'strategy': 'manual',
             'parameters': {'runners_count': 1}
         }
 
@@ -132,7 +132,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
-            'type': 'manual',
+            'strategy': 'manual',
             'parameters': {'runners_count': 1}
         }
 
@@ -191,7 +191,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
-            'type': 'manual',
+            'strategy': 'manual',
             'parameters': {'runners_count': 0}
         }
 
@@ -242,7 +242,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
-            'type': 'manual',
+            'strategy': 'manual',
             'parameters': {'runners_count': 0}
         }
 

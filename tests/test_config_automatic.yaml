@@ -7,7 +7,7 @@ config:
     labels:
       - test
     namespace: test-namespace
-    type: autoscaling
+    strategy: percentageRunnersIdle
     parameters:
       min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting
       max: 10  #

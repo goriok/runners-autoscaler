@@ -6,6 +6,6 @@ config:
     namespace: test-namespace
     labels:
       - test-label
-    type: manual
+    strategy: manual
     parameters:
       runners_count: 1

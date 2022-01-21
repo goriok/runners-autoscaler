@@ -15,7 +15,7 @@ test_config = [
         "repository": "runner-test",
         "labels": ["self.hosted", "test", "linux"],
         "namespace": "rg-1",
-        "type": "autoscaling",
+        "strategy": "percentageRunnersIdle",
         "parameters": {
             "min": 1,
             "max": 10,
@@ -33,7 +33,7 @@ test_config_no_namespace = [
         "workspace": "test",
         "repository": "runner-test",
         "labels": ["self.hosted", "test", "linux"],
-        "type": "autoscaling",
+        "strategy": "percentageRunnersIdle",
         "parameters": {
             "min": 1,
             "max": 10,
