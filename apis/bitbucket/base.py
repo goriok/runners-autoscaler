@@ -80,7 +80,9 @@ class BitbucketRepository(BitbucketAPIService):
 
     def get_repository(self, workspace, repo_slug, **kwargs):
         if kwargs:
-            repo, _ = self.make_http_request(f'{self.BASE_URL}/{workspace}/{repo_slug}/?{urllib.parse.urlencode(kwargs)}')
+            repo, _ = self.make_http_request(
+                f'{self.BASE_URL}/{workspace}/{repo_slug}/?{urllib.parse.urlencode(kwargs)}'
+            )
         else:
             repo, _ = self.make_http_request(f'{self.BASE_URL}/{workspace}/{repo_slug}')
 
@@ -107,25 +109,25 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
     BASE_URL = f'{BITBUCKET_BASE_URL}/internal/workspaces'
     INTERVAL_BEFORE_REQUESTS = 5
 
-    def get_runner(self, workspace_name, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+    def get_runner(self, workspace_uuid, runner_uuid):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url)
         return runner
 
     # TODO implement paging
-    def get_runners(self, workspace_name):
-        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners?pagelen=100'
+    def get_runners(self, workspace_uuid):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners?pagelen=100'
         runners, _ = self.make_http_request(url)
         return runners
 
-    def create_runner(self, workspace_name, name, labels):
-        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners'
+    def create_runner(self, workspace_uuid, name, labels):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners'
         data = {'name': name, 'labels': labels}
         runner, _ = self.make_http_request(url, method='post', json=data, headers={'Content-Type': 'application/json'})
         return runner
 
-    def delete_runner(self, workspace_name, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+    def delete_runner(self, workspace_uuid, runner_uuid):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner
 
@@ -135,24 +137,24 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
     BASE_URL = f'{BITBUCKET_BASE_URL}/internal/repositories'
     INTERVAL_BEFORE_REQUESTS = 5
 
-    def get_runner(self, workspace_name, repo_slug, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+    def get_runner(self, workspace_uuid, repo_uuid, runner_uuid):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url)
         return runner
 
     # TODO implement paging
-    def get_runners(self, workspace_name, repo_slug):
-        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners?pagelen=100'
+    def get_runners(self, workspace_uuid, repo_uuid):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners?pagelen=100'
         runners, _ = self.make_http_request(url)
         return runners
 
-    def create_runner(self, workspace_name, repo_slug, name, labels):
-        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners'
+    def create_runner(self, workspace_uuid, repo_uuid, name, labels):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners'
         data = {'name': name, 'labels': labels}
         runner, _ = self.make_http_request(url, method='post', json=data, headers={'Content-Type': 'application/json'})
         return runner
 
-    def delete_runner(self, workspace_name, repo_slug, runner_uuid):
-        url = f'{self.BASE_URL}/{workspace_name}/{repo_slug}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+    def delete_runner(self, workspace_uuid, repo_uuid, runner_uuid):
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner

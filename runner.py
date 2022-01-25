@@ -9,46 +9,46 @@ from apis.bitbucket.base import (BitbucketWorkspace, BitbucketRepository, Bitbuc
 
 # Bitbucket Cloud API
 def get_bitbucket_runners(workspace, repository=None):
-    msg = f"Getting runners on Bitbucket workspace: {workspace}"
+    msg = f"Getting runners on Bitbucket workspace: {workspace['name']}"
 
     if repository:
-        logger.info(f"{msg} repository: {repository} ...")
+        logger.info(f"{msg} repository: {repository['name']} ...")
 
         repository_runner_api = BitbucketRepositoryRunner()
-        runners_data = repository_runner_api.get_runners(workspace, repository)
+        runners_data = repository_runner_api.get_runners(workspace['uuid'], repository['uuid'])
     else:
         logger.info(f"{msg} ...")
 
         workspace_runner_api = BitbucketWorkspaceRunner()
-        runners_data = workspace_runner_api.get_runners(workspace)
+        runners_data = workspace_runner_api.get_runners(workspace['uuid'])
 
     return runners_data['values']
 
 
 def create_bitbucket_runner(workspace, repository=None, name='test', labels=('test',)):
-    start_msg = f"Starting to setup runner on Bitbucket workspace: {workspace}"
-    create_complete_msg = f"Runner created on Bitbucket workspace: {workspace}"
+    start_msg = f"Starting to setup runner on Bitbucket workspace: {workspace['name']}"
+    create_complete_msg = f"Runner created on Bitbucket workspace: {workspace['name']}"
 
     if repository:
-        logger.info(f"{start_msg} repository: {repository} ...")
+        logger.info(f"{start_msg} repository: {repository['name']} ...")
 
         repository_runner_api = BitbucketRepositoryRunner()
-        data = repository_runner_api.create_runner(workspace, repository, name, tuple(labels))
+        data = repository_runner_api.create_runner(workspace['uuid'], repository['uuid'], name, tuple(labels))
 
-        logger.info(f"{create_complete_msg} repository: {repository}")
+        logger.info(f"{create_complete_msg} repository: {repository['name']}")
     else:
         logger.info(f"{start_msg} ...")
 
         workspace_runner_api = BitbucketWorkspaceRunner()
-        data = workspace_runner_api.create_runner(workspace, name, tuple(labels))
+        data = workspace_runner_api.create_runner(workspace['uuid'], name, tuple(labels))
 
         logger.info(f"{create_complete_msg}")
 
     logger.debug(data)
 
     runner_data = {
-        "accountUuid": None,
-        "repositoryUuid": None,
+        "accountUuid": workspace['uuid'],
+        "repositoryUuid": repository['uuid'] if repository else None,
         "runnerUuid": data["uuid"].strip('{}'),
         "oauthClientId_base64": string_to_base64string(data["oauth_client"]["id"]),
         "oauthClientSecret_base64": string_to_base64string(data["oauth_client"]["secret"]),
@@ -56,37 +56,22 @@ def create_bitbucket_runner(workspace, repository=None, name='test', labels=('te
 
     logger.debug(runner_data)
 
-    workspace_api = BitbucketWorkspace()
-    workspace_data = workspace_api.get_workspace(workspace)
-
-    logger.debug(workspace_data)
-
-    runner_data['accountUuid'] = workspace_data['uuid'].strip('{}')
-
-    if repository:
-        repository_api = BitbucketRepository()
-        repository_data = repository_api.get_repository(workspace, repository)
-
-        logger.debug(repository_data)
-
-        runner_data['repositoryUuid'] = repository_data['uuid'].strip('{}')
-
     return runner_data
 
 
 def delete_bitbucket_runner(workspace, repository=None, runner_uuid=None):
-    msg = f"Starting to delete runner {runner_uuid} from Bitbucket workspace: {workspace}"
+    msg = f"Starting to delete runner {runner_uuid} from Bitbucket workspace: {workspace['name']}"
 
     if repository:
-        logger.info(f"{msg} repository: {repository} ...")
+        logger.info(f"{msg} repository: {repository['name']} ...")
 
         repository_runner_api = BitbucketRepositoryRunner()
-        repository_runner_api.delete_runner(workspace, repository, runner_uuid)
+        repository_runner_api.delete_runner(workspace['uuid'], repository['uuid'], runner_uuid)
     else:
         logger.info(f"{msg} ...")
 
         workspace_runner_api = BitbucketWorkspaceRunner()
-        workspace_runner_api.delete_runner(workspace, runner_uuid)
+        workspace_runner_api.delete_runner(workspace['uuid'], runner_uuid)
 
 
 # local Kubernetes
@@ -172,3 +157,23 @@ def read_from_config(config_path):
         fail(f"Error in configuration file: {config_path}")
 
     return runner_config
+
+
+def get_bitbucket_workspace_repository_uuids(workspace_name, repository_name):
+    workspace_api = BitbucketWorkspace()
+    workspace_response = workspace_api.get_workspace(workspace_name)
+    workspace_data = {
+        'uuid': workspace_response['uuid'].strip('{}'),
+        'name': workspace_response['slug']
+    }
+
+    repository_data = None
+    if repository_name:
+        repository_api = BitbucketRepository()
+        repository_response = repository_api.get_repository(workspace_name, repository_name)
+        repository_data = {
+            'uuid': repository_response['uuid'].strip('{}'),
+            'name': repository_response['slug']
+        }
+
+    return workspace_data, repository_data

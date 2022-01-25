@@ -38,7 +38,13 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             ]},
             200
         )
-        runner_data = {'workspace': 'fake_workspace'}
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": None
+        }
         runner_count_scaler = count_scaler.BitbucketRunnerCountScaler(runner_data=runner_data)
         result = runner_count_scaler.get_runners()
         self.assertEqual(
@@ -85,8 +91,14 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
 
         runner_data = {
             'name': 'Runner repository group',
-            'workspace': 'test-workspace',
-            'repository': 'test-repo',
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
             'type': 'manual',
@@ -110,8 +122,14 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
 
         runner_data = {
             'name': 'Runner repository group',
-            'workspace': 'test-workspace',
-            'repository': 'test-repo',
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
             'type': 'manual',
@@ -121,8 +139,8 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
         service = count_scaler.BitbucketRunnerCountScaler(runner_data=runner_data)
 
         create_runner_data = {
-            'accountUuid': 'test-acc-uuid',
-            'repositoryUuid': 'test-repo-uuid',
+            'accountUuid': 'workspace-test_uuid',
+            'repositoryUuid': 'repository-test_uuid',
             'runnerUuid': 'test-runner-uuid',
             'oauthClientId_base64': 'testbase64=',
             'oauthClientSecret_base64': 'testsecret=='
@@ -134,7 +152,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace test-workspace\n',
+        self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('manual.count_scaler.DEFAULT_SLEEP_TIME_RUNNER_DELETE', 0.1)
@@ -163,8 +181,14 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
 
         runner_data = {
             'name': 'Runner repository group',
-            'workspace': 'test-workspace',
-            'repository': 'test-repo',
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
             'type': 'manual',
@@ -180,7 +204,7 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
             service.run()
 
         self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
-                      ' on workspace test-workspace\n',
+                      ' on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('manual.count_scaler.DEFAULT_SLEEP_TIME_RUNNER_DELETE', 0.1)
@@ -208,8 +232,14 @@ class BitbucketRunnerCountScalerTestCase(TestCase):
 
         runner_data = {
             'name': 'Runner repository group',
-            'workspace': 'test-workspace',
-            'repository': 'test-repo',
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             'labels': {'self.hosted', 'linux', 'test-label'},
             'namespace': 'bitbucket-runner',
             'type': 'manual',

@@ -48,12 +48,14 @@ class RunnerScaleTestCase(TestCase):
 
     @mock.patch('subprocess.run')
     @mock.patch('argparse.ArgumentParser.parse_args')
+    @mock.patch('runner.get_bitbucket_workspace_repository_uuids')
     @mock.patch('runner.check_kubernetes_namespace')
     @mock.patch('manual.count_scaler.BitbucketRunnerCountScaler.run')
-    def test_main_manual(self, mock_run, mock_namespace, mock_args, mock_validate_kubernetes):
+    def test_main_manual(self, mock_run, mock_namespace, mock_get_uuids, mock_args, mock_validate_kubernetes):
         mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
         mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
         mock_args.return_value = argparse.Namespace(config='tests/test_config_manual.yaml')
+        mock_get_uuids.return_value = ('test-workspace-uuid', 'test-repo-uuid')
         mock_namespace.return_value = None
         mock_run.return_value = None
 
@@ -67,6 +69,7 @@ class RunnerScaleTestCase(TestCase):
 
     @mock.patch('subprocess.run')
     @mock.patch('argparse.ArgumentParser.parse_args')
+    @mock.patch('runner.get_bitbucket_workspace_repository_uuids')
     @mock.patch('runner.check_kubernetes_namespace')
     @mock.patch('apis.kubernetes.base.KubernetesBaseAPIService.create_config_map')
     @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.generate_kube_spec_file')
@@ -79,12 +82,14 @@ class RunnerScaleTestCase(TestCase):
             mock_generate_spec,
             mock_create_config_map,
             mock_namespace_created,
+            mock_get_uuids,
             mock_args,
             mock_validate_kubernetes
     ):
         mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
         mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
         mock_args.return_value = argparse.Namespace(config='tests/test_config_automatic.yaml')
+        mock_get_uuids.return_value = ('test-workspace-uuid', 'test-repo-uuid')
         mock_namespace_created.return_value = True
         mock_create_config_map.return_value = None
         mock_generate_spec.return_value = None
@@ -146,3 +151,25 @@ class RunnerScaleTestCase(TestCase):
             f'Namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
             out.getvalue()
         )
+
+    @mock.patch('subprocess.run')
+    @mock.patch('argparse.ArgumentParser.parse_args')
+    @mock.patch('runner.read_from_config')
+    def test_main_workspace_required(
+            self,
+            mock_runner_data,
+            mock_args,
+            mock_validate_kubernetes
+    ):
+        mock_validate_kubernetes.return_value = mock.Mock(returncode=0)
+        mock_validate_kubernetes.return_value.check_returncode = mock.Mock(returncode=0)
+        mock_args.return_value = argparse.Namespace(config='tests/test_config_automatic.yaml')
+        mock_runner_data.return_value = {'config': [{'namespace': 'test'}]}
+
+        with capture_output() as out:
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                runner_scale.main()
+
+        assert mock_args.called
+        self.assertEqual(pytest_wrapped_e.type, SystemExit)
+        self.assertIn('Workspace required for runner.', out.getvalue())

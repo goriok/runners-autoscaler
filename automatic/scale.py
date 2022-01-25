@@ -6,7 +6,7 @@ import runner
 from logger import logger
 from automatic.autoscaler import BitbucketRunnerAutoscaler
 from helpers import required, enable_debug
-from constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE, BITBUCKET_RUNNER_API_POLLING_INTERVAL
+from constants import BITBUCKET_RUNNER_API_POLLING_INTERVAL
 
 DEFAULT_LABELS = {'self.hosted', 'linux'}
 MIN_RUNNERS_COUNT = 0
@@ -29,15 +29,13 @@ def main():
     for runner_data in runners_data:
         # TODO validate args
         # TODO optimize this logic
-        if runner_data.get('namespace') is None:
-            namespace = runner_data.get('namespace', DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
-            runner_data['namespace'] = namespace
-
         labels = set()
         labels.update(DEFAULT_LABELS)
         labels.update(set(runner_data.get('labels')))
         runner_data['labels'] = labels
 
+    # TODO Think about not to pass all config but just data form config related
+    #  to this strategy
     autoscale_runners = [r for r in runners_data if r['type'] == 'autoscaling']
 
     for runner_data in autoscale_runners[:1]:

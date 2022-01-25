@@ -41,17 +41,31 @@ def main():
 
     # update runners data with default params
     for runner_data in runners_data['config']:
-        # TODO validate args
+        # TODO validate args. Refactor conditional blocks with validator usage.
         # TODO optimize this logic
         if runner_data.get('namespace') is None:
             fail('Namespace required for runner.')
         elif runner_data['namespace'] == DEFAULT_RUNNER_KUBERNETES_NAMESPACE:
             fail(f'Namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.')
 
+        if runner_data.get('workspace') is None:
+            fail('Workspace required for runner.')
+
+        if runner_data.get('repository') is None:
+            runner_data['repository'] = None
+
         labels = set()
         labels.update(DEFAULT_LABELS)
         labels.update(set(runner_data.get('labels')))
         runner_data['labels'] = labels
+
+        workspace_data, repository_data = runner.get_bitbucket_workspace_repository_uuids(
+            workspace_name=runner_data['workspace'],
+            repository_name=runner_data['repository']
+        )
+
+        runner_data['workspace'] = workspace_data
+        runner_data['repository'] = repository_data
 
     manual_runners = [r for r in runners_data['config'] if r['type'] == 'manual']
     autoscale_runners = [r for r in runners_data['config'] if r['type'] == 'autoscaling']
@@ -86,8 +100,9 @@ def main():
         kube_api = KubernetesBaseAPIService()
 
         autoscaler_data = {
-            'autoscaler.config': json.dumps(runners_data['config'],
-                                            default=lambda x: list(x) if isinstance(x, set) else str(x))
+            'autoscaler.config': json.dumps(
+                runners_data['config'],
+                default=lambda x: list(x) if isinstance(x, set) else str(x))
         }
         kube_api.create_config_map(
             AUTOSCALER_CONFIG_MAP_NAME,
