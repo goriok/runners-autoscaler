@@ -36,7 +36,7 @@ def main():
 
     # TODO Think about not to pass all config but just data form config related
     #  to this strategy
-    autoscale_runners = [r for r in runners_data if r['type'] == 'autoscaling']
+    autoscale_runners = [r for r in runners_data if r['strategy'] == 'percentageRunnersIdle']
 
     for runner_data in autoscale_runners[:1]:
         logger.info(f"Working on runners: {runner_data}")

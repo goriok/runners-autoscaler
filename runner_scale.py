@@ -67,8 +67,8 @@ def main():
         runner_data['workspace'] = workspace_data
         runner_data['repository'] = repository_data
 
-    manual_runners = [r for r in runners_data['config'] if r['type'] == 'manual']
-    autoscale_runners = [r for r in runners_data['config'] if r['type'] == 'autoscaling']
+    manual_runners = [r for r in runners_data['config'] if r['strategy'] == 'manual']
+    autoscale_runners = [r for r in runners_data['config'] if r['strategy'] == 'percentageRunnersIdle']
 
     # handle manual workflow
     for runner_data in manual_runners:
@@ -79,7 +79,7 @@ def main():
         count_scaler = BitbucketRunnerCountScaler(runner_data)
         count_scaler.run()
 
-    # handle autoscaling workflow
+    # handle percentageRunnersIdle workflow
     # TODO allow multiple. Now autoscaling limit 1
     if autoscale_runners:
         # TODO build Docker and pass config

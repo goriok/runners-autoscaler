@@ -11,7 +11,7 @@
       labels:
         - demo5
       namespace: rg-1
-      type: autoscaling
+      strategy: percentageRunnersIdle
       parameters:
         min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting
         max: 10  #
@@ -26,7 +26,7 @@
       labels:
         - demo1
       namespace: runner-group-1
-      type: manual
+      strategy: manual
       parameters:
         runners_count: 0
 
@@ -35,7 +35,7 @@
       labels:
         - demo2
       namespace: runner-group-2
-      type: manual
+      strategy: manual
       parameters:
         runners_count: 0
 
@@ -45,7 +45,7 @@
       labels:
         - demo3
       namespace: runner-group-3
-      type: manual
+      strategy: manual
       parameters:
         runners_count: 0
 
@@ -55,6 +55,6 @@
       labels:
         - demo4
       namespace: runner-group-4
-      type: manual
+      strategy: manual
       parameters:
         runners_count: 0

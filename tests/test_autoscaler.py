@@ -101,7 +101,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 10,
@@ -155,7 +155,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 10,
@@ -240,7 +240,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 10,
@@ -332,7 +332,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 10,
@@ -392,7 +392,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 10,
@@ -461,7 +461,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 1,
@@ -527,7 +527,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
-            "type": "autoscaling",
+            "strategy": "percentageRunnersIdle",
             "parameters": {
                 "min": 1,
                 "max": 2,
