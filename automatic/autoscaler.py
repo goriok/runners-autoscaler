@@ -38,9 +38,9 @@ class BitbucketRunnerAutoscaler:
 
         # check runners count before add new runner
         if len(runners) >= MAX_RUNNERS_COUNT_PER_REPOSITORY:
-            msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data['workspace']}"
+            msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data['workspace']['name']}"
             if self.runner_data['repository']:
-                msg = f"{msg} repository: {self.runner_data['repository']}"
+                msg = f"{msg} repository: {self.runner_data['repository']['name']}"
 
             logger.warning(msg)
             logger.warning(
@@ -51,8 +51,8 @@ class BitbucketRunnerAutoscaler:
         logger.info(f"Runner #{count_number + 1} for namespace: {self.runner_data['namespace']} setup...")
 
         data = runner.create_bitbucket_runner(
-            workspace_uuid=self.runner_data['workspace'],
-            repository_uuid=self.runner_data['repository'],
+            workspace=self.runner_data['workspace'],
+            repository=self.runner_data['repository'],
             name=self.runner_data.get('name'),
             labels=self.runner_data['labels'],
         )
@@ -62,7 +62,7 @@ class BitbucketRunnerAutoscaler:
 
         success(
             f"Successfully setup runner UUID {data['runnerUuid']} "
-            f"on workspace {self.runner_data['workspace']}\n",
+            f"on workspace {self.runner_data['workspace']['name']}\n",
             do_exit=False
         )
 
@@ -91,8 +91,8 @@ class BitbucketRunnerAutoscaler:
 
         for runner_uuid in runners_uuid_to_delete:
             runner.delete_bitbucket_runner(
-                workspace_uuid=self.runner_data['workspace'],
-                repository_uuid=self.runner_data['repository'],
+                workspace=self.runner_data['workspace'],
+                repository=self.runner_data['repository'],
                 runner_uuid=runner_uuid
             )
 
@@ -100,7 +100,7 @@ class BitbucketRunnerAutoscaler:
 
             success(
                 f"Successfully deleted runner UUID {runner_uuid} "
-                f"on workspace {self.runner_data['workspace']}\n",
+                f"on workspace {self.runner_data['workspace']['name']}\n",
                 do_exit=False
             )
 
@@ -109,9 +109,9 @@ class BitbucketRunnerAutoscaler:
     def run(self):
         runners = self.get_runners()
 
-        msg = f"Found {len(runners)} runners on workspace {self.runner_data['workspace']}"
+        msg = f"Found {len(runners)} runners on workspace {self.runner_data['workspace']['name']}"
         if self.runner_data['repository']:
-            msg = f"{msg} repository: {self.runner_data['repository']}"
+            msg = f"{msg} repository: {self.runner_data['repository']['name']}"
 
         logger.info(msg)
 

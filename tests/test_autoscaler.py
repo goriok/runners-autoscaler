@@ -38,7 +38,13 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             ]},
             200
         )
-        runner_data = {'workspace': 'fake_workspace', 'repository': None}
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": None
+        }
         runner_count_scaler = autoscaler.BitbucketRunnerAutoscaler(runner_data=runner_data)
         result = runner_count_scaler.get_runners()
         self.assertEqual(
@@ -85,8 +91,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -133,8 +145,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -151,8 +169,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         service = autoscaler.BitbucketRunnerAutoscaler(runner_data=runner_data)
 
         create_runner_data = {
-            'accountUuid': 'test-acc-uuid',
-            'repositoryUuid': 'test-repo-uuid',
+            'accountUuid': 'workspace-test_uuid',
+            'repositoryUuid': 'repository-test_uuid',
             'runnerUuid': 'test-runner-uuid',
             'oauthClientId_base64': 'testbase64=',
             'oauthClientSecret_base64': 'testsecret=='
@@ -166,7 +184,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                 service.run()
 
         self.assertIn("{'OFFLINE': 1}", self.caplog.text)
-        self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace test\n',
+        self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('automatic.autoscaler.DEFAULT_SLEEP_TIME_RUNNER_DELETE', 0.1)
@@ -212,8 +230,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -236,7 +260,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             service.run()
 
         self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
-                      ' on workspace test\n',
+                      ' on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('automatic.autoscaler.DEFAULT_SLEEP_TIME_RUNNER_DELETE', 0.1)
@@ -298,8 +322,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -322,7 +352,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             service.run()
 
         self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
-                      ' on workspace test\n',
+                      ' on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('automatic.autoscaler.DEFAULT_SLEEP_TIME_RUNNER_SETUP', 0.1)
@@ -352,8 +382,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -370,8 +406,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         service = autoscaler.BitbucketRunnerAutoscaler(runner_data=runner_data)
 
         create_runner_data = {
-            'accountUuid': 'test-acc-uuid',
-            'repositoryUuid': 'test-repo-uuid',
+            'accountUuid': 'workspace-test_uuid',
+            'repositoryUuid': 'repository-test_uuid',
             'runnerUuid': 'test-runner-uuid',
             'oauthClientId_base64': 'testbase64=',
             'oauthClientSecret_base64': 'testsecret=='
@@ -385,7 +421,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                 service.run()
 
         self.assertIn("{'ONLINE': 1}", self.caplog.text)
-        self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace test\n',
+        self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('automatic.autoscaler.DEFAULT_SLEEP_TIME_RUNNER_SETUP', 0.1)
@@ -415,8 +451,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -433,8 +475,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         service = autoscaler.BitbucketRunnerAutoscaler(runner_data=runner_data)
 
         create_runner_data = {
-            'accountUuid': 'test-acc-uuid',
-            'repositoryUuid': 'test-repo-uuid',
+            'accountUuid': 'workspace-test_uuid',
+            'repositoryUuid': 'repository-test_uuid',
             'runnerUuid': 'test-runner-uuid',
             'oauthClientId_base64': 'testbase64=',
             'oauthClientSecret_base64': 'testsecret=='
@@ -475,8 +517,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         runner_data = {
             "name": "Runner repository group",
-            "workspace": "test",
-            "repository": "runner-test",
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
             "labels": {"self.hosted", "test", "linux"},
             "namespace": "rg-1",
             "type": "autoscaling",
@@ -495,4 +543,4 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         with self.caplog.at_level(logging.WARNING):
             service.create_runner(2)
 
-        self.assertIn('Max Runners count limit reached 1 per workspace test repository: runner-test', self.caplog.text)
+        self.assertIn('Max Runners count limit reached 1 per workspace workspace-test repository: repository-test', self.caplog.text)

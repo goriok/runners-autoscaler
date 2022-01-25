@@ -59,13 +59,13 @@ def main():
         labels.update(set(runner_data.get('labels')))
         runner_data['labels'] = labels
 
-        workspace_uuid, repository_uuid = runner.get_bitbucket_workspace_repository_uuids(
+        workspace_data, repository_data = runner.get_bitbucket_workspace_repository_uuids(
             workspace_name=runner_data['workspace'],
             repository_name=runner_data['repository']
         )
 
-        runner_data['workspace'] = workspace_uuid
-        runner_data['repository'] = repository_uuid
+        runner_data['workspace'] = workspace_data
+        runner_data['repository'] = repository_data
 
     manual_runners = [r for r in runners_data['config'] if r['type'] == 'manual']
     autoscale_runners = [r for r in runners_data['config'] if r['type'] == 'autoscaling']
