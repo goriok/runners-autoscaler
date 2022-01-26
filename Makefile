@@ -14,7 +14,7 @@ lint:
 	@$(ENV)/bin/flake8
 
 test:
-	@$(ENV)/bin/python -m pytest -p no:cacheprovider tests/ --verbose --cov autoscaler --cov-fail=90
+	@$(ENV)/bin/python -m pytest -p no:cacheprovider tests/ --verbose --cov autoscaler --cov-fail=85
 
 start:
 	@$(ENV)/bin/python autoscaler start

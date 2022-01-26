@@ -3,6 +3,8 @@ import os
 
 from setuptools import setup, find_packages, Command
 
+
+
 # Package meta-data.
 NAME = 'bitbucket-runner-autoscaler'
 DESCRIPTION = 'Autoscale Bitbucket Pipelines runners using Kubernetes'
@@ -11,18 +13,9 @@ EMAIL = 'pipelines-feedback@atlassian.com'
 AUTHOR = 'Bitbucket Pipelines'
 REQUIRES_PYTHON = '>=3.7.0'
 VERSION = None
-REQUIRED = [
-    'requests>=2.0.0'
-    'requests_oauthlib>=1.0.0'
-    'Jinja2>=3.0.0'
-    'colorlog>=6.0.0'
-    'colorama>=0.0.0'
-    'oauthlib>=3.0.0'
-    'PyYAML>=5.4.1'
-    'python-dateutil>=2.0.0'
-    'kubernetes==19.15.0'
-    'click==8.0.3'
-]
+
+with open('requirements.txt') as fp:
+    install_reqs = fp.read()
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -61,7 +54,7 @@ setup(
     description=DESCRIPTION,
     long_description=u"\n\n".join([readme, changelog]),
     long_description_content_type='text/markdown',
-    tests_require=['nose'],
+    tests_require=['pytest'],
     url=URL,
     author=AUTHOR,
     author_email=EMAIL,
@@ -71,11 +64,11 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'autoscaler = autoscaler:main'
+            'bitbucket-runner-autoscaler = autoscaler.cli:main'
         ]
     },
 
-    install_requires=REQUIRED,
+    install_requires=install_reqs,
 
     classifiers=[
         'Development Status :: 4 - Beta',
