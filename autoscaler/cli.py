@@ -1,4 +1,3 @@
-
 import click
 
 from autoscaler import __version__, manual_command, start_command

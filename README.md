@@ -31,20 +31,33 @@ This script sends requests to the BITBUCKET API in scale runners up and down.
 Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API request limits].
 
 
-## Installation
+## How to run
+
+### Locally (out of cluster)
+```
+python -m pip install https://bitbucket.org/bitbucketpipelines/runners-autoscaler/get/<version>.zip
+bitbucket-runner-autoscaler manual
+```
+
+### Locally (out of cluster using Docker)
+```
+docker run -it bitbucketpipelines/runner-autoscaler:<version> manual
+```
+
+### Deployment (in Kubernetes cluster)
 
 ```
-# check available tags here https://bitbucket.org/bitbucketpipelines/runners-autoscaler/downloads/?tab=tags
-curl -L https://bitbucket.org/bitbucketpipelines/runners-autoscaler/get/<tag-version>.zip --output runners-autoscaler.zip
-unzip runners-autoscaler.zip
-cd runners-autoscaler
-```
+# Build the docker image
+docker build -t bitbucketpipelines/runners-autoscaler .
 
+# Create RBAC configuration
+kubectl create -f config/runners-autoscaler-rbac.yaml
 
-## Usage
+# Create config map - modify to suit your needs
+kubectl create -f config/runners-autoscaler-cm.yaml
 
-```
-python3 autoscaler start
+# Create deployment
+kubectl create -f config/runners-autoscaler-deployment.yaml
 ```
 
 

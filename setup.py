@@ -3,8 +3,6 @@ import os
 
 from setuptools import setup, find_packages, Command
 
-
-
 # Package meta-data.
 NAME = 'bitbucket-runner-autoscaler'
 DESCRIPTION = 'Autoscale Bitbucket Pipelines runners using Kubernetes'
@@ -33,6 +31,7 @@ if not VERSION:
         about = {}
         exec(f.read(), about)
         VERSION = about['__version__']
+
 
 class CleanCommand(Command):
     """Custom clean command to tidy up the project root."""
