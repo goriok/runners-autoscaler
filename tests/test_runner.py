@@ -1,12 +1,11 @@
-import os
 import logging
+import os
 from unittest import TestCase, mock
 
-import yaml
+import autoscaler.runner as runner
 import pytest
+import yaml
 
-
-import runner
 from tests.helpers import capture_output
 
 
@@ -17,7 +16,7 @@ class RunnerTestCase(TestCase):
     def inject_fixtures(self, caplog):
         self.caplog = caplog
 
-    @mock.patch('apis.bitbucket.base.BitbucketRepositoryRunner.get_runners')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepositoryRunner.get_runners')
     def test_get_bitbucket_runners(self, get_runners_request):
         get_runners_request.return_value = {
             'values': [
@@ -72,7 +71,7 @@ class RunnerTestCase(TestCase):
             ]
         )
 
-    @mock.patch('apis.bitbucket.base.BitbucketWorkspaceRunner.get_runners')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspaceRunner.get_runners')
     def test_get_bitbucket_runners_no_repo(self, get_runners_request):
         get_runners_request.return_value = {
             'values': [
@@ -123,7 +122,7 @@ class RunnerTestCase(TestCase):
             ]
         )
 
-    @mock.patch('apis.bitbucket.base.BitbucketRepositoryRunner.create_runner')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepositoryRunner.create_runner')
     def test_create_bitbucket_runner(self, mock_create_runner):
         mock_create_runner.return_value = {
             'uuid': '{test-uuid}',
@@ -170,7 +169,7 @@ class RunnerTestCase(TestCase):
             }
         )
 
-    @mock.patch('apis.bitbucket.base.BitbucketWorkspaceRunner.create_runner')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspaceRunner.create_runner')
     def test_create_bitbucket_runner_no_repo(self, mock_create_runner):
         mock_create_runner.return_value = {
             'uuid': '{test-uuid}',
@@ -213,7 +212,7 @@ class RunnerTestCase(TestCase):
             }
         )
 
-    @mock.patch('apis.bitbucket.base.BitbucketRepositoryRunner.delete_runner')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepositoryRunner.delete_runner')
     def test_delete_bitbucket_runner(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
@@ -237,7 +236,7 @@ class RunnerTestCase(TestCase):
             'test-uuid'
         )
 
-    @mock.patch('apis.bitbucket.base.BitbucketWorkspaceRunner.delete_runner')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspaceRunner.delete_runner')
     def test_delete_bitbucket_runner_no_repo(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
@@ -253,7 +252,7 @@ class RunnerTestCase(TestCase):
 
         mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
 
-    @mock.patch('apis.kubernetes.base.KubernetesBaseAPIService.get_or_create_kubernetes_namespace')
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_or_create_kubernetes_namespace')
     def test_check_kubernetes_namespace(self, mock_check_namespace):
         mock_check_namespace.return_value = None
 
@@ -263,8 +262,8 @@ class RunnerTestCase(TestCase):
 
         mock_check_namespace.assert_called_once_with(**runner_data)
 
-    @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.create_kube_spec_file')
-    @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.apply_kubernetes_spec_file')
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesSpecFileAPIService.create_kube_spec_file')
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesSpecFileAPIService.apply_kubernetes_spec_file')
     def test_setup_job(self, mock_apply, mock_create):
         mock_create.return_value = 'test-k8-dir/test-runner.yaml'
         apply_result = (
@@ -297,8 +296,8 @@ class RunnerTestCase(TestCase):
 
         self.assertIn(str(apply_result), self.caplog.text)
 
-    @mock.patch('apis.kubernetes.base.KubernetesBaseAPIService.delete_job')
-    @mock.patch('apis.kubernetes.base.KubernetesSpecFileAPIService.delete_kube_spec_file')
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.delete_job')
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesSpecFileAPIService.delete_kube_spec_file')
     def test_delete_job(self, mock_delete_file, mock_delete_job):
         mock_delete_job.return_value = None
 
@@ -317,14 +316,14 @@ class RunnerTestCase(TestCase):
 
         with capture_output() as out:
             with pytest.raises(SystemExit) as pytest_wrapped_e:
-                runner.read_from_config('tests/test_config_manual.yaml')
+                runner.read_from_config('tests/strategy/test_config_manual.yaml')
 
         self.assertTrue(mock_config.called)
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Error in configuration file: tests/test_config_manual.yaml', out.getvalue())
+        self.assertIn('Error in configuration file: tests/strategy/test_config_manual.yaml', out.getvalue())
 
-    @mock.patch('apis.bitbucket.base.BitbucketWorkspace.get_workspace')
-    @mock.patch('apis.bitbucket.base.BitbucketRepository.get_repository')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspace.get_workspace')
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepository.get_repository')
     def test_get_bitbucket_workspace_repository_uuids(self, mock_get_repo, mock_get_workspace):
         mock_get_repo.return_value = {'uuid': '{test-repo-uuid}', 'slug': 'test-repo'}
         mock_get_workspace.return_value = {'uuid': '{test-workspace-uuid}', 'slug': 'test-workspace'}

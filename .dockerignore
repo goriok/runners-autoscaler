@@ -1,7 +1,6 @@
 .git/
 .changes/
 bitbucket-runner-k8s-specs/
-manual/
 tests/
 specs/
 .coveragerc

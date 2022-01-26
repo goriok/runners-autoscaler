@@ -6,6 +6,9 @@
 .pytest_cache
 .coverage
 htmlcov/
+.tox
+nosetests.xml
+test-reports/
 
 # OS specific
 .DS_Store
@@ -26,3 +29,22 @@ identity
 .aws/
 .gcp/
 .kube/
+venv
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Installer logs
+pip-log.txt

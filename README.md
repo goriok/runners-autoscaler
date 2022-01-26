@@ -44,7 +44,7 @@ cd runners-autoscaler
 ## Usage
 
 ```
-python3 runner_scale.py --config filepath/config.yaml
+python3 autoscaler start
 ```
 
 

@@ -1,43 +1,38 @@
 image:
-  name: atlassian/default-image:2
+  name: atlassian/default-image:3
+
+definitions:
+  test: &test
+    step:
+      name: Test
+      image: python:3.9
+      script:
+        - make setup lint test
+
+  release-dev: &release-dev
+    step:
+      name: Release development version
+      image: python:3.9
+      trigger: manual
+      script:
+        - pip install semversioner
+        - ./ci-scripts/docker-release-dev.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
+        - ./ci-scripts/git-release-dev.sh
+      services:
+      - docker
 
 
-test: &test
-  parallel:
-    - step:
-        name: Test
-        image: python:3.9
-        script:
-          - pip install -r requirements.txt
-          - pip install -r tests/requirements.txt
-          - flake8 --extend-ignore E501,E125
-          - pytest -p no:cacheprovider tests/ --verbose --cov apis --cov runner --cov runner_scale --cov manual --cov automatic --cov-fail=90
-
-
-release-dev: &release-dev
-  step:
-    name: Release development version
-    image: python:3.9
-    trigger: manual
-    script:
-      - pip install semversioner
-      - ./ci-scripts/docker-release-dev.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
-      - ./ci-scripts/git-release-dev.sh
-    services:
-    - docker
-
-
-push: &push
-  step:
-    name: Push and Tag
-    image: python:3.9
-    script:
-      - pip install semversioner
-      - ./ci-scripts/bump-version.sh
-      - ./ci-scripts/docker-release.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
-      - ./ci-scripts/git-release.sh
-    services:
-    - docker
+  push: &push
+    step:
+      name: Push and Tag
+      image: python:3.9
+      script:
+        - pip install semversioner
+        - ./ci-scripts/bump-version.sh
+        - ./ci-scripts/docker-release.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
+        - ./ci-scripts/git-release.sh
+      services:
+      - docker
 
 
 pipelines:
