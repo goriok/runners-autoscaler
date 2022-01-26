@@ -68,8 +68,8 @@ config:
     repository: my-awesome-repository   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
     labels:
       - demo1                           # Labels for the Runner.
-    namespace: runner-group-1           # Kubernetes namespace to set up the Runner on. The default namespace that is provided in the constants.py file will be used, if you do not create or add a different namespace.
-    type: manual                        # Type of the setup workflow. Manual or autoscaling.
+    namespace: runner-group-1           # Kubernetes namespace to set up the Runner on.
+    strategy: manual                    # Strategy of the setup workflow. Supported: manual, percentageRunnersIdle.
     parameters:
       runners_count: 1                  # Count of Runners to set up. Automatically scale up or scale down runners according to Bitbucket runners with status "ONLINE". If value `0` all idle runners with status "ONLINE" will be deleted. Default: 1.
   - name: Runner workspace group
@@ -77,7 +77,7 @@ config:
     labels:
       - demo2
     namespace: runner-group-2
-    type: manual
+    strategy: manual
     parameters:
       runners_count: 0
 
@@ -86,7 +86,7 @@ config:
     labels:
       - demo3
     namespace: runner-group-3
-    type: autoscaling                   # Type of the setup workflow. Manual or autoscaling.
+    strategy: percentageRunnersIdle     # Strategy of the setup workflow. Supported: manual, percentageRunnersIdle.
     parameters:
       min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting
       max: 10  # 
@@ -96,7 +96,6 @@ config:
       scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1  speed to scale down
 
   constants:  # autoscaler parameters available for tuning
-    default_runner_kubernetes_namespace: bitbucket-runner
     default_sleep_time_runner_setup: 5  # seconds
     default_sleep_time_runner_delete: 5  # seconds
     runner_api_polling_interval: 600  # seconds
