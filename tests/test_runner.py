@@ -2,10 +2,10 @@ import logging
 import os
 from unittest import TestCase, mock
 
-import autoscaler.runner as runner
 import pytest
 import yaml
 
+import autoscaler.runner as runner
 from tests.helpers import capture_output
 
 
@@ -252,6 +252,17 @@ class RunnerTestCase(TestCase):
 
         mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
 
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_kubernetes_config')
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_kubernetes_version')
+    def test_validate_kubernetes(self, mock_get_version, mock_get_config):
+        mock_get_version.return_value = None
+        mock_get_config.return_value = None
+
+        runner.validate_kubernetes()
+
+        self.assertTrue(mock_get_version.called)
+        self.assertTrue(mock_get_config.called)
+
     @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_or_create_kubernetes_namespace')
     def test_check_kubernetes_namespace(self, mock_check_namespace):
         mock_check_namespace.return_value = None
@@ -316,11 +327,11 @@ class RunnerTestCase(TestCase):
 
         with capture_output() as out:
             with pytest.raises(SystemExit) as pytest_wrapped_e:
-                runner.read_from_config('tests/strategy/test_config_manual.yaml')
+                runner.read_from_config('tests/test_config.yaml')
 
         self.assertTrue(mock_config.called)
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Error in configuration file: tests/strategy/test_config_manual.yaml', out.getvalue())
+        self.assertIn('Error in configuration file: tests/test_config.yaml', out.getvalue())
 
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspace.get_workspace')
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepository.get_repository')

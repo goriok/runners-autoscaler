@@ -6,10 +6,10 @@ from jinja2 import PackageLoader, Environment
 from kubernetes import config as k8s_config, client as k8s_client
 from kubernetes.client import ApiException
 
-from autoscaler.core.logger import logger
 from autoscaler.clients.base import BaseSubprocessAPIService
 from autoscaler.core.constants import (
-    TEMPLATE_FILE_NAME, RUNNER_KUBERNETES_SPECS_DIR, DEFAULT_RUNNER_KUBERNETES_NAMESPACE, CONSTANTS_CONFIG_MAP_NAME)
+    TEMPLATE_FILE_NAME, RUNNER_KUBERNETES_SPECS_DIR, DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
+from autoscaler.core.logger import logger
 
 
 DEFAULT_RUNNER_IDENTITY_LENGTH = 8
@@ -65,10 +65,9 @@ class KubernetesBaseAPIService:
 
         return result
 
-    def create_config_map(self, name, config_map, namespace):
-        data = [f"--from-literal={k}={v}" for k, v in config_map.items()]
-        cmd_create = ["kubectl", "create", "configmap", name, f"--namespace={namespace}"]
-        cmd_create.extend(data)
+    def create_apply_spec(self, name):
+        cmd_create = ["kubectl", "create"]
+        cmd_create.extend(["-f", f"{name}"])
         cmd_create.extend(["--dry-run=client", "-o", "yaml"])
 
         cmd_apply = ["kubectl", "apply", "-f", "-"]
@@ -176,10 +175,10 @@ class KubernetesPythonAPIService:
     def create_kubernetes_namespace(self, namespace):
         pass
 
-    def create_config_map_object(self, data, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    def create_config_map_object(self, name, data, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
         # Configure ConfigMap metadata
         metadata = self.client.V1ObjectMeta(
-            name=CONSTANTS_CONFIG_MAP_NAME,
+            name=name,
             namespace=namespace,
         )
         # Instantiate the configmap object

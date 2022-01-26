@@ -76,11 +76,11 @@ class KubernetesBaseAPIServiceTestCase(TestCase):
         self.assertEqual('baz', result)
 
     @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
-    def test_create_config_map(self, mock_create):
+    def test_create_apply_spec(self, mock_create):
         mock_create.return_value = 'baz'
 
         api = KubernetesBaseAPIService()
-        result = api.create_config_map('foo', {'bar': 1}, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
+        result = api.create_apply_spec('foo')
         self.assertEqual('baz', result)
 
 

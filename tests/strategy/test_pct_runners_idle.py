@@ -2,8 +2,10 @@ import logging
 import os
 from unittest import TestCase, mock
 
-import autoscaler.runner as runner
 import pytest
+
+import autoscaler.runner as runner
+from autoscaler.core.help_classes import Constants
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
 from tests.helpers import capture_output
 
@@ -44,7 +46,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "repository": None
         }
-        runner_count_scaler = PctRunnersIdleScaler(runner_data=runner_data)
+        runner_count_scaler = PctRunnersIdleScaler(runner_data=runner_data, runner_constants=Constants())
         result = runner_count_scaler.get_runners()
         self.assertEqual(
             result,
@@ -111,14 +113,13 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(runner_data=runner_data, runner_constants=Constants())
 
         with self.caplog.at_level(logging.INFO):
             service.run()
 
         self.assertIn('Nothing to do...\n', self.caplog.text)
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.DEFAULT_SLEEP_TIME_RUNNER_SETUP', 0.1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.create_bitbucket_runner')
     @mock.patch('autoscaler.runner.setup_job')
@@ -165,7 +166,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(default_sleep_time_runner_setup=1)
+        )
 
         create_runner_data = {
             'accountUuid': 'workspace-test_uuid',
@@ -186,7 +190,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace workspace-test\n',
                       out.getvalue())
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.DEFAULT_SLEEP_TIME_RUNNER_DELETE', 0.1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.delete_bitbucket_runner')
     @mock.patch('autoscaler.runner.delete_job')
@@ -250,7 +253,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(default_sleep_time_runner_delete=1)
+        )
 
         mock_delete_runner.return_value = None
         mock_delete_job.return_value = None
@@ -262,7 +268,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.DEFAULT_SLEEP_TIME_RUNNER_DELETE', 0.1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.delete_bitbucket_runner')
     @mock.patch('autoscaler.runner.delete_job')
@@ -342,7 +347,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(default_sleep_time_runner_delete=1)
+        )
 
         mock_delete_runner.return_value = None
         mock_delete_job.return_value = None
@@ -354,7 +362,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.DEFAULT_SLEEP_TIME_RUNNER_SETUP', 0.1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.create_bitbucket_runner')
     @mock.patch('autoscaler.runner.setup_job')
@@ -402,7 +409,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(default_sleep_time_runner_setup=1)
+        )
 
         create_runner_data = {
             'accountUuid': 'workspace-test_uuid',
@@ -423,7 +433,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace workspace-test\n',
                       out.getvalue())
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.DEFAULT_SLEEP_TIME_RUNNER_SETUP', 0.1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.create_bitbucket_runner')
     @mock.patch('autoscaler.runner.setup_job')
@@ -471,7 +480,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(default_sleep_time_runner_setup=1)
+        )
 
         create_runner_data = {
             'accountUuid': 'workspace-test_uuid',
@@ -490,7 +502,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         self.assertIn("{'ONLINE': 1}", self.caplog.text)
         self.assertIn('Max runners count: 1 reached.', self.caplog.text)
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.DEFAULT_SLEEP_TIME_RUNNER_SETUP', 0.1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.MAX_RUNNERS_COUNT_PER_REPOSITORY', 1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     def test_create_additional_runners_exceeds_max_constant(self, mock_get_runners):
@@ -537,7 +548,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data)
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(default_sleep_time_runner_setup=1)
+        )
 
         with self.caplog.at_level(logging.WARNING):
             service.create_runner(2)

@@ -22,5 +22,10 @@ exclude_lines =
 
 ignore_errors = True
 
+omit =
+    autoscaler/*__init__.py
+    autoscaler/__main__.py
+    autoscaler/__version__.py
+
 [html]
 directory = coverage_html_report

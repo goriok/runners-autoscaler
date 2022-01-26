@@ -1,17 +1,15 @@
 import math
 import os
-from time import sleep
-from pprint import pprint
 from collections import Counter
 from datetime import datetime, timedelta, timezone
-
 from dateutil import parser as du_parser
+from pprint import pprint
+from time import sleep
 
 from autoscaler import runner
-from autoscaler.core.logger import logger
-from autoscaler.core.helpers import success
 from autoscaler.clients.bitbucket.base import BitbucketRunnerStatuses
-from autoscaler.core.constants import DEFAULT_SLEEP_TIME_RUNNER_SETUP, DEFAULT_SLEEP_TIME_RUNNER_DELETE, RUNNER_COOL_DOWN_PERIOD
+from autoscaler.core.helpers import success
+from autoscaler.core.logger import logger
 
 
 MAX_RUNNERS_COUNT_PER_REPOSITORY = 100
@@ -22,8 +20,9 @@ SCALE_DOWN_MULTIPLIER = 0.5
 
 class PctRunnersIdleScaler:
 
-    def __init__(self, runner_data):
+    def __init__(self, runner_data, runner_constants):
         self.runner_data = runner_data
+        self.runner_consants = runner_constants
 
     def get_runners(self):
         # TODO optimize GET requests with filters by labels
@@ -66,7 +65,7 @@ class PctRunnersIdleScaler:
             do_exit=False
         )
 
-        sleep(DEFAULT_SLEEP_TIME_RUNNER_SETUP)
+        sleep(self.runner_consants.default_sleep_time_runner_setup)
 
     def delete_runners(self, runners_idle):
         # delete only idle runners
@@ -77,16 +76,19 @@ class PctRunnersIdleScaler:
         # delete only old runners
         runners_uuid_to_delete = [
             r['uuid'].strip('{}') for r in runners_idle if du_parser.isoparse(r['created_on']) + timedelta(
-                seconds=RUNNER_COOL_DOWN_PERIOD) < datetime.now(timezone.utc)
+                seconds=self.runner_consants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
 
         if runners_uuid_to_delete:
-            logger.warning(f"Runners count {len(runners_uuid_to_delete)} with the next UUID will be deleted:"
-                           f" {runners_uuid_to_delete}")
+            logger.warning(
+                f"Runners count {len(runners_uuid_to_delete)} with the next UUID will be deleted:"
+                f" {runners_uuid_to_delete}"
+            )
         else:
             logger.warning(
                 f"Nothing to delete... "
-                f"All runners are created less than coolDownPeriod: {RUNNER_COOL_DOWN_PERIOD} sec ago."
+                f"All runners are created less than coolDownPeriod: "
+                f"{self.runner_consants.runner_cool_down_period} sec ago."
             )
 
         for runner_uuid in runners_uuid_to_delete:
@@ -104,7 +106,7 @@ class PctRunnersIdleScaler:
                 do_exit=False
             )
 
-            sleep(DEFAULT_SLEEP_TIME_RUNNER_DELETE)
+            sleep(self.runner_consants.default_sleep_time_runner_delete)
 
     def run(self):
         runners = self.get_runners()
@@ -164,8 +166,8 @@ class PctRunnersIdleScaler:
 
         # TODO add max_runners per repo or max_runners per workspace
         elif (runners_scale_treshold > float(self.runner_data['parameters']['scaleUpThreshold']) or len(online_runners) < self.runner_data['parameters']['min']) \
-            and len(online_runners) <= self.runner_data['parameters']['max'] \
-            and len(runners) <= MAX_RUNNERS_COUNT_PER_REPOSITORY:
+                and len(online_runners) <= self.runner_data['parameters']['max'] \
+                and len(runners) <= MAX_RUNNERS_COUNT_PER_REPOSITORY:
 
             # TODO validate scaleDownFactor > 1
             desired_runners_count = math.ceil(

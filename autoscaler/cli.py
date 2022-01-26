@@ -1,6 +1,6 @@
 import click
 
-from autoscaler import __version__, manual_command, start_command
+from autoscaler import __version__, start_command
 
 
 @click.group()
@@ -12,12 +12,6 @@ def cli(ctx, debug) -> None:
     # by means other than the `if` block below)
     ctx.ensure_object(dict)
     ctx.obj['DEBUG'] = debug
-
-
-@cli.command('manual', help="Execute script to scale runners manually.")
-@click.pass_context
-def manual(ctx):
-    manual_command.main()
 
 
 @cli.command('start', help="Starts Kubernetes controller.")
