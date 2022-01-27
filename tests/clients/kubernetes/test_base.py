@@ -1,7 +1,10 @@
 from unittest import TestCase, mock
 
-from autoscaler.core.constants import RUNNER_KUBERNETES_SPECS_DIR, DEFAULT_RUNNER_KUBERNETES_NAMESPACE
-from autoscaler.clients.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService
+from autoscaler.clients.kubernetes.base import (KubernetesBaseAPIService,
+                                                KubernetesSpecFileAPIService)
+from autoscaler.core.constants import (DEFAULT_RUNNER_KUBERNETES_NAMESPACE,
+                                       RUNNER_KUBERNETES_SPECS_DIR)
+from tests.helpers import get_file
 
 
 class KubernetesBaseAPIServiceTestCase(TestCase):
@@ -82,6 +85,20 @@ class KubernetesBaseAPIServiceTestCase(TestCase):
 
 
 class KubernetesSpecFileAPIServiceTestCase(TestCase):
+
+    def test_generate_kube_spec_file(self):
+        runner_data = {
+            'accountUuid': 'account',
+            'repositoryUuid': 'repo',
+            'runnerUuid': 'runner',
+            'oauthClientId_base64': 'testID',
+            'oauthClientSecret_base64': 'testSecret',
+            'runnerNamespace': 'namespace'
+        }
+        api = KubernetesSpecFileAPIService()
+        output = api.generate_kube_spec_file(runner_data=runner_data)
+
+        assert output == get_file('job-default.yaml')
 
     @mock.patch('subprocess.run')
     def test_apply_kubernetes_spec_file(self, subprocess_mock):

@@ -2,7 +2,7 @@
 import os
 from pathlib import Path
 
-from jinja2 import FileSystemLoader, Environment
+from jinja2 import PackageLoader, Environment
 from kubernetes import config as k8s_config, client as k8s_client
 from kubernetes.client import ApiException
 
@@ -92,7 +92,7 @@ class KubernetesSpecFileAPIService:
 
         logger.info("Start processing template to create Runners job Kubernetes spec file...")
 
-        template_loader = FileSystemLoader("./")
+        template_loader = PackageLoader("autoscaler", "resources")
         template_env = Environment(
             loader=template_loader,
             variable_start_string="<%",
