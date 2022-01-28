@@ -1,0 +1,6 @@
+[
+  {
+    "description": "Add support the percentageRunnersIdle strategy.",
+    "type": "minor"
+  }
+]
