@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: runner-bitbucket-credentials
+    data:
+      bitbucketClientSecret: <%bitbucket_client_secret_base64%>
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: runner-controller
+    spec:
+      template:
+        metadata:
+          name: runner-controller-pod
+        spec:
+          containers:
+          - name: runner-controller
+            image: bitbucketpipelines/runners-autoscaler:0.1.0.63-dev
+            env:
+              - name: BITBUCKET_USERNAME
+                value: <%bitbucket_client_username%>
+              - name: AUTOSCALER_CONFIG
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%autoscaler_config_map_name%>
+                    key: autoscaler.config
+              - name: DEFAULT_SLEEP_TIME_RUNNER_SETUP
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.default_sleep_time_runner_setup
+              - name: DEFAULT_SLEEP_TIME_RUNNER_DELETE
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.default_sleep_time_runner_delete
+              - name: BITBUCKET_RUNNER_API_POLLING_INTERVAL
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.runner_api_polling_interval
+              - name: RUNNER_COOL_DOWN_PERIOD
+                valueFrom:
+                  configMapKeyRef:
+                    name: <%constants_config_map_name%>
+                    key: constants.runner_cool_down_period
+              - name: BITBUCKET_APP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: runner-bitbucket-credentials
+                    key: bitbucketClientSecret
+            imagePullPolicy: IfNotPresent
+          restartPolicy: Never

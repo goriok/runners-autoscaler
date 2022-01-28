@@ -71,8 +71,8 @@ class BaseSubprocessAPIService:
         return result.stdout, result.returncode
 
     def run_piped_command(self, command_1, command_2):
-        p1 = Popen(command_1.split(), stdout=PIPE)
-        p2 = Popen(command_2.split(), stdin=p1.stdout, stdout=PIPE)
+        p1 = Popen(command_1, stdout=PIPE)
+        p2 = Popen(command_2, stdin=p1.stdout, stdout=PIPE)
         p1.stdout.close()
 
         output = p2.communicate()[0]

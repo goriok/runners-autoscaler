@@ -38,7 +38,17 @@ class RunnerTestCase(TestCase):
                     'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
             ]
         }
-        runner_data = {'workspace': 'fake_workspace', 'repository': 'test-repo'}
+
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            }
+        }
 
         result = runner.get_bitbucket_runners(**runner_data)
         self.assertEqual(
@@ -83,7 +93,13 @@ class RunnerTestCase(TestCase):
                     'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
             ]
         }
-        runner_data = {'workspace': 'fake_workspace'}
+
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            }
+        }
 
         result = runner.get_bitbucket_runners(**runner_data)
         self.assertEqual(
@@ -108,9 +124,7 @@ class RunnerTestCase(TestCase):
         )
 
     @mock.patch('apis.bitbucket.base.BitbucketRepositoryRunner.create_runner')
-    @mock.patch('apis.bitbucket.base.BitbucketWorkspace.get_workspace')
-    @mock.patch('apis.bitbucket.base.BitbucketRepository.get_repository')
-    def test_create_bitbucket_runner(self, mock_get_repository, mock_get_workspace, mock_create_runner):
+    def test_create_bitbucket_runner(self, mock_create_runner):
         mock_create_runner.return_value = {
             'uuid': '{test-uuid}',
             'name': 'good',
@@ -129,18 +143,27 @@ class RunnerTestCase(TestCase):
                 'audience': 'api.fake-api.com'
             }
         }
-        mock_get_workspace.return_value = {'uuid': '{test-workspace-uuid}'}
-        mock_get_repository.return_value = {'uuid': '{test-repo-uuid}'}
 
-        runner_data = {'workspace': 'fake_workspace', 'repository': 'test-repo', 'name': 'good', 'labels': ('asd',)}
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
+            'name': 'good',
+            'labels': ('asd',)
+        }
 
         result = runner.create_bitbucket_runner(**runner_data)
 
         self.assertEqual(
             result,
             {
-                'accountUuid': 'test-workspace-uuid',
-                'repositoryUuid': 'test-repo-uuid',
+                'accountUuid': 'workspace-test_uuid',
+                'repositoryUuid': 'repository-test_uuid',
                 'runnerUuid': 'test-uuid',
                 'oauthClientId_base64': 'dGVzdGlk',
                 'oauthClientSecret_base64': 'dGVzdHNlY3JldA==',
@@ -148,8 +171,7 @@ class RunnerTestCase(TestCase):
         )
 
     @mock.patch('apis.bitbucket.base.BitbucketWorkspaceRunner.create_runner')
-    @mock.patch('apis.bitbucket.base.BitbucketWorkspace.get_workspace')
-    def test_create_bitbucket_runner_no_repo(self, mock_get_workspace, mock_create_runner):
+    def test_create_bitbucket_runner_no_repo(self, mock_create_runner):
         mock_create_runner.return_value = {
             'uuid': '{test-uuid}',
             'name': 'good',
@@ -168,16 +190,22 @@ class RunnerTestCase(TestCase):
                 'audience': 'api.fake-api.com'
             }
         }
-        mock_get_workspace.return_value = {'uuid': '{test-workspace-uuid}'}
 
-        runner_data = {'workspace': 'fake_workspace', 'name': 'good', 'labels': ('asd',)}
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            'name': 'good',
+            'labels': ('asd',)
+        }
 
         result = runner.create_bitbucket_runner(**runner_data)
 
         self.assertEqual(
             result,
             {
-                'accountUuid': 'test-workspace-uuid',
+                'accountUuid': 'workspace-test_uuid',
                 'repositoryUuid': None,
                 'runnerUuid': 'test-uuid',
                 'oauthClientId_base64': 'dGVzdGlk',
@@ -189,21 +217,41 @@ class RunnerTestCase(TestCase):
     def test_delete_bitbucket_runner(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
-        runner_data = {'workspace': 'fake_workspace', 'repository': 'test-repo', 'runner_uuid': 'test-uuid'}
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            "repository": {
+                "name": "repository-test",
+                "uuid": "repository-test_uuid"
+            },
+            'runner_uuid': 'test-uuid'
+        }
 
         runner.delete_bitbucket_runner(**runner_data)
 
-        mock_delete_runner.assert_called_once_with('fake_workspace', 'test-repo', 'test-uuid')
+        mock_delete_runner.assert_called_once_with(
+            runner_data['workspace']['uuid'],
+            runner_data['repository']['uuid'],
+            'test-uuid'
+        )
 
     @mock.patch('apis.bitbucket.base.BitbucketWorkspaceRunner.delete_runner')
     def test_delete_bitbucket_runner_no_repo(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
-        runner_data = {'workspace': 'fake_workspace', 'runner_uuid': 'test-uuid'}
+        runner_data = {
+            "workspace": {
+                "name": "workspace-test",
+                "uuid": "workspace-test_uuid"
+            },
+            'runner_uuid': 'test-uuid'
+        }
 
         runner.delete_bitbucket_runner(**runner_data)
 
-        mock_delete_runner.assert_called_once_with('fake_workspace', 'test-uuid')
+        mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
 
     @mock.patch('apis.kubernetes.base.KubernetesBaseAPIService.get_or_create_kubernetes_namespace')
     def test_check_kubernetes_namespace(self, mock_check_namespace):
@@ -269,8 +317,21 @@ class RunnerTestCase(TestCase):
 
         with capture_output() as out:
             with pytest.raises(SystemExit) as pytest_wrapped_e:
-                runner.read_from_config('tests/test_config.yaml')
+                runner.read_from_config('tests/test_config_manual.yaml')
 
         self.assertTrue(mock_config.called)
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Error in configuration file: tests/test_config.yaml', out.getvalue())
+        self.assertIn('Error in configuration file: tests/test_config_manual.yaml', out.getvalue())
+
+    @mock.patch('apis.bitbucket.base.BitbucketWorkspace.get_workspace')
+    @mock.patch('apis.bitbucket.base.BitbucketRepository.get_repository')
+    def test_get_bitbucket_workspace_repository_uuids(self, mock_get_repo, mock_get_workspace):
+        mock_get_repo.return_value = {'uuid': '{test-repo-uuid}', 'slug': 'test-repo'}
+        mock_get_workspace.return_value = {'uuid': '{test-workspace-uuid}', 'slug': 'test-workspace'}
+
+        runner_data = {'workspace_name': 'test-workspace', 'repository_name': 'test-repo'}
+        result = runner.get_bitbucket_workspace_repository_uuids(**runner_data)
+        self.assertEqual(
+            result,
+            ({'uuid': 'test-workspace-uuid', 'name': 'test-workspace'}, {'uuid': 'test-repo-uuid', 'name': 'test-repo'})
+        )
