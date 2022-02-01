@@ -1,9 +1,11 @@
 import yaml
 
-from autoscaler.core.logger import logger
+from autoscaler.clients.bitbucket.base import (
+    BitbucketWorkspace, BitbucketRepository, BitbucketWorkspaceRunner, BitbucketRepositoryRunner)
+from autoscaler.clients.kubernetes.base import (
+    KubernetesBaseAPIService, KubernetesSpecFileAPIService, KubernetesPythonAPIService)
 from autoscaler.core.helpers import string_to_base64string, fail
-from autoscaler.clients.kubernetes.base import KubernetesBaseAPIService, KubernetesSpecFileAPIService, KubernetesPythonAPIService
-from autoscaler.clients.bitbucket.base import (BitbucketWorkspace, BitbucketRepository, BitbucketWorkspaceRunner, BitbucketRepositoryRunner)
+from autoscaler.core.logger import logger
 
 
 # Bitbucket Cloud API

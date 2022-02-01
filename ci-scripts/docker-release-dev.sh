@@ -22,4 +22,4 @@ docker build -t "${IMAGE}" .
 docker tag "${IMAGE}" "${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
 docker push "${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
 
-sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION\.$BITBUCKET_BUILD_NUMBER-dev/g" controller-spec.yml.template
+sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION\.$BITBUCKET_BUILD_NUMBER-dev/g" config/runners-autoscaler-deployment.yaml.template

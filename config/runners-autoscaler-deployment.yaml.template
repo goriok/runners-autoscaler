@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: runner-bitbucket-credentials
+      namespace: bitbucket-runner
+    data:
+      bitbucketClientSecret: <bitbucket_client_secret_base64>
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: runner-controller
+      namespace: bitbucket-runner
+    spec:
+      template:
+        metadata:
+          name: runner-controller-pod
+        spec:
+          containers:
+          - name: runner-controller
+            image: bitbucketpipelines/runners-autoscaler:0.2.0
+            volumeMounts:
+            - name: runners-autoscaler-config
+              mountPath: /opt/conf/config
+              readOnly: true
+            env:
+              - name: BITBUCKET_USERNAME
+                value: <bitbucket_client_username>
+              - name: BITBUCKET_APP_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    name: runner-bitbucket-credentials
+                    key: bitbucketClientSecret
+            imagePullPolicy: IfNotPresent
+          volumes:
+            - name: runners-autoscaler-config
+              configMap:
+                name: runners-autoscaler-config
+                defaultMode: 0644
+                items:
+                  - key: runners_config.yaml
+                    path: runners_config.yaml
+          restartPolicy: Never

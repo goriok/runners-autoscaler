@@ -3,11 +3,10 @@ from unittest import TestCase, mock
 
 import pytest
 import requests_oauthlib
-from autoscaler.clients.bitbucket.base import (Auth, BitbucketAPIService,
-                                               BitbucketRepository,
-                                               BitbucketRepositoryRunner,
-                                               BitbucketWorkspace,
-                                               BitbucketWorkspaceRunner)
+
+from autoscaler.clients.bitbucket.base import (
+    Auth, BitbucketAPIService, BitbucketRepository, BitbucketRepositoryRunner,
+    BitbucketWorkspace, BitbucketWorkspaceRunner)
 from autoscaler.core.exceptions import NotAuthorized
 
 

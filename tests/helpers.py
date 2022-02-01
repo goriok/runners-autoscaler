@@ -1,9 +1,7 @@
 import io
 import sys
-from contextlib import contextmanager
-
-
 import importlib.resources as pkg_resources
+from contextlib import contextmanager
 
 
 @contextmanager
@@ -18,5 +16,5 @@ def capture_output():
         sys.stdout.flush()
 
 
-def get_file(filename: str) -> io.StringIO:
+def get_file(filename: str) -> str:
     return pkg_resources.read_text('tests.resources', filename)

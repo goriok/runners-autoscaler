@@ -5,8 +5,9 @@ from unittest import TestCase, mock
 
 import pytest
 import requests
-from autoscaler.clients.base import (BaseAPIService, BaseSubprocessAPIService,
-                                     BearerAuth)
+
+from autoscaler.clients.base import (
+    BaseAPIService, BaseSubprocessAPIService, BearerAuth)
 from autoscaler.core.exceptions import PipesHTTPError
 from tests.helpers import capture_output
 

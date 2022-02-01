@@ -1,16 +1,14 @@
 """Basic client API classes to be inherited from"""
-
+from json.decoder import JSONDecodeError
 import subprocess
 from subprocess import Popen, PIPE
-from json.decoder import JSONDecodeError
 
 import requests
 from requests.auth import HTTPBasicAuth
 
-from autoscaler.core.helpers import fail
-from autoscaler.core.logger import logger
 from autoscaler.core.exceptions import PipesHTTPError
-
+from autoscaler.core.logger import logger
+from autoscaler.core.helpers import fail
 
 BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
 

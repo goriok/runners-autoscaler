@@ -1,6 +1,6 @@
 constants:
   runner_cool_down_period: 30
-
+  runner_api_polling_interval: 1
 config:
   - name: Runner repository group
     workspace: test-workspace

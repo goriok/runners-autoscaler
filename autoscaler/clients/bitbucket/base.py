@@ -1,19 +1,18 @@
 """Module to interact with Bitbucket APIs:
     authentication, basic bitbucket api, bitbucket repositories, bitbucket workspaces
 """
-
-import os
 import enum
+import os
 import urllib.parse
 
+from oauthlib.oauth2 import BackendApplicationClient
 from requests.auth import HTTPBasicAuth
 from requests_oauthlib.oauth2_session import OAuth2Session
-from oauthlib.oauth2 import BackendApplicationClient
 
-from autoscaler.core.logger import logger
-from autoscaler.core.exceptions import NotAuthorized
 from autoscaler.clients.base import BaseAPIService, BearerAuth
+from autoscaler.core.exceptions import NotAuthorized
 from autoscaler.core.helpers import decorate_with_curly_brackets
+from autoscaler.core.logger import logger
 
 
 BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
