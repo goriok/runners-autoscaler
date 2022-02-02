@@ -30,63 +30,64 @@ Here are some of the benefits of using runners.
 This script sends requests to the BITBUCKET API in scale runners up and down.
 Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API request limits].
 
+## Prerequisites
+- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, workspace:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
+- [optional] setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster
 
-## Installation
+- [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
+  ```
+  eksctl create cluster --name ${NAME_CLUSTER} --version 1.21 --region us-east-1 --zones us-east-1b,us-east-1c --nodegroup-name ${NODE_GROUP_NAME} --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 2
+  ```
 
+## How to run
+
+### Deployment (in Kubernetes cluster)
+
+Create in `config/` folder three files:
+
+`config/runners-autoscaler-rbac.yaml`,
+
+`config/runners-autoscaler-cm.yaml`,
+
+`config/runners-autoscaler-deployment.yaml`
+
+based on templates provided inside this folder. 
+
+Fill them with needed variables (these variables decorated with `<...>` inside template files).
+
+Next run commands below: 
 ```
-# check available tags here https://bitbucket.org/bitbucketpipelines/runners-autoscaler/downloads/?tab=tags
-curl -L https://bitbucket.org/bitbucketpipelines/runners-autoscaler/get/<tag-version>.zip --output runners-autoscaler.zip
-unzip runners-autoscaler.zip
-cd runners-autoscaler
+# Build the docker image
+docker build -t bitbucketpipelines/runners-autoscaler .
+
+# Create namespace
+kubectl create namespace bitbucket-runner
+
+# Create RBAC configuration
+kubectl apply -f config/runners-autoscaler-rbac.yaml
+
+# Create config map - modify to suit your needs
+kubectl apply -f config/runners-autoscaler-cm.yaml
+
+# Create deployment
+kubectl apply -f config/runners-autoscaler-deployment.yaml
 ```
 
 
-## Usage
 
-```
-python3 runner_scale.py --config filepath/config.yaml
-```
-
-
-## Parameters
-| Parameter             | Usage                                             |
-| --------------------- | --------------------------------------------------|
-| --config(*)           |  Path to runners-autoscaler config file. Use template [`runner-config.yaml.template`](./runner-config.yaml.template). Setup will start with parameters provided in the config. |
-| --debug               |  Debug details of the script execution. Change this to `true` if you would like to debug. Default: `false`. |
-_(*) = required variable. This variable needs to always be specified when using the pipe._
-
-The runners setup will start with the parameters provided from the config file.
-An example of the config file is provided in the following template: [`runner-config.yaml.template`](./runner-config.yaml.template).
-
-
-## Runner config details:
+## Runner config details
+In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters
 
 ```yaml
 config:
-  - name: Runner repository group       # Name of the Runner displayed in the Bitbucket Runner UI.
-    workspace: myworkspace              # Name of the workspace the Runner is added to. 
-    repository: my-awesome-repository   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
+  - name: "Runner repository group"       # Name of the Runner displayed in the Bitbucket Runner UI.
+    workspace: "myworkspace"              # Name of the workspace the Runner is added to. 
+    repository: "my-awesome-repository"   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
     labels:
-      - demo1                           # Labels for the Runner.
-    namespace: runner-group-1           # Kubernetes namespace to set up the Runner on.
-    strategy: manual                    # Strategy of the setup workflow. Supported: manual, percentageRunnersIdle.
-    parameters:
-      runners_count: 1                  # Count of Runners to set up. Automatically scale up or scale down runners according to Bitbucket runners with status "ONLINE". If value `0` all idle runners with status "ONLINE" will be deleted. Default: 1.
-  - name: Runner workspace group
-    workspace: myworkspace
-    labels:
-      - demo2
-    namespace: runner-group-2
-    strategy: manual
-    parameters:
-      runners_count: 0
-
-  - name: Runner group 3
-    workspace: myworkspace
-    labels:
-      - demo3
-    namespace: runner-group-3
-    strategy: percentageRunnersIdle     # Strategy of the setup workflow. Supported: manual, percentageRunnersIdle.
+      - "demo1"                           # Labels for the Runner.
+      - "test2"                           # Labels for the Runner.
+    namespace: "runner-group-1"           # Kubernetes namespace to set up the Runner on.
+    strategy: "percentageRunnersIdle"     # Type of the strategy workflow.
     parameters:
       min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting
       max: 10  # 
@@ -103,68 +104,14 @@ config:
 
 ```
 
-
-## Prerequisites
-
-Before executing the script, make sure it meets the following requirements:
-
-- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (with repository:read, workspace:read, runner:write permissions) in the local environment.
-     ```
-     export BITBUCKET_USERNAME=username
-     export BITBUCKET_APP_PASSWORD=password
-     ```
-- Python3.7+
-- python [virtual environments][venv] - to create and activate it, use the following commands: 
-    ```
-    python3 -m venv <MYVENV>  # create a virtual environment
-    . <MYVENV>/bin/activate  # activate a virtual environment
-    ```
-- python dependencies installed:
-  ```
-  pip install -r requirements.txt
-  ```
-- [kubernetes (k8s) cluster and client][k8s install] installed:
-  ```
-  kubectl version
-  ```
-- make sure you provide enough resources for the Kubernetes cluster. Tested with the next resources: 
-  ```
-  minikube start --cpus 4 --memory 6288 --disk-size=20g
-  and AWS EKS --node-type t3.medium
-  ```
-
-*additionally, for Autoscaling mode*
-
-- setup role with permissions to manage resources inside a Kubernetes cluster (example files with specs provided)
-  ```
-  kubectl create namespace bitbucket-runner
-  kubectl -n bitbucket-runner apply -f specs/role-spec.yaml
-  kubectl -n bitbucket-runner apply -f specs/cluster-admin-rb.yml
-  ```
-
-- [optional] setup [kubernetes-dashboard][kuberneters-dashboard] to monitor your cluster
-
-- [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
-  ```
-  eksctl create cluster --name ${NAME_CLUSTER} --version 1.21 --region us-east-1 --zones us-east-1b,us-east-1c --nodegroup-name ${NODE_GROUP_NAME} --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 2
-  ```
-
-
 ## Documentation
 
 This script allows you to automate routines for Bitbucket Pipelines self-hosted Runners.
 With this script you can, create runners on Bitbucket Cloud via API requests, setup Kubernetes jobs on your host, connect Bitbucket Cloud runners with Kubernetes jobs, and provide artifacts kubespec files for created Bitbucket Cloud runners.
-This scaling tool supports the next types of the setup workflow (mode):
-- manual
-- autoscaling
+This scaling tool supports the next types of the workflow (strategy):
+- percentageRunnersIdle
 
-
-## Manual mode
-### Scale down logic:
-If the value is set to '0' for the scale down logic, all idle runners with an “ONLINE” status will be deleted, or if the count of runners that you’ve provided is less than the current runners count, then idle runners with an “ONLINE” status will be deleted.
-
-
-## Autoscaling mode
+## percentageRunnersIdle strategy
 
 The Runner Autoscaler Controller (next autoscaler) will poll Bitbucket Cloud API based on the configuration sync period for the number of available ONLINE/BUSY runners which live in the workspace/repository and scale based on the settings provided by autoscaler configuration file.
 The autoscaler automatically scales the number of Jobs relates to the Bitbucket Runner in the Kubernetes Namespace based on custom metrics.
@@ -269,10 +216,7 @@ Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
 
 [community]: https://community.atlassian.com/t5/forums/postpage/board-id/bitbucket-questions?add-tags=pipelines,pipes,runner,autoscaler
 [runner]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
-[runner-config]: https://support.atlassian.com/bitbucket-cloud/docs/configure-your-runner-in-bitbucket-pipelines-yml
 [BITBUCKET_APP_PASSWORD]: https://support.atlassian.com/bitbucket-cloud/docs/app-passwords
 [BITBUCKET API request limits]: https://support.atlassian.com/bitbucket-cloud/docs/api-request-limits/
-[venv]: https://docs.python.org/3/library/venv.html
-[k8s install]: https://kubernetes.io/docs/tasks/tools/
-[kuberneters-dashboard]: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+[kubernetes-dashboard]: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
 [setup cluster eksctl]: https://eksctl.io/usage/creating-and-managing-clusters/

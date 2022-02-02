@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: List
+items:
+  - apiVersion: v1
+    kind: Secret
+    metadata:
+      name: runner-oauth-credentials-runner
+      labels:
+        accountUuid: account
+        repositoryUuid: repo
+        runnerUuid: runner
+        runnerNamespace: namespace
+    data:
+      oauthClientId: testID
+      oauthClientSecret: testSecret
+  - apiVersion: batch/v1
+    kind: Job
+    metadata:
+      name: runner-runner
+    spec:
+      template:
+        metadata:
+          labels:
+            accountUuid: account
+            runnerUuid: runner
+            repositoryUuid: repo
+            runnerNamespace: namespace
+        spec:
+          containers:
+            - name: bitbucket-k8s-runner
+              image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner
+              env:
+                - name: ACCOUNT_UUID
+                  value: "{account}"
+                - name: REPOSITORY_UUID
+                  value: "{repo}"
+                - name: RUNNER_UUID
+                  value: "{runner}"
+                - name: OAUTH_CLIENT_ID
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-oauth-credentials-runner
+                      key: oauthClientId
+                - name: OAUTH_CLIENT_SECRET
+                  valueFrom:
+                    secretKeyRef:
+                      name: runner-oauth-credentials-runner
+                      key: oauthClientSecret
+                - name: WORKING_DIRECTORY
+                  value: "/tmp"
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                - name: docker-containers
+                  mountPath: /var/lib/docker/containers
+                  readOnly: true
+                - name: var-run
+                  mountPath: /var/run
+            - name: docker-in-docker
+              image: docker:dind
+              securityContext:
+                privileged: true
+              volumeMounts:
+                - name: tmp
+                  mountPath: /tmp
+                - name: docker-containers
+                  mountPath: /var/lib/docker/containers
+                - name: var-run
+                  mountPath: /var/run
+          restartPolicy: OnFailure
+          volumes:
+            - name: tmp
+            - name: docker-containers
+            - name: var-run
+      backoffLimit: 6
+      completions: 1
+      parallelism: 1

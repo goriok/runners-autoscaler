@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runners-autoscaler-config
+  namespace: bitbucket-runner
+data:
+  runners_config.yaml: |
+    constants:
+      default_sleep_time_runner_setup: 10
+      default_sleep_time_runner_delete: 5
+      runner_api_polling_interval: 600
+      runner_cool_down_period: 300
+    config:
+      - name: "Runner group 1"
+        workspace: "<workspace>"
+        repository: "<repository>"
+        labels:
+          - "demo1"
+          - "demo5"
+        namespace: "<k8s namespace>"
+        strategy: "percentageRunnersIdle"
+        parameters:
+          min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting
+          max: 10  #
+          scaleUpThreshold: 0.5  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+          scaleDownThreshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+          scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1
+          scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1
