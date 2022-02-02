@@ -6,6 +6,7 @@ import pytest
 
 import autoscaler.runner as runner
 from autoscaler.core.help_classes import Constants
+from autoscaler.services.kubernetes import KubernetesInMemoryService
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
 from tests.helpers import capture_output
 
@@ -46,7 +47,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "repository": None
         }
-        runner_count_scaler = PctRunnersIdleScaler(runner_data=runner_data, runner_constants=Constants())
+        runner_count_scaler = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(),
+            kubernetes_service=KubernetesInMemoryService()
+        )
         result = runner_count_scaler.get_runners()
         self.assertEqual(
             result,
@@ -113,7 +118,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        service = PctRunnersIdleScaler(runner_data=runner_data, runner_constants=Constants())
+        service = PctRunnersIdleScaler(
+            runner_data=runner_data,
+            runner_constants=Constants(),
+            kubernetes_service=KubernetesInMemoryService()
+        )
 
         with self.caplog.at_level(logging.INFO):
             service.run()
@@ -122,8 +131,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.create_bitbucket_runner')
-    @mock.patch('autoscaler.runner.setup_job')
-    def test_create_first_runners(self, mock_setup_job, mock_create_runner, mock_get_runners):
+    def test_create_first_runners(self, mock_create_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -168,7 +176,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
-            runner_constants=Constants(default_sleep_time_runner_setup=1)
+            runner_constants=Constants(default_sleep_time_runner_setup=1),
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         create_runner_data = {
@@ -180,7 +189,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         }
 
         mock_create_runner.return_value = create_runner_data
-        mock_setup_job.return_value = None
 
         with capture_output() as out:
             with self.caplog.at_level(logging.DEBUG):
@@ -192,8 +200,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.delete_bitbucket_runner')
-    @mock.patch('autoscaler.runner.delete_job')
-    def test_delete_runners_reach_min(self, mock_delete_job, mock_delete_runner, mock_get_runners):
+    def test_delete_runners_reach_min(self, mock_delete_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -255,11 +262,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
-            runner_constants=Constants(default_sleep_time_runner_delete=1)
+            runner_constants=Constants(default_sleep_time_runner_delete=1),
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         mock_delete_runner.return_value = None
-        mock_delete_job.return_value = None
 
         with capture_output() as out:
             service.run()
@@ -270,8 +277,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.delete_bitbucket_runner')
-    @mock.patch('autoscaler.runner.delete_job')
-    def test_delete_runners(self, mock_delete_job, mock_delete_runner, mock_get_runners):
+    def test_delete_runners(self, mock_delete_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -349,11 +355,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
-            runner_constants=Constants(default_sleep_time_runner_delete=1)
+            runner_constants=Constants(default_sleep_time_runner_delete=1),
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         mock_delete_runner.return_value = None
-        mock_delete_job.return_value = None
 
         with capture_output() as out:
             service.run()
@@ -364,8 +370,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.create_bitbucket_runner')
-    @mock.patch('autoscaler.runner.setup_job')
-    def test_create_additional_runners(self, mock_setup_job, mock_create_runner, mock_get_runners):
+    def test_create_additional_runners(self, mock_create_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -411,7 +416,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
-            runner_constants=Constants(default_sleep_time_runner_setup=1)
+            runner_constants=Constants(default_sleep_time_runner_setup=1),
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         create_runner_data = {
@@ -423,7 +429,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         }
 
         mock_create_runner.return_value = create_runner_data
-        mock_setup_job.return_value = None
 
         with capture_output() as out:
             with self.caplog.at_level(logging.DEBUG):
@@ -435,8 +440,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     @mock.patch('autoscaler.runner.create_bitbucket_runner')
-    @mock.patch('autoscaler.runner.setup_job')
-    def test_create_additional_runners_exceeds_max_config(self, mock_setup_job, mock_create_runner, mock_get_runners):
+    def test_create_additional_runners_exceeds_max_config(self, mock_create_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -482,7 +486,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
-            runner_constants=Constants(default_sleep_time_runner_setup=1)
+            runner_constants=Constants(default_sleep_time_runner_setup=1),
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         create_runner_data = {
@@ -494,7 +499,6 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         }
 
         mock_create_runner.return_value = create_runner_data
-        mock_setup_job.return_value = None
 
         with self.caplog.at_level(logging.DEBUG):
             service.run()
@@ -550,7 +554,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
-            runner_constants=Constants(default_sleep_time_runner_setup=1)
+            runner_constants=Constants(default_sleep_time_runner_setup=1),
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         with self.caplog.at_level(logging.WARNING):

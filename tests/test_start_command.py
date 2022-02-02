@@ -51,26 +51,25 @@ class ScaleTestCase(TestCase):
     @mock.patch('autoscaler.start_command.TESTING_BREAK_LOOP', True)
     @mock.patch('argparse.ArgumentParser.parse_args')
     @mock.patch('autoscaler.runner.get_bitbucket_workspace_repository_uuids')
-    @mock.patch('autoscaler.runner.check_kubernetes_namespace')
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.run')
+    @mock.patch('autoscaler.services.kubernetes.KubernetesService.check_kubernetes_namespace')
     def test_main(
             self,
+            mock_kubernetes_service,
             mock_run,
-            mock_namespace,
             mock_get_uuids,
             mock_args
     ):
         mock_args.return_value = argparse.Namespace(config='tests/test_config.yaml')
         mock_get_uuids.return_value = ('test-workspace-uuid', 'test-repo-uuid')
-        mock_namespace.return_value = None
         mock_run.return_value = None
+        mock_kubernetes_service.return_value = None
 
         with self.caplog.at_level(logging.INFO):
             scale.main()
 
         assert mock_args.called
         assert mock_run.called
-        assert mock_namespace.called
         self.assertIn('test', self.caplog.text)
 
     @mock.patch('argparse.ArgumentParser.parse_args')

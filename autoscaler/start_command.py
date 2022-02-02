@@ -7,6 +7,7 @@ from autoscaler.core.helpers import required, enable_debug, fail
 from autoscaler.core.help_classes import Constants
 from autoscaler.core.logger import logger
 import autoscaler.runner as runner
+from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
 
 
@@ -77,14 +78,16 @@ def main():
 
     autoscale_runners = [r for r in runners_data['config'] if r['strategy'] == 'percentageRunnersIdle']
 
+    kubernetes_service = KubernetesService()
+
     for runner_data in autoscale_runners[:1]:
         logger.info(f"Working on runners: {runner_data}")
 
-        runner.check_kubernetes_namespace(runner_data['namespace'], incluster=True)
-
         # TODO add validator for autoscaler parameters
         # TODO move to k8s pod
-        autoscaler = PctRunnersIdleScaler(runner_data, runner_constants)
+        autoscaler = PctRunnersIdleScaler(runner_data, runner_constants, kubernetes_service)
+        autoscaler.validate()
+
         while True:
             autoscaler.run()
             logger.warning(f"AUTOSCALER next attempt in {runner_constants.runner_api_polling_interval} seconds...\n")

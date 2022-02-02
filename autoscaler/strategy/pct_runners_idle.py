@@ -20,9 +20,13 @@ SCALE_DOWN_MULTIPLIER = 0.5
 
 class PctRunnersIdleScaler:
 
-    def __init__(self, runner_data, runner_constants):
+    def __init__(self, runner_data, runner_constants, kubernetes_service):
         self.runner_data = runner_data
         self.runner_consants = runner_constants
+        self.kubernetes_service = kubernetes_service
+
+    def validate(self):
+        return self.kubernetes_service.check_kubernetes_namespace(self.runner_data['namespace'])
 
     def get_runners(self):
         # TODO optimize GET requests with filters by labels
@@ -57,7 +61,7 @@ class PctRunnersIdleScaler:
         )
 
         data['runnerNamespace'] = self.runner_data['namespace']
-        runner.setup_job(data, incluster=True)
+        self.kubernetes_service.setup_job(data)
 
         success(
             f"Successfully setup runner UUID {data['runnerUuid']} "
@@ -98,7 +102,7 @@ class PctRunnersIdleScaler:
                 runner_uuid=runner_uuid
             )
 
-            runner.delete_job(runner_uuid, self.runner_data['namespace'], incluster=True)
+            self.kubernetes_service.delete_job(runner_uuid, self.runner_data['namespace'])
 
             success(
                 f"Successfully deleted runner UUID {runner_uuid} "

@@ -1,4 +1,3 @@
-import logging
 import os
 from unittest import TestCase, mock
 
@@ -251,75 +250,6 @@ class RunnerTestCase(TestCase):
         runner.delete_bitbucket_runner(**runner_data)
 
         mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
-
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_kubernetes_config')
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_kubernetes_version')
-    def test_validate_kubernetes(self, mock_get_version, mock_get_config):
-        mock_get_version.return_value = None
-        mock_get_config.return_value = None
-
-        runner.validate_kubernetes()
-
-        self.assertTrue(mock_get_version.called)
-        self.assertTrue(mock_get_config.called)
-
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.get_or_create_kubernetes_namespace')
-    def test_check_kubernetes_namespace(self, mock_check_namespace):
-        mock_check_namespace.return_value = None
-
-        runner_data = {'namespace': 'test'}
-
-        runner.check_kubernetes_namespace(**runner_data)
-
-        mock_check_namespace.assert_called_once_with(**runner_data)
-
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesSpecFileAPIService.create_kube_spec_file')
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesSpecFileAPIService.apply_kubernetes_spec_file')
-    def test_setup_job(self, mock_apply, mock_create):
-        mock_create.return_value = 'test-k8-dir/test-runner.yaml'
-        apply_result = (
-            'secret/runner-oauth-credentials configured\njob.batch/runner-test-uuid created\n',
-            0)
-        mock_apply.return_value = apply_result
-
-        runner_data = {
-            'runnerNamespace': 'test-namespace',
-            'uuid': '{test-uuid}',
-            'name': 'good',
-            'labels': ['self.hosted', 'asd', 'linux'],
-            'state': {
-                'status': 'UNREGISTERED',
-                'version': {'version': '1.252'},
-                'updated_on': '2021-12-03T18:20:22.561088Z'
-            },
-            'created_on': '2021-12-03T18:20:22.561005Z',
-            'updated_on': '2021-12-03T18:20:22.561005Z',
-            'oauth_client': {
-                'id': 'testid',
-                'secret': 'testsecret',
-                'token_endpoint': 'https://fake-api.auth0.com/oauth/token',
-                'audience': 'api.fake-api.com'
-            }
-        }
-
-        with self.caplog.at_level(logging.INFO):
-            runner.setup_job(runner_data)
-
-        self.assertIn(str(apply_result), self.caplog.text)
-
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesBaseAPIService.delete_job')
-    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesSpecFileAPIService.delete_kube_spec_file')
-    def test_delete_job(self, mock_delete_file, mock_delete_job):
-        mock_delete_job.return_value = None
-
-        mock_delete_file.return_value = None
-
-        runner_data = {'namespace': 'test-namespace', 'runner_uuid': 'test-uuid'}
-
-        runner.delete_job(**runner_data)
-
-        mock_delete_job.assert_called_once_with('test-uuid', namespace='test-namespace')
-        mock_delete_file.assert_called_once_with('test-uuid')
 
     @mock.patch('yaml.safe_load')
     def test_read_from_config(self, mock_config):
