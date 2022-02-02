@@ -1,0 +1,6 @@
+[
+  {
+    "description": "Improve code structure and installation process in Kubernetes.",
+    "type": "minor"
+  }
+]
