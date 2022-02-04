@@ -4,7 +4,6 @@ from unittest import TestCase, mock
 
 import pytest
 
-import autoscaler.runner as runner
 from autoscaler.core.help_classes import Constants
 from autoscaler.services.kubernetes import KubernetesInMemoryService
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
@@ -18,27 +17,24 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
     def inject_fixtures(self, caplog):
         self.caplog = caplog
 
-    @mock.patch.object(runner.BitbucketWorkspaceRunner, 'make_http_request')
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_runners')
     def test_get_runners(self, get_runners_request):
-        get_runners_request.return_value = ({
-            'values': [
-                {
-                    'created_on': '2021-09-29T23:28:04.683210Z',
-                    'labels': ['abc', 'fff', 'self.hosted', 'linux'],
-                    'name': 'good',
-                    'oauth_client': {
-                        'audience': 'api.fake-api.com',
-                        'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
-                        'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
-                    'state': {
-                        'status': 'ONLINE',
-                        'updated_on': '2021-09-29T23:55:14.857790Z',
-                        'version': {'current': '1.184'}
-                    },
-                    'updated_on': '2021-09-29T23:55:14.857791Z',
-                    'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
-            ]},
-            200
+        get_runners_request.return_value = ([{
+                'created_on': '2021-09-29T23:28:04.683210Z',
+                'labels': ['abc', 'fff', 'self.hosted', 'linux'],
+                'name': 'good',
+                'oauth_client': {
+                    'audience': 'api.fake-api.com',
+                    'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
+                    'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
+                'state': {
+                    'status': 'ONLINE',
+                    'updated_on': '2021-09-29T23:55:14.857790Z',
+                    'version': {'current': '1.184'}
+                },
+                'updated_on': '2021-09-29T23:55:14.857791Z',
+                'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'
+            }]
         )
         runner_data = {
             "workspace": {
@@ -47,11 +43,13 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             },
             "repository": None
         }
+
         runner_count_scaler = PctRunnersIdleScaler(
             runner_data=runner_data,
             runner_constants=Constants(),
             kubernetes_service=KubernetesInMemoryService()
         )
+
         result = runner_count_scaler.get_runners()
         self.assertEqual(
             result,
@@ -130,7 +128,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         self.assertIn('Nothing to do...\n', self.caplog.text)
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.runner.create_bitbucket_runner')
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.create_bitbucket_runner')
     def test_create_first_runners(self, mock_create_runner, mock_get_runners):
         get_runners = [
             {
@@ -199,7 +197,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                       out.getvalue())
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.runner.delete_bitbucket_runner')
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.delete_bitbucket_runner')
     def test_delete_runners_reach_min(self, mock_delete_runner, mock_get_runners):
         get_runners = [
             {
@@ -260,10 +258,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
+        kubernetes_service = KubernetesInMemoryService()
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
             runner_constants=Constants(default_sleep_time_runner_delete=1),
-            kubernetes_service=KubernetesInMemoryService()
+            kubernetes_service=kubernetes_service
         )
 
         mock_delete_runner.return_value = None
@@ -276,7 +275,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                       out.getvalue())
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.runner.delete_bitbucket_runner')
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.delete_bitbucket_runner')
     def test_delete_runners(self, mock_delete_runner, mock_get_runners):
         get_runners = [
             {
@@ -369,7 +368,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                       out.getvalue())
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.runner.create_bitbucket_runner')
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.create_bitbucket_runner')
     def test_create_additional_runners(self, mock_create_runner, mock_get_runners):
         get_runners = [
             {
@@ -414,10 +413,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
+        kubernetes_service = KubernetesInMemoryService()
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
             runner_constants=Constants(default_sleep_time_runner_setup=1),
-            kubernetes_service=KubernetesInMemoryService()
+            kubernetes_service=kubernetes_service
         )
 
         create_runner_data = {
@@ -434,12 +434,14 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             with self.caplog.at_level(logging.DEBUG):
                 service.run()
 
+        self.assertEqual(len(kubernetes_service.list_jobs()), 1)
+        self.assertIsNotNone(kubernetes_service.list_jobs()['test-runner-uuid'])
         self.assertIn("{'ONLINE': 1}", self.caplog.text)
         self.assertIn('Successfully setup runner UUID test-runner-uuid on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.runner.create_bitbucket_runner')
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.create_bitbucket_runner')
     def test_create_additional_runners_exceeds_max_config(self, mock_create_runner, mock_get_runners):
         get_runners = [
             {

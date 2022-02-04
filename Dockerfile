@@ -8,4 +8,4 @@ COPY autoscaler/ /home/bitbucket/autoscaler
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-ENTRYPOINT ["python", "autoscaler/start_command.py"]
+ENTRYPOINT ["python", "autoscaler/start.py"]

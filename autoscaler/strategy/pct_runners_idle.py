@@ -6,10 +6,12 @@ from dateutil import parser as du_parser
 from pprint import pprint
 from time import sleep
 
-from autoscaler import runner
 from autoscaler.clients.bitbucket.base import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success
+from autoscaler.core.interfaces import Strategy
 from autoscaler.core.logger import logger
+from autoscaler.services.kubernetes import KubernetesService
+from autoscaler.services.bitbucket import BitbucketService
 
 
 MAX_RUNNERS_COUNT_PER_REPOSITORY = 100
@@ -18,19 +20,20 @@ SCALE_UP_MULTIPLIER = 1.5
 SCALE_DOWN_MULTIPLIER = 0.5
 
 
-class PctRunnersIdleScaler:
+class PctRunnersIdleScaler(Strategy):
 
-    def __init__(self, runner_data, runner_constants, kubernetes_service):
+    def __init__(self, runner_data, runner_constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_consants = runner_constants
-        self.kubernetes_service = kubernetes_service
+        self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService()
+        self.runner_service = runner_service if runner_service else BitbucketService()
 
     def validate(self):
-        return self.kubernetes_service.check_kubernetes_namespace(self.runner_data['namespace'])
+        return self.kubernetes_service.init(self.runner_data['namespace'])
 
     def get_runners(self):
         # TODO optimize GET requests with filters by labels
-        return runner.get_bitbucket_runners(self.runner_data['workspace'], self.runner_data['repository'])
+        return self.runner_service.get_bitbucket_runners(self.runner_data['workspace'], self.runner_data['repository'])
 
     def create_runner(self, count_number):
         runners = self.get_runners()
@@ -53,7 +56,7 @@ class PctRunnersIdleScaler:
 
         logger.info(f"Runner #{count_number + 1} for namespace: {self.runner_data['namespace']} setup...")
 
-        data = runner.create_bitbucket_runner(
+        data = self.runner_service.create_bitbucket_runner(
             workspace=self.runner_data['workspace'],
             repository=self.runner_data['repository'],
             name=self.runner_data.get('name'),
@@ -96,7 +99,7 @@ class PctRunnersIdleScaler:
             )
 
         for runner_uuid in runners_uuid_to_delete:
-            runner.delete_bitbucket_runner(
+            self.runner_service.delete_bitbucket_runner(
                 workspace=self.runner_data['workspace'],
                 repository=self.runner_data['repository'],
                 runner_uuid=runner_uuid

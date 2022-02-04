@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 import yaml
 from autoscaler.clients.kubernetes.base import (
     KubernetesPythonAPIService,
@@ -5,21 +6,46 @@ from autoscaler.clients.kubernetes.base import (
 from autoscaler.core.logger import logger
 
 
-class KubernetesInMemoryService:
-    def check_kubernetes_namespace(self, namespace):
-        return True
+class KubernetesServiceInterface(ABC):
+
+    @abstractmethod
+    def init(self, namespace):
+        raise NotImplementedError
+
+    def list_jobs(self):
+        raise NotImplementedError
 
     def setup_job(self, runner_data):
-        pass
+        raise NotImplementedError
 
-    def delete_job(self, runner_uuid, namespace):
-        pass
+    def delete_job(self, job_id, namespace):
+        raise NotImplementedError
 
 
-class KubernetesService:
+class KubernetesInMemoryService(KubernetesServiceInterface):
 
-    def check_kubernetes_namespace(self, namespace):
-        logger.info(f"Checking for the {namespace} namespace...")
+    def __init__(self):
+        self.running_jobs = {}
+
+    def init(self, namespace):
+        self.running_jobs = {}
+        return True
+
+    def list_jobs(self):
+        return self.running_jobs
+
+    def setup_job(self, runner_data):
+        runner_id = runner_data['runnerUuid']
+        self.running_jobs[runner_id] = runner_data
+
+    def delete_job(self, job_id, namespace):
+        self.running_jobs.pop(job_id, None)
+
+
+class KubernetesService(KubernetesServiceInterface):
+
+    def init(self, namespace):
+        logger.info(f"Getting or creating {namespace} namespace in Kubernetes...")
         kube_python_api = KubernetesPythonAPIService()
         created = kube_python_api.get_or_create_kubernetes_namespace(
             namespace=namespace)
@@ -46,10 +72,10 @@ class KubernetesService:
 
         logger.info("Job created.")
 
-    def delete_job(self, runner_uuid, namespace):
+    def delete_job(self, job_id, namespace):
         # TODO refactor it
         kube_python_api = KubernetesPythonAPIService()
-        kube_python_api.delete_job(runner_uuid, namespace)
+        kube_python_api.delete_job(job_id, namespace)
         # TODO delete secrets
 
         logger.info("Job deleted.")

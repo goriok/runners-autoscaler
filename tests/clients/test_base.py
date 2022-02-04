@@ -8,7 +8,7 @@ import requests
 
 from autoscaler.clients.base import (
     BaseAPIService, BaseSubprocessAPIService, BearerAuth)
-from autoscaler.core.exceptions import PipesHTTPError
+from autoscaler.core.exceptions import AutoscalerHTTPError
 from tests.helpers import capture_output
 
 
@@ -45,7 +45,7 @@ class BaseAPIServiceTestCase(TestCase):
 
         mock_request.return_value.__enter__.return_value = response_object
 
-        with self.assertRaises(PipesHTTPError):
+        with self.assertRaises(AutoscalerHTTPError):
             BaseAPIService().make_http_request('http://fake_url',)
 
         response_object.json.side_effect = JSONDecodeError('Error decoding string', *('', 0))

@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 import requests
 from requests.auth import HTTPBasicAuth
 
-from autoscaler.core.exceptions import PipesHTTPError
+from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.core.logger import logger
 from autoscaler.core.helpers import fail
 
@@ -36,7 +36,7 @@ class BaseAPIService:
             except requests.exceptions.HTTPError as exc:
                 logger.debug(f"Got {exc}. Status: {response.status_code}")
                 if ignore_exc is None or (response.status_code not in ignore_exc):
-                    raise PipesHTTPError(response.text, status_code=response.status_code)
+                    raise AutoscalerHTTPError(response.text, status_code=response.status_code)
 
                 if ignore_exc and response.status_code in ignore_exc:
                     logger.warning(f"Obtained status {response.status_code} for {url}. Ignoring...")

@@ -2,14 +2,12 @@ import os
 from unittest import TestCase, mock
 
 import pytest
-import yaml
 
-import autoscaler.runner as runner
-from tests.helpers import capture_output
+from autoscaler.services.bitbucket import BitbucketService
 
 
 @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test', 'DEBUG': 'true'})
-class RunnerTestCase(TestCase):
+class BitbucketServiceTestCase(TestCase):
 
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, caplog):
@@ -47,8 +45,8 @@ class RunnerTestCase(TestCase):
                 "uuid": "repository-test_uuid"
             }
         }
-
-        result = runner.get_bitbucket_runners(**runner_data)
+        service: BitbucketService = BitbucketService()
+        result = service.get_bitbucket_runners(**runner_data)
         self.assertEqual(
             result,
             [
@@ -99,7 +97,9 @@ class RunnerTestCase(TestCase):
             }
         }
 
-        result = runner.get_bitbucket_runners(**runner_data)
+        service: BitbucketService = BitbucketService()
+        result = service.get_bitbucket_runners(**runner_data)
+
         self.assertEqual(
             result,
             [
@@ -155,7 +155,8 @@ class RunnerTestCase(TestCase):
             'labels': ('asd',)
         }
 
-        result = runner.create_bitbucket_runner(**runner_data)
+        service: BitbucketService = BitbucketService()
+        result = service.create_bitbucket_runner(**runner_data)
 
         self.assertEqual(
             result,
@@ -198,7 +199,8 @@ class RunnerTestCase(TestCase):
             'labels': ('asd',)
         }
 
-        result = runner.create_bitbucket_runner(**runner_data)
+        service: BitbucketService = BitbucketService()
+        result = service.create_bitbucket_runner(**runner_data)
 
         self.assertEqual(
             result,
@@ -227,7 +229,8 @@ class RunnerTestCase(TestCase):
             'runner_uuid': 'test-uuid'
         }
 
-        runner.delete_bitbucket_runner(**runner_data)
+        service: BitbucketService = BitbucketService()
+        service.delete_bitbucket_runner(**runner_data)
 
         mock_delete_runner.assert_called_once_with(
             runner_data['workspace']['uuid'],
@@ -247,21 +250,10 @@ class RunnerTestCase(TestCase):
             'runner_uuid': 'test-uuid'
         }
 
-        runner.delete_bitbucket_runner(**runner_data)
+        service: BitbucketService = BitbucketService()
+        service.delete_bitbucket_runner(**runner_data)
 
         mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
-
-    @mock.patch('yaml.safe_load')
-    def test_read_from_config(self, mock_config):
-        mock_config.side_effect = yaml.YAMLError
-
-        with capture_output() as out:
-            with pytest.raises(SystemExit) as pytest_wrapped_e:
-                runner.read_from_config('tests/test_config.yaml')
-
-        self.assertTrue(mock_config.called)
-        self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Error in configuration file: tests/test_config.yaml', out.getvalue())
 
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspace.get_workspace')
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepository.get_repository')
@@ -269,8 +261,9 @@ class RunnerTestCase(TestCase):
         mock_get_repo.return_value = {'uuid': '{test-repo-uuid}', 'slug': 'test-repo'}
         mock_get_workspace.return_value = {'uuid': '{test-workspace-uuid}', 'slug': 'test-workspace'}
 
-        runner_data = {'workspace_name': 'test-workspace', 'repository_name': 'test-repo'}
-        result = runner.get_bitbucket_workspace_repository_uuids(**runner_data)
+        service: BitbucketService = BitbucketService()
+        result = service.get_bitbucket_workspace_repository_uuids(workspace_name='test-workspace', repository_name='test-repo')
+
         self.assertEqual(
             result,
             ({'uuid': 'test-workspace-uuid', 'name': 'test-workspace'}, {'uuid': 'test-repo-uuid', 'name': 'test-repo'})
