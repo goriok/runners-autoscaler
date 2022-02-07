@@ -258,11 +258,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             }
         }
 
-        kubernetes_service = KubernetesInMemoryService()
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
             runner_constants=Constants(default_sleep_time_runner_delete=1),
-            kubernetes_service=kubernetes_service
+            kubernetes_service=KubernetesInMemoryService()
         )
 
         mock_delete_runner.return_value = None

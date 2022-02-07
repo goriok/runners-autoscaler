@@ -70,7 +70,7 @@ class ScaleTestCase(TestCase):
     def test_main_namespace_reserved(self):
 
         poller = StartPoller(
-            config_file_path='tests/resources/test_config_default_namespace.yaml',
+            config_file_path='tests/resources/test_config_reserved_namespace.yaml',
             poll=False
         )
 
