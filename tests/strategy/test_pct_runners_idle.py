@@ -41,7 +41,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                 "name": "workspace-test",
                 "uuid": "workspace-test_uuid"
             },
-            "repository": None
+            "repository": None,
+            "name": "Test group"
         }
 
         runner_count_scaler = PctRunnersIdleScaler(

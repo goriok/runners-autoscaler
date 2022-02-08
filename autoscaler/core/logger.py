@@ -25,3 +25,8 @@ def logger_config():
 
 
 logger = logger_config()
+
+
+class GroupNamePrefixAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        return '[%s] %s' % (self.extra['name'], msg), kwargs

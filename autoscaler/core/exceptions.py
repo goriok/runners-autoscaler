@@ -16,3 +16,23 @@ class AutoscalerHTTPError(AutoscalerException):
 
 class NotAuthorized(AutoscalerHTTPError):
     status_code = 401
+
+
+class KubernetesError(Exception):
+    """Base class for all Kubernetes exceptions."""
+    pass
+
+
+class KubernetesNamespaceError(KubernetesError):
+    """Base class for all Kubernetes namespace exceptions."""
+    pass
+
+
+class CannotCreateNamespaceError(KubernetesNamespaceError):
+    """Raised when cannot create namespace."""
+    pass
+
+
+class NamespaceNotFoundError(KubernetesNamespaceError):
+    """Raised when namespace not found."""
+    pass

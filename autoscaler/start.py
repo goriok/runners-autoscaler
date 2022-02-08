@@ -1,18 +1,20 @@
 import os
 from time import sleep
+from concurrent.futures import ThreadPoolExecutor, wait
 
 import autoscaler.core.constants as constants
 from autoscaler.core.helpers import read_yaml_file, required, enable_debug, fail
-from autoscaler.core.help_classes import Constants
+from autoscaler.core.help_classes import Constants, Strategies
 from autoscaler.core.logger import logger
 from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
 
 
-DEFAULT_LABELS = {'self.hosted', 'linux'}
+DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})
 MIN_RUNNERS_COUNT = 0
 MAX_RUNNERS_COUNT = 100
+MAX_GROUPS_COUNT = 10
 
 
 class StartPoller:
@@ -38,9 +40,6 @@ class StartPoller:
 
         logger.info(f"Autoscaler config: {runners_data}")
 
-        kubernetes_service: KubernetesService = KubernetesService()
-        runner_service: BitbucketService = BitbucketService()
-
         if 'constants' in runners_data:
             runner_constants = Constants(
                 runners_data['constants'].get('default_sleep_time_runner_setup', constants.DEFAULT_SLEEP_TIME_RUNNER_DELETE),
@@ -51,51 +50,70 @@ class StartPoller:
         else:
             runner_constants = Constants()
 
-        for runner_data in runners_data['config']:
-            # TODO validate args. Refactor conditional blocks with validator usage.
-            # TODO optimize this logic
-            if runner_data.get('namespace') is None:
-                fail('Namespace required for runner.')
-            elif runner_data['namespace'] == constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE:
-                fail(f'Namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.')
+        autoscaler_runners = [r for r in runners_data['groups']]
 
-            if runner_data.get('workspace') is None:
-                fail('Workspace required for runner.')
+        if len(autoscaler_runners) > MAX_GROUPS_COUNT:
+            fail(f'Your groups count {len(autoscaler_runners)} exceeds maximum allowed count of {MAX_GROUPS_COUNT}')
 
-            if runner_data.get('repository') is None:
-                runner_data['repository'] = None
+        for runner_data in autoscaler_runners:
+            validate(runner_data)
 
-            labels = set()
-            labels.update(DEFAULT_LABELS)
-            labels.update(set(runner_data.get('labels')))
-            runner_data['labels'] = labels
+            update(runner_data)
 
-            workspace_data, repository_data = runner_service.get_bitbucket_workspace_repository_uuids(
-                workspace_name=runner_data['workspace'],
-                repository_name=runner_data['repository']
-            )
-
-            runner_data['workspace'] = workspace_data
-            runner_data['repository'] = repository_data
-
-        autoscale_runners = [r for r in runners_data['config'] if r['strategy'] == 'percentageRunnersIdle']
-
-        for runner_data in autoscale_runners[:1]:
-            logger.info(f"Working on runners: {runner_data}")
-
-            # TODO add validator for autoscaler parameters
-            # TODO move to k8s pod
-            autoscaler = PctRunnersIdleScaler(runner_data, runner_constants, kubernetes_service, runner_service)
-            autoscaler.validate()
-
+        with ThreadPoolExecutor(max_workers=MAX_GROUPS_COUNT) as executor:
             while True:
-                autoscaler.run()
-                logger.warning(f"AUTOSCALER next attempt in {runner_constants.runner_api_polling_interval} seconds...\n")
+                futures = []
+                for runner_data in autoscaler_runners:
+                    if runner_data['strategy'] == Strategies.PCT_RUNNER_IDLE.value:
+                        kubernetes_service = KubernetesService(runner_data['name'])
+
+                        runner_service = BitbucketService(runner_data['name'])
+
+                        pctRunnersIdleScaler = PctRunnersIdleScaler(runner_data, runner_constants, kubernetes_service, runner_service)
+
+                        futures.append(executor.submit(pctRunnersIdleScaler.process))
+
+                wait(futures)
+                for fut in futures:
+                    fut.result()
+
+                logger.info(
+                    f"Autoscaler next attempt in {runner_constants.runner_api_polling_interval} seconds...\n")
+
                 sleep(runner_constants.runner_api_polling_interval)
 
                 # Added for testing.
                 if not self.poll:
                     break
+
+
+def validate(runner_data):
+    # TODO validate args. Refactor conditional blocks with validator usage.
+    # TODO optimize this logic
+    if runner_data.get('namespace') is None:
+        fail('Namespace required for runner.')
+    elif runner_data['namespace'] == constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE:
+        fail(f'Namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.')
+
+    if runner_data.get('workspace') is None:
+        fail('Workspace required for runner.')
+
+    if runner_data.get('repository') is None:
+        runner_data['repository'] = None
+
+
+def update(runner_data):
+    labels = set(DEFAULT_LABELS)
+    labels.update(runner_data.get('labels'))
+    runner_data['labels'] = labels
+
+    workspace_data, repository_data = BitbucketService.get_bitbucket_workspace_repository_uuids(
+        workspace_name=runner_data['workspace'],
+        repository_name=runner_data['repository']
+    )
+
+    runner_data['workspace'] = workspace_data
+    runner_data['repository'] = repository_data
 
 
 def main():
