@@ -130,11 +130,8 @@ class KubernetesPythonAPIService:
         self.load_config()
         self.client = k8s_client
 
-    def load_config(self, incluster=True):
-        if incluster:
-            k8s_config.load_incluster_config()
-        else:
-            raise NotImplementedError()
+    def load_config(self):
+        k8s_config.load_incluster_config()
 
     def create_secret(self, spec, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
         core_v1 = self.client.CoreV1Api()
@@ -157,12 +154,6 @@ class KubernetesPythonAPIService:
             )
         )
 
-    def get_kubernetes_version(self):
-        pass
-
-    def get_kubernetes_config(self):
-        pass
-
     def get_or_create_kubernetes_namespace(self, namespace):
         core_v1 = self.client.CoreV1Api()
         try:
@@ -171,30 +162,3 @@ class KubernetesPythonAPIService:
             )
         except ApiException as e:
             logger.info(f"Couldn't create namespace: {namespace}. Error {e}")
-
-    def create_kubernetes_namespace(self, namespace):
-        pass
-
-    def create_config_map_object(self, name, data, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
-        # Configure ConfigMap metadata
-        metadata = self.client.V1ObjectMeta(
-            name=name,
-            namespace=namespace,
-        )
-        # Instantiate the configmap object
-        configmap = self.client.V1ConfigMap(
-            api_version="v1",
-            kind="ConfigMap",
-            data=data,
-            metadata=metadata
-        )
-        return configmap
-
-    def create_config_map(self, config_map, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
-        try:
-            self.client.CoreV1Api().create_namespaced_config_map(
-                namespace=namespace,
-                body=config_map
-            )
-        except ApiException as e:
-            logger.info(f"Couldn't create namespaced_config_map on namespace: {namespace}. Error {e}")

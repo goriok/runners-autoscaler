@@ -19,7 +19,7 @@ lint:
 
 .PHONY: test
 test:
-	@$(ENV)/bin/python -m pytest -p no:cacheprovider tests/ --verbose --cov autoscaler --cov-fail=85
+	@$(ENV)/bin/python -m pytest -p no:cacheprovider tests/ --verbose --cov autoscaler --cov-fail=90
 
 .PHONY: clean
 clean:

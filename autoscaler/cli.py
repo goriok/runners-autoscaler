@@ -1,6 +1,6 @@
 import click
 
-from autoscaler import __version__, start_command
+from autoscaler import __version__, start
 
 
 @click.group()
@@ -16,8 +16,8 @@ def cli(ctx, debug) -> None:
 
 @cli.command('start', help="Starts Kubernetes controller.")
 @click.pass_context
-def start(ctx):
-    start_command.main()
+def start_command(ctx):
+    start.main()
 
 
 def main() -> None:

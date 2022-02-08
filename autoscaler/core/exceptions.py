@@ -1,7 +1,12 @@
 """Exceptions module for various exceptions."""
 
 
-class PipesHTTPError(Exception):
+class AutoscalerException(Exception):
+    """Base class for all AutoScaler exceptions."""
+    pass
+
+
+class AutoscalerHTTPError(AutoscalerException):
     status_code = 500
 
     def __init__(self, message, status_code=None):
@@ -9,5 +14,5 @@ class PipesHTTPError(Exception):
         super().__init__(f'Status code: {self.status_code}. {message}')
 
 
-class NotAuthorized(PipesHTTPError):
+class NotAuthorized(AutoscalerHTTPError):
     status_code = 401
