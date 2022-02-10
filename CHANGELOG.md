@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 0.4.1
+
+- patch: Refactor rbac template with least possible privilegies.
+
 ## 0.4.0
 
 - minor: Improve code structure for maintanability and extensibility purposes.
