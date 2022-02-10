@@ -61,7 +61,7 @@ Next run commands below:
 docker build -t bitbucketpipelines/runners-autoscaler .
 
 # Create namespace
-kubectl create namespace bitbucket-runner
+kubectl apply -f config/runners-autoscaler-namespace.yaml
 
 # Create RBAC configuration
 kubectl apply -f config/runners-autoscaler-rbac.yaml
