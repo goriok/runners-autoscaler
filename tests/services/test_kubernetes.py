@@ -79,13 +79,15 @@ class KubernetesServiceTestCase(TestCase):
         mock_config.assert_called_once()
         mock_secret.assert_called_once()
 
+    @mock.patch('autoscaler.clients.kubernetes.base.KubernetesPythonAPIService.delete_secret')
     @mock.patch('autoscaler.clients.kubernetes.base.KubernetesPythonAPIService.delete_job')
     @mock.patch('autoscaler.clients.kubernetes.base.KubernetesPythonAPIService.load_config')
-    def test_delete_job(self, mock_config, mock_delete_job):
+    def test_delete_job(self, mock_config, mock_delete_job, mock_delete_secret):
+        mock_delete_secret.return_value = None
         mock_delete_job.return_value = None
         mock_config.return_value = None
 
-        runner_data = {'namespace': 'test-namespace', 'job_id': 'test-uuid'}
+        runner_data = {'namespace': 'test-namespace', 'runner_uuid': 'test-uuid'}
 
         service: KubernetesService = KubernetesService('test')
         service.delete_job(**runner_data)

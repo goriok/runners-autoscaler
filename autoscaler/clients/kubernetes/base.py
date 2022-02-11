@@ -4,8 +4,7 @@ from kubernetes import config as k8s_config, client as k8s_client
 from kubernetes.client import ApiException
 
 from autoscaler.core.exceptions import CannotCreateNamespaceError, NamespaceNotFoundError, KubernetesNamespaceError
-from autoscaler.core.constants import (
-    TEMPLATE_FILE_NAME, DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
+from autoscaler.core.constants import TEMPLATE_FILE_NAME
 
 
 class KubernetesSpecFileAPIService:
@@ -32,17 +31,28 @@ class KubernetesPythonAPIService:
     def load_config(self):
         k8s_config.load_incluster_config()
 
-    def create_secret(self, spec, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    def create_secret(self, spec, namespace):
         core_v1 = self.client.CoreV1Api()
         resp = core_v1.create_namespaced_secret(body=spec, namespace=namespace)
         return resp
 
-    def create_job(self, spec, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    def create_job(self, spec, namespace):
         batch_v1 = self.client.BatchV1Api()
         resp = batch_v1.create_namespaced_job(body=spec, namespace=namespace)
         return resp
 
-    def delete_job(self, runner_uuid, namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE):
+    def delete_secret(self, runner_uuid, namespace):
+        core_v1 = self.client.CoreV1Api()
+        core_v1.delete_namespaced_secret(
+            name=f"runner-oauth-credentials-{runner_uuid}",
+            namespace=namespace,
+            body=self.client.V1DeleteOptions(
+                propagation_policy='Foreground',
+                grace_period_seconds=5
+            )
+        )
+
+    def delete_job(self, runner_uuid, namespace):
         batch_v1 = self.client.BatchV1Api()
         batch_v1.delete_namespaced_job(
             name=f"runner-{runner_uuid}",
