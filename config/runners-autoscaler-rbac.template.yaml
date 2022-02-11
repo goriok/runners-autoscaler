@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: runners-autoscaler
-  namespace: bitbucket-runner
+  namespace: bitbucket-runner-control-plane
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -41,4 +41,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: runners-autoscaler
-    namespace: bitbucket-runner
+    namespace: bitbucket-runner-control-plane

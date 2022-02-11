@@ -3,6 +3,7 @@ from unittest import TestCase, mock
 
 import pytest
 from autoscaler.start import StartPoller
+from autoscaler.core.constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 
 from tests.helpers import capture_output
 
@@ -77,7 +78,7 @@ class ScaleTestCase(TestCase):
 
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
         self.assertIn(
-            'Namespace name `bitbucket-runner` is reserved and not available.',
+            f'Namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
             out.getvalue()
         )
 

@@ -5,14 +5,14 @@ items:
     kind: Secret
     metadata:
       name: runner-bitbucket-credentials
-      namespace: bitbucket-runner
+      namespace: bitbucket-runner-control-plane
     data:
-      bitbucketClientSecret: <bitbucket_client_secret_base64>
+      bitbucketClientSecret: <BITBUCKET_APP_PASSWORD base64>
   - apiVersion: batch/v1
     kind: Job
     metadata:
       name: runner-controller
-      namespace: bitbucket-runner
+      namespace: bitbucket-runner-control-plane
     spec:
       template:
         metadata:
@@ -28,7 +28,7 @@ items:
               readOnly: true
             env:
               - name: BITBUCKET_USERNAME
-                value: <bitbucket_client_username>
+                value: <BITBUCKET_USERNAME>
               - name: BITBUCKET_APP_PASSWORD
                 valueFrom:
                   secretKeyRef:
