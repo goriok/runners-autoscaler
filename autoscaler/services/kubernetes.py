@@ -14,10 +14,10 @@ class KubernetesServiceInterface(ABC):
     def list_jobs(self):
         raise NotImplementedError
 
-    def setup_job(self, runner_data):
+    def setup_job(self, data):
         raise NotImplementedError
 
-    def delete_job(self, job_id, namespace):
+    def delete_job(self, runner_uuid, namespace):
         raise NotImplementedError
 
 
@@ -33,12 +33,12 @@ class KubernetesInMemoryService(KubernetesServiceInterface):
     def list_jobs(self):
         return self.running_jobs
 
-    def setup_job(self, runner_data):
-        runner_id = runner_data['runnerUuid']
-        self.running_jobs[runner_id] = runner_data
+    def setup_job(self, data):
+        runner_id = data['runnerUuid']
+        self.running_jobs[runner_id] = data
 
-    def delete_job(self, job_id, namespace):
-        self.running_jobs.pop(job_id, None)
+    def delete_job(self, runner_uuid, namespace):
+        self.running_jobs.pop(runner_uuid, None)
 
 
 class KubernetesService(KubernetesServiceInterface):
@@ -63,36 +63,34 @@ class KubernetesService(KubernetesServiceInterface):
             kube_python_api.create_kubernetes_namespace(namespace=namespace)
             self.logger_adapter.info(f"Namespace {namespace} created.")
 
-    def setup_job(self, runner_data):
+    def setup_job(self, data):
         self.logger_adapter.info("Starting to setup the Kubernetes job ...")
 
         # TODO refactor it
         kube_spec_file_api = KubernetesSpecFileAPIService()
-        runner_job_spec = kube_spec_file_api.generate_kube_spec_file(
-            runner_data)
+        runner_job_spec = kube_spec_file_api.generate_kube_spec_file(data)
 
         self.logger_adapter.debug(runner_job_spec)
 
-        # TODO improve workflow with k8s spec template for runner job
-        # runner-config.yaml.template
         runner_spec = yaml.safe_load(runner_job_spec)
         job_secret_spec = runner_spec['items'][0]
         job_spec = runner_spec['items'][1]
 
         kube_python_api = KubernetesPythonAPIService()
 
-        secret = kube_python_api.create_secret(job_secret_spec, runner_data['runnerNamespace'])
+        secret = kube_python_api.create_secret(job_secret_spec, data['runnerNamespace'])
         self.logger_adapter.info(f"Secret created. status={secret.metadata.name}")
 
-        job = kube_python_api.create_job(job_spec, runner_data['runnerNamespace'])
+        job = kube_python_api.create_job(job_spec, data['runnerNamespace'])
         self.logger_adapter.info(f"Job created. status={job.metadata.name}")
 
-    def delete_job(self, job_id, namespace):
-        self.logger_adapter.info(f"Starting to delete job {job_id} from namespace {namespace}")
+    def delete_job(self, runner_uuid, namespace):
+        self.logger_adapter.info(f"Starting to delete job for runner {runner_uuid} from namespace {namespace}")
 
-        # TODO refactor it
         kube_python_api = KubernetesPythonAPIService()
-        kube_python_api.delete_job(job_id, namespace)
-        # TODO delete secrets
+
+        kube_python_api.delete_job(runner_uuid, namespace)
+
+        kube_python_api.delete_secret(runner_uuid, namespace)
 
         self.logger_adapter.info("Job deleted.")

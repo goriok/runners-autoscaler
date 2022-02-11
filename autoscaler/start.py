@@ -4,7 +4,7 @@ from concurrent.futures import ThreadPoolExecutor, wait
 
 import autoscaler.core.constants as constants
 from autoscaler.core.helpers import read_yaml_file, required, enable_debug, fail
-from autoscaler.core.help_classes import Constants, Strategies
+from autoscaler.core.help_classes import Constants, Strategies, RunnerData, NameUUIDData
 from autoscaler.core.logger import logger
 from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.services.bitbucket import BitbucketService
@@ -55,19 +55,21 @@ class StartPoller:
         if len(autoscaler_runners) > MAX_GROUPS_COUNT:
             fail(f'Your groups count {len(autoscaler_runners)} exceeds maximum allowed count of {MAX_GROUPS_COUNT}')
 
-        for runner_data in autoscaler_runners:
-            validate(runner_data)
+        for i, data in enumerate(autoscaler_runners):
+            validate(data)
 
-            update(runner_data)
+            autoscaler_runners[i] = update(data)
 
+        logger.info(f"Autoscaler runners: {autoscaler_runners}")
         with ThreadPoolExecutor(max_workers=MAX_GROUPS_COUNT) as executor:
             while True:
                 futures = []
                 for runner_data in autoscaler_runners:
-                    if runner_data['strategy'] == Strategies.PCT_RUNNER_IDLE.value:
-                        kubernetes_service = KubernetesService(runner_data['name'])
+                    runner_data: RunnerData
+                    if runner_data.strategy == Strategies.PCT_RUNNER_IDLE.value:
+                        kubernetes_service = KubernetesService(runner_data.name)
 
-                        runner_service = BitbucketService(runner_data['name'])
+                        runner_service = BitbucketService(runner_data.name)
 
                         pctRunnersIdleScaler = PctRunnersIdleScaler(runner_data, runner_constants, kubernetes_service, runner_service)
 
@@ -95,11 +97,20 @@ def validate(runner_data):
     elif runner_data['namespace'] == constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE:
         fail(f'Namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.')
 
+    if runner_data.get('name') is None:
+        fail('Group name required for runner.')
+
     if runner_data.get('workspace') is None:
         fail('Workspace required for runner.')
 
     if runner_data.get('repository') is None:
         runner_data['repository'] = None
+
+    if runner_data.get('parameters') is None:
+        fail('Parameters required for runner.')
+
+    if runner_data.get('strategy') is None:
+        fail('Strategy required for runner.')
 
 
 def update(runner_data):
@@ -112,8 +123,34 @@ def update(runner_data):
         repository_name=runner_data['repository']
     )
 
-    runner_data['workspace'] = workspace_data
-    runner_data['repository'] = repository_data
+    runner_data['workspace'] = NameUUIDData(
+        name=workspace_data['name'],
+        uuid=workspace_data['uuid'],
+    )
+
+    runner_data['repository'] = NameUUIDData(
+        name=repository_data['name'],
+        uuid=repository_data['uuid'],
+    )
+
+    # Update parameters for different strategies
+    if runner_data['strategy'] == Strategies.PCT_RUNNER_IDLE.value:
+        try:
+            runner_data['parameters'] = PctRunnersIdleScaler.update_parameters(runner_data)
+        except KeyError as e:
+            fail(f"{runner_data['name']}: parameter is missing {e}")
+    else:
+        fail(f'{runner_data["name"]}: strategy {runner_data["strategy"]} not supported.')
+
+    return RunnerData(
+        workspace=runner_data['workspace'],
+        repository=runner_data['repository'],
+        name=runner_data['name'],
+        labels=runner_data['labels'],
+        namespace=runner_data['namespace'],
+        strategy=runner_data['strategy'],
+        parameters=runner_data['parameters']
+    )
 
 
 def main():
