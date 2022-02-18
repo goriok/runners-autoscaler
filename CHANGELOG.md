@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.1.0
+
+- minor: README and template improvements.
+
 ## 1.0.0
 
 - major: Implemented support of multiple groups in configMap
