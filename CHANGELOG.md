@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.0.0
+
+- major: Implemented support of multiple groups in configMap
+
 ## 0.4.1
 
 - patch: Refactor rbac template with least possible privilegies.
