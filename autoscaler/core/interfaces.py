@@ -10,3 +10,7 @@ class Strategy(ABC):
     @abstractmethod
     def run(self) -> None:
         raise NotImplementedError
+
+    @abstractmethod
+    def process(self) -> None:
+        raise NotImplementedError

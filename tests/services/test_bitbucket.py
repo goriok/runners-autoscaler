@@ -45,7 +45,7 @@ class BitbucketServiceTestCase(TestCase):
                 "uuid": "repository-test_uuid"
             }
         }
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         result = service.get_bitbucket_runners(**runner_data)
         self.assertEqual(
             result,
@@ -97,7 +97,7 @@ class BitbucketServiceTestCase(TestCase):
             }
         }
 
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         result = service.get_bitbucket_runners(**runner_data)
 
         self.assertEqual(
@@ -155,7 +155,7 @@ class BitbucketServiceTestCase(TestCase):
             'labels': ('asd',)
         }
 
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         result = service.create_bitbucket_runner(**runner_data)
 
         self.assertEqual(
@@ -199,7 +199,7 @@ class BitbucketServiceTestCase(TestCase):
             'labels': ('asd',)
         }
 
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         result = service.create_bitbucket_runner(**runner_data)
 
         self.assertEqual(
@@ -229,7 +229,7 @@ class BitbucketServiceTestCase(TestCase):
             'runner_uuid': 'test-uuid'
         }
 
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         service.delete_bitbucket_runner(**runner_data)
 
         mock_delete_runner.assert_called_once_with(
@@ -250,7 +250,7 @@ class BitbucketServiceTestCase(TestCase):
             'runner_uuid': 'test-uuid'
         }
 
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         service.delete_bitbucket_runner(**runner_data)
 
         mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
@@ -261,7 +261,7 @@ class BitbucketServiceTestCase(TestCase):
         mock_get_repo.return_value = {'uuid': '{test-repo-uuid}', 'slug': 'test-repo'}
         mock_get_workspace.return_value = {'uuid': '{test-workspace-uuid}', 'slug': 'test-workspace'}
 
-        service: BitbucketService = BitbucketService()
+        service: BitbucketService = BitbucketService('test')
         result = service.get_bitbucket_workspace_repository_uuids(workspace_name='test-workspace', repository_name='test-repo')
 
         self.assertEqual(

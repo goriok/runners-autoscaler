@@ -79,7 +79,7 @@ kubectl apply -f config/runners-autoscaler-deployment.yaml
 In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters
 
 ```yaml
-config:
+groups:
   - name: "Runner repository group"       # Name of the Runner displayed in the Bitbucket Runner UI.
     workspace: "myworkspace"              # Name of the workspace the Runner is added to. 
     repository: "my-awesome-repository"   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
@@ -96,13 +96,14 @@ config:
       scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1  speed to scale up
       scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1  speed to scale down
 
-  constants:  # autoscaler parameters available for tuning
-    default_sleep_time_runner_setup: 5  # seconds
-    default_sleep_time_runner_delete: 5  # seconds
-    runner_api_polling_interval: 600  # seconds
-    runner_cool_down_period: 300  # seconds
+constants:  # autoscaler parameters available for tuning
+  default_sleep_time_runner_setup: 5  # seconds
+  default_sleep_time_runner_delete: 5  # seconds
+  runner_api_polling_interval: 600  # seconds
+  runner_cool_down_period: 300  # seconds
 
 ```
+you can create up to 10 groups.
 
 ## Documentation
 

@@ -1,7 +1,7 @@
 constants:
   runner_cool_down_period: 30
   runner_api_polling_interval: 1
-config:
+groups:
   - name: Runner repository group
     namespace: bitbucket-test
     labels:

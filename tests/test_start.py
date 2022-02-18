@@ -1,4 +1,3 @@
-import logging
 import os
 from unittest import TestCase, mock
 
@@ -30,16 +29,16 @@ class ScaleTestCase(TestCase):
         self.assertIn('Passed runners configuration file fail_config_path does not exist.', out.getvalue())
 
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
-    @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.run')
+    @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.process')
     @mock.patch('autoscaler.services.kubernetes.KubernetesService.init')
     def test_main(
             self,
             mock_kubernetes_service,
-            mock_run,
+            mock_process,
             mock_get_uuids
     ):
         mock_get_uuids.return_value = ('test-workspace-uuid', 'test-repo-uuid')
-        mock_run.return_value = None
+        mock_process.return_value = None
         mock_kubernetes_service.return_value = None
 
         poller = StartPoller(
@@ -47,11 +46,9 @@ class ScaleTestCase(TestCase):
             poll=False
         )
 
-        with self.caplog.at_level(logging.INFO):
-            poller.start()
+        poller.start()
 
-        assert mock_run.called
-        self.assertIn('test', self.caplog.text)
+        self.assertEqual(mock_process.call_count, 2)
 
     def test_main_namespace_required(self):
 
