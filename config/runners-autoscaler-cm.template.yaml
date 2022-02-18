@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: runners-autoscaler-config
-  namespace: bitbucket-runner
+  namespace: bitbucket-runner-control-plane
 data:
   runners_config.yaml: |
     constants:

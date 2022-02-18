@@ -31,7 +31,7 @@ This script sends requests to the BITBUCKET API in scale runners up and down.
 Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API request limits].
 
 ## Prerequisites
-- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, workspace:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
+- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-job.yaml`
 - [optional] setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster
 
 - [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
@@ -49,7 +49,7 @@ Create in `config/` folder three files:
 
 `config/runners-autoscaler-cm.yaml`,
 
-`config/runners-autoscaler-deployment.yaml`
+`config/runners-autoscaler-job.yaml`
 
 based on templates provided inside this folder. 
 
@@ -57,9 +57,6 @@ Fill them with needed variables (these variables decorated with `<...>` inside t
 
 Next run commands below: 
 ```
-# Build the docker image
-docker build -t bitbucketpipelines/runners-autoscaler .
-
 # Create namespace
 kubectl apply -f config/runners-autoscaler-namespace.yaml
 
@@ -70,7 +67,7 @@ kubectl apply -f config/runners-autoscaler-rbac.yaml
 kubectl apply -f config/runners-autoscaler-cm.yaml
 
 # Create deployment
-kubectl apply -f config/runners-autoscaler-deployment.yaml
+kubectl apply -f config/runners-autoscaler-job.yaml
 ```
 
 
@@ -90,17 +87,17 @@ groups:
     strategy: "percentageRunnersIdle"     # Type of the strategy workflow.
     parameters:
       min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting
-      max: 10  # 
+      max: 10  # maximum allowed runners count
       scaleUpThreshold: 0.8  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
       scaleDownThreshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
       scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1  speed to scale up
       scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1  speed to scale down
 
 constants:  # autoscaler parameters available for tuning
-  default_sleep_time_runner_setup: 5  # seconds
-  default_sleep_time_runner_delete: 5  # seconds
-  runner_api_polling_interval: 600  # seconds
-  runner_cool_down_period: 300  # seconds
+  default_sleep_time_runner_setup: 5  # seconds. Time between runners creation.
+  default_sleep_time_runner_delete: 5  # seconds. Time between runners deletion.
+  runner_api_polling_interval: 600  # seconds. Time between requests to Bitbucket API.
+  runner_cool_down_period: 300  # seconds. Time reserved for runner to setup.
 
 ```
 you can create up to 10 groups.
