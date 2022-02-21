@@ -12,8 +12,6 @@ from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
 
 
 DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})
-MIN_RUNNERS_COUNT = 0
-MAX_RUNNERS_COUNT = 100
 MAX_GROUPS_COUNT = 10
 
 
