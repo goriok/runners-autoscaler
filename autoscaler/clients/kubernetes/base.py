@@ -8,6 +8,10 @@ from autoscaler.core.constants import TEMPLATE_FILE_NAME
 
 
 class KubernetesSpecFileAPIService:
+
+    def __init__(self):
+        pass
+
     def generate_kube_spec_file(self, runner_data, template_filename=TEMPLATE_FILE_NAME):
         # process template to k8s spec
         template_loader = PackageLoader("autoscaler", "resources")
