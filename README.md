@@ -31,7 +31,7 @@ This script sends requests to the BITBUCKET API in scale runners up and down.
 Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API request limits].
 
 ## Prerequisites
-- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-job.yaml`
+- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
 - [optional] setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster
 
 - [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
@@ -49,7 +49,7 @@ Create in `config/` folder three files:
 
 `config/runners-autoscaler-cm.yaml`,
 
-`config/runners-autoscaler-job.yaml`
+`config/runners-autoscaler-deployment.yaml`
 
 based on templates provided inside this folder. 
 
@@ -67,7 +67,7 @@ kubectl apply -f config/runners-autoscaler-rbac.yaml
 kubectl apply -f config/runners-autoscaler-cm.yaml
 
 # Create deployment
-kubectl apply -f config/runners-autoscaler-job.yaml
+kubectl apply -f config/runners-autoscaler-deployment.yaml
 ```
 
 
