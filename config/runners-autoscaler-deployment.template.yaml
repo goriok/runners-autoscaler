@@ -28,7 +28,7 @@ items:
           serviceAccountName: runners-autoscaler
           containers:
           - name: runner-controller
-            image: bitbucketpipelines/runners-autoscaler:1.2.0
+            image: bitbucketpipelines/runners-autoscaler:1.3.0
             volumeMounts:
             - name: runners-autoscaler-config
               mountPath: /opt/conf/config

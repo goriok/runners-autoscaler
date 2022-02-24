@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Use a deployment instead of a job in bitbucket-runner-control-plane namespace."
-}
