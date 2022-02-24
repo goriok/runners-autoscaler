@@ -50,6 +50,18 @@ class KubernetesPythonAPIServiceTestCase(TestCase):
         mock_create.assert_called_once_with(body='foo', namespace='bar')
 
     @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.delete_namespaced_secret')
+    @mock.patch('kubernetes.client.V1DeleteOptions')
+    def test_delete_secret(self, mock_client_delete, mock_delete, mock_config):
+        mock_config.return_value = None
+        mock_client_delete.return_value = None
+        api = KubernetesPythonAPIService()
+
+        api.delete_secret('foo', 'bar')
+
+        mock_delete.assert_called_once_with(name='runner-oauth-credentials-foo', namespace='bar', body=None)
+
+    @mock.patch('kubernetes.config.load_incluster_config')
     @mock.patch('kubernetes.client.BatchV1Api.delete_namespaced_job')
     @mock.patch('kubernetes.client.V1DeleteOptions')
     def test_delete_job(self, mock_client_delete, mock_delete, mock_config):

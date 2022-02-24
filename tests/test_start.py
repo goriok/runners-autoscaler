@@ -38,7 +38,10 @@ class ScaleTestCase(TestCase):
             mock_process,
             mock_get_uuids
     ):
-        mock_get_uuids.return_value = ('test-workspace-uuid', 'test-repo-uuid')
+        mock_get_uuids.return_value = (
+            {'name': 'test-workspace-name', 'uuid': 'test-workspace-uuid'},
+            {'name': 'test-repo-name', 'uuid': 'test-repo-uuid'},
+        )
         mock_process.return_value = None
         mock_kubernetes_service.return_value = None
 

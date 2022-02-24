@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
 from time import sleep
 
-from autoscaler.core.help_classes import BitbucketRunnerStatuses
+from autoscaler.core.help_classes import BitbucketRunnerStatuses, PctRunnersIdleParameters, RunnerData, Constants
 from autoscaler.core.helpers import success, fail
 from autoscaler.core.exceptions import KubernetesNamespaceError, CannotCreateNamespaceError
 from autoscaler.core.interfaces import Strategy
@@ -21,20 +21,20 @@ SCALE_DOWN_MULTIPLIER = 0.5
 
 
 class PctRunnersIdleScaler(Strategy):
-    def __init__(self, runner_data, runner_constants, kubernetes_service=None, runner_service=None):
+    def __init__(self, runner_data: RunnerData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_constants = runner_constants
-        self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService(runner_data['name'])
-        self.runner_service = runner_service if runner_service else BitbucketService(runner_data['name'])
-        self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': runner_data['name']})
+        self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService(runner_data.name)
+        self.runner_service = runner_service if runner_service else BitbucketService(runner_data.name)
+        self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': runner_data.name})
 
     def validate(self):
         try:
-            self.kubernetes_service.init(self.runner_data['namespace'])
+            self.kubernetes_service.init(self.runner_data.namespace)
         except CannotCreateNamespaceError as e:
-            fail(f"Couldn't create namespace: {self.runner_data['namespace']}. Error {e}")
+            fail(f"Couldn't create namespace: {self.runner_data.namespace}. Error {e}")
         except KubernetesNamespaceError as e:
-            fail(f"Couldn't get namespace: {self.runner_data['namespace']}. Error {e}")
+            fail(f"Couldn't get namespace: {self.runner_data.namespace}. Error {e}")
 
     def process(self):
         self.logger_adapter.info(f"Working on runner group: {self.runner_data}")
@@ -45,9 +45,21 @@ class PctRunnersIdleScaler(Strategy):
 
         self.run()
 
+    @staticmethod
+    def update_parameters(runner_data: dict[str, dict]) -> PctRunnersIdleParameters:
+        # TODO create case translator camelCase -> snake_case in validators
+        return PctRunnersIdleParameters(
+            min=runner_data['parameters']['min'],
+            max=runner_data['parameters']['max'],
+            scale_up_threshold=runner_data['parameters']['scaleUpThreshold'],
+            scale_down_threshold=runner_data['parameters']['scaleDownThreshold'],
+            scale_up_multiplier=runner_data['parameters']['scaleUpMultiplier'],
+            scale_down_multiplier=runner_data['parameters']['scaleDownMultiplier']
+        )
+
     def get_runners(self):
         # TODO optimize GET requests with filters by labels
-        return self.runner_service.get_bitbucket_runners(self.runner_data['workspace'], self.runner_data['repository'])
+        return self.runner_service.get_bitbucket_runners(self.runner_data.workspace, self.runner_data.repository)
 
     def create_runner(self, count_number):
         runners = self.get_runners()
@@ -58,9 +70,9 @@ class PctRunnersIdleScaler(Strategy):
 
         # check runners count before add new runner
         if len(runners) >= MAX_RUNNERS_COUNT_PER_REPOSITORY:
-            msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data['workspace']['name']}"
-            if self.runner_data['repository']:
-                msg = f"{msg} repository: {self.runner_data['repository']['name']}"
+            msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data.workspace.name}"
+            if self.runner_data.repository:
+                msg = f"{msg} repository: {self.runner_data.repository.name}"
 
             self.logger_adapter.warning(msg)
             self.logger_adapter.warning(
@@ -68,21 +80,22 @@ class PctRunnersIdleScaler(Strategy):
 
             return
 
-        self.logger_adapter.info(f"Runner #{count_number + 1} for namespace: {self.runner_data['namespace']} setup...")
+        self.logger_adapter.info(f"Runner #{count_number + 1} for namespace: {self.runner_data.namespace} setup...")
 
         data = self.runner_service.create_bitbucket_runner(
-            workspace=self.runner_data['workspace'],
-            repository=self.runner_data['repository'],
-            name=self.runner_data.get('name'),
-            labels=self.runner_data['labels'],
+            workspace=self.runner_data.workspace,
+            name=self.runner_data.name,
+            labels=self.runner_data.labels,
+            repository=self.runner_data.repository
         )
 
-        data['runnerNamespace'] = self.runner_data['namespace']
+        data['runnerNamespace'] = self.runner_data.namespace
+
         self.kubernetes_service.setup_job(data)
 
         success(
-            f"[{self.runner_data['name']}] Successfully setup runner UUID {data['runnerUuid']} "
-            f"on workspace {self.runner_data['workspace']['name']}\n",
+            f"[{self.runner_data.name}] Successfully setup runner UUID {data['runnerUuid']} "
+            f"on workspace {self.runner_data.workspace.name}\n",
             do_exit=False
         )
 
@@ -114,16 +127,16 @@ class PctRunnersIdleScaler(Strategy):
 
         for runner_uuid in runners_uuid_to_delete:
             self.runner_service.delete_bitbucket_runner(
-                workspace=self.runner_data['workspace'],
+                workspace=self.runner_data.workspace,
                 runner_uuid=runner_uuid,
-                repository=self.runner_data['repository']
+                repository=self.runner_data.repository
             )
 
-            self.kubernetes_service.delete_job(runner_uuid, self.runner_data['namespace'])
+            self.kubernetes_service.delete_job(runner_uuid, self.runner_data.namespace)
 
             success(
-                f"[{self.runner_data['name']}] Successfully deleted runner UUID {runner_uuid} "
-                f"on workspace {self.runner_data['workspace']['name']}\n",
+                f"[{self.runner_data.name}] Successfully deleted runner UUID {runner_uuid} "
+                f"on workspace {self.runner_data.workspace.name}\n",
                 do_exit=False
             )
 
@@ -132,9 +145,9 @@ class PctRunnersIdleScaler(Strategy):
     def run(self):
         runners = self.get_runners()
 
-        msg = f"Found {len(runners)} runners on workspace {self.runner_data['workspace']['name']}"
-        if self.runner_data['repository']:
-            msg = f"{msg} repository: {self.runner_data['repository']['name']}"
+        msg = f"Found {len(runners)} runners on workspace {self.runner_data.workspace.name}"
+        if self.runner_data.repository:
+            msg = f"{msg} repository: {self.runner_data.repository.name}"
 
         self.logger_adapter.info(msg)
 
@@ -147,16 +160,16 @@ class PctRunnersIdleScaler(Strategy):
 
         online_runners = [
             r for r in runners if
-            set(r['labels']) == self.runner_data['labels'] and r['state']['status'] == BitbucketRunnerStatuses.ONLINE
+            set(r['labels']) == self.runner_data.labels and r['state']['status'] == BitbucketRunnerStatuses.ONLINE
         ]
 
-        self.logger_adapter.info(f"Found ONLINE runners with labels {self.runner_data['labels']}: {len(online_runners)}")
+        self.logger_adapter.info(f"Found ONLINE runners with labels {self.runner_data.labels}: {len(online_runners)}")
         self.logger_adapter.debug(online_runners)
 
         runners_idle = [r for r in online_runners if r['state'].get('step') is None]
         runners_busy = [r for r in online_runners if 'step' in r['state']]
 
-        self.logger_adapter.info(f"Found IDLE runners with labels {self.runner_data['labels']}: {len(runners_idle)}")
+        self.logger_adapter.info(f"Found IDLE runners with labels {self.runner_data.labels}: {len(runners_idle)}")
         if os.getenv('DEBUG') == 'true':
             self.logger_adapter.debug(runners_idle)
 
@@ -165,14 +178,14 @@ class PctRunnersIdleScaler(Strategy):
 
         msg_autoscaler = (
             f"Runners Autoscaler. "
-            f"min: {self.runner_data['parameters']['min']}, "
-            f"max: {self.runner_data['parameters']['max']}, "
+            f"min: {self.runner_data.parameters.min}, "
+            f"max: {self.runner_data.parameters.max}, "
             f"current: {len(online_runners)}"
         )
 
-        if not online_runners and self.runner_data['parameters']['min'] > 0:
+        if not online_runners and self.runner_data.parameters.min > 0:
             # create new runners from 0
-            count_runners_to_create = self.runner_data['parameters']['min']
+            count_runners_to_create = self.runner_data.parameters.min
 
             msg_autoscaler = (
                 f"{msg_autoscaler}, "
@@ -186,22 +199,22 @@ class PctRunnersIdleScaler(Strategy):
                 self.create_runner(i)
 
         # TODO add max_runners per repo or max_runners per workspace
-        elif (runners_scale_threshold > float(self.runner_data['parameters']['scaleUpThreshold']) or len(online_runners) < self.runner_data['parameters']['min']) \
-                and len(online_runners) <= self.runner_data['parameters']['max'] \
+        elif (runners_scale_threshold > float(self.runner_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.parameters.min) \
+                and len(online_runners) <= self.runner_data.parameters.max \
                 and len(runners) <= MAX_RUNNERS_COUNT_PER_REPOSITORY:
 
             # TODO validate scaleDownFactor > 1
             desired_runners_count = math.ceil(
-                len(online_runners) * self.runner_data['parameters'].get('scaleUpMultiplier', SCALE_UP_MULTIPLIER)
+                len(online_runners) * self.runner_data.parameters.scale_up_multiplier
             )
-            if desired_runners_count <= self.runner_data['parameters']['max']:
+            if desired_runners_count <= self.runner_data.parameters.max:
                 count_runners_to_create = desired_runners_count - len(online_runners)
             else:
-                count_runners_to_create = self.runner_data['parameters']['max'] - len(online_runners)
-                desired_runners_count = self.runner_data['parameters']['max']
+                count_runners_to_create = self.runner_data.parameters.max - len(online_runners)
+                desired_runners_count = self.runner_data.parameters.max
 
             if count_runners_to_create == 0:
-                self.logger_adapter.info(f"Max runners count: {self.runner_data['parameters']['max']} reached.")
+                self.logger_adapter.info(f"Max runners count: {self.runner_data.parameters.max} reached.")
                 return
 
             msg_autoscaler = (
@@ -215,19 +228,19 @@ class PctRunnersIdleScaler(Strategy):
             for i in range(count_runners_to_create):
                 self.create_runner(i)
 
-        elif runners_scale_threshold < float(self.runner_data['parameters']['scaleDownThreshold']) and \
-                len(runners_idle) > self.runner_data['parameters']['min']:
+        elif runners_scale_threshold < float(self.runner_data.parameters.scale_down_threshold) and \
+                len(runners_idle) > self.runner_data.parameters.min:
 
             # TODO validate 0 < scaleDownFactor < 1
             desired_runners_count = math.floor(
-                len(runners_idle) * self.runner_data['parameters'].get('scaleDownMultiplier', SCALE_DOWN_MULTIPLIER)
+                len(runners_idle) * self.runner_data.parameters.scale_down_multiplier
             )
 
-            if desired_runners_count > self.runner_data['parameters']['min']:
+            if desired_runners_count > self.runner_data.parameters.min:
                 count_runners_to_delete = len(runners_idle) - desired_runners_count
             else:
-                count_runners_to_delete = len(runners_idle) - self.runner_data['parameters']['min']
-                desired_runners_count = self.runner_data['parameters']['min']
+                count_runners_to_delete = len(runners_idle) - self.runner_data.parameters.min
+                desired_runners_count = self.runner_data.parameters.min
 
             runners_idle_to_delete = runners_idle[:count_runners_to_delete]
 

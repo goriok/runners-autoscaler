@@ -3,6 +3,7 @@ from unittest import TestCase, mock
 
 import pytest
 
+from autoscaler.core.help_classes import RunnerData, NameUUIDData
 from autoscaler.services.bitbucket import BitbucketService
 
 
@@ -35,18 +36,24 @@ class BitbucketServiceTestCase(TestCase):
             ]
         }
 
-        runner_data = {
-            "workspace": {
-                "name": "workspace-test",
-                "uuid": "workspace-test_uuid"
-            },
-            "repository": {
-                "name": "repository-test",
-                "uuid": "repository-test_uuid"
-            }
-        }
-        service: BitbucketService = BitbucketService('test')
-        result = service.get_bitbucket_runners(**runner_data)
+        runner_data = RunnerData(**{
+            'workspace': NameUUIDData(**{
+                'name': 'workspace-test',
+                'uuid': 'workspace-test_uuid'
+            }),
+            'repository': NameUUIDData(**{
+                'name': 'repository-test',
+                'uuid': 'repository-test_uuid'
+            }),
+            'name': 'good',
+            'namespace': 'test',
+            'strategy': 'custom',
+            'labels': {'asd'},
+            'parameters': None
+        })
+
+        service: BitbucketService = BitbucketService(runner_data.name)
+        result = service.get_bitbucket_runners(runner_data.workspace, runner_data.repository)
         self.assertEqual(
             result,
             [
@@ -90,15 +97,20 @@ class BitbucketServiceTestCase(TestCase):
             ]
         }
 
-        runner_data = {
-            "workspace": {
-                "name": "workspace-test",
-                "uuid": "workspace-test_uuid"
-            }
-        }
+        runner_data = RunnerData(**{
+            'workspace': NameUUIDData(**{
+                'name': 'workspace-test',
+                'uuid': 'workspace-test_uuid'
+            }),
+            'name': 'good',
+            'namespace': 'test',
+            'strategy': 'custom',
+            'labels': {'asd'},
+            'parameters': None
+        })
 
-        service: BitbucketService = BitbucketService('test')
-        result = service.get_bitbucket_runners(**runner_data)
+        service: BitbucketService = BitbucketService(runner_data.name)
+        result = service.get_bitbucket_runners(runner_data.workspace, runner_data.repository)
 
         self.assertEqual(
             result,
@@ -142,21 +154,29 @@ class BitbucketServiceTestCase(TestCase):
             }
         }
 
-        runner_data = {
-            "workspace": {
-                "name": "workspace-test",
-                "uuid": "workspace-test_uuid"
-            },
-            "repository": {
-                "name": "repository-test",
-                "uuid": "repository-test_uuid"
-            },
+        runner_data = RunnerData(**{
+            'workspace': NameUUIDData(**{
+                'name': 'workspace-test',
+                'uuid': 'workspace-test_uuid'
+            }),
+            'repository': NameUUIDData(**{
+                'name': 'repository-test',
+                'uuid': 'repository-test_uuid'
+            }),
             'name': 'good',
-            'labels': ('asd',)
-        }
+            'namespace': 'test',
+            'strategy': 'custom',
+            'labels': {'asd'},
+            'parameters': None
+        })
 
-        service: BitbucketService = BitbucketService('test')
-        result = service.create_bitbucket_runner(**runner_data)
+        service: BitbucketService = BitbucketService(runner_data.name)
+        result = service.create_bitbucket_runner(
+            runner_data.workspace,
+            runner_data.name,
+            runner_data.labels,
+            runner_data.repository
+        )
 
         self.assertEqual(
             result,
@@ -190,17 +210,25 @@ class BitbucketServiceTestCase(TestCase):
             }
         }
 
-        runner_data = {
-            "workspace": {
-                "name": "workspace-test",
-                "uuid": "workspace-test_uuid"
-            },
+        runner_data = RunnerData(**{
+            'workspace': NameUUIDData(**{
+                'name': 'workspace-test',
+                'uuid': 'workspace-test_uuid'
+            }),
             'name': 'good',
-            'labels': ('asd',)
-        }
+            'namespace': 'test',
+            'strategy': 'custom',
+            'labels': {'asd'},
+            'parameters': None
+        })
 
-        service: BitbucketService = BitbucketService('test')
-        result = service.create_bitbucket_runner(**runner_data)
+        service: BitbucketService = BitbucketService(runner_data.name)
+        result = service.create_bitbucket_runner(
+            runner_data.workspace,
+            runner_data.name,
+            runner_data.labels,
+            runner_data.repository
+        )
 
         self.assertEqual(
             result,
@@ -217,43 +245,59 @@ class BitbucketServiceTestCase(TestCase):
     def test_delete_bitbucket_runner(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
-        runner_data = {
-            "workspace": {
-                "name": "workspace-test",
-                "uuid": "workspace-test_uuid"
-            },
-            "repository": {
-                "name": "repository-test",
-                "uuid": "repository-test_uuid"
-            },
-            'runner_uuid': 'test-uuid'
-        }
+        runner_data = RunnerData(**{
+            'workspace': NameUUIDData(**{
+                'name': 'workspace-test',
+                'uuid': 'workspace-test_uuid'
+            }),
+            'repository': NameUUIDData(**{
+                'name': 'repository-test',
+                'uuid': 'repository-test_uuid'
+            }),
+            'name': 'good',
+            'namespace': 'test',
+            'strategy': 'custom',
+            'labels': {'asd'},
+            'parameters': None
+        })
 
-        service: BitbucketService = BitbucketService('test')
-        service.delete_bitbucket_runner(**runner_data)
+        runner_uuid = 'test-uuid'
+
+        service: BitbucketService = BitbucketService(runner_data.name)
+        service.delete_bitbucket_runner(
+            runner_data.workspace,
+            runner_uuid,
+            repository=runner_data.repository
+        )
 
         mock_delete_runner.assert_called_once_with(
-            runner_data['workspace']['uuid'],
-            runner_data['repository']['uuid'],
-            'test-uuid'
+            runner_data.workspace.uuid,
+            runner_data.repository.uuid,
+            runner_uuid
         )
 
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspaceRunner.delete_runner')
     def test_delete_bitbucket_runner_no_repo(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
-        runner_data = {
-            "workspace": {
-                "name": "workspace-test",
-                "uuid": "workspace-test_uuid"
-            },
-            'runner_uuid': 'test-uuid'
-        }
+        runner_data = RunnerData(**{
+            'workspace': NameUUIDData(**{
+                'name': 'workspace-test',
+                'uuid': 'workspace-test_uuid'
+            }),
+            'name': 'good',
+            'namespace': 'test',
+            'strategy': 'custom',
+            'labels': {'asd'},
+            'parameters': None
+        })
 
-        service: BitbucketService = BitbucketService('test')
-        service.delete_bitbucket_runner(**runner_data)
+        runner_uuid = 'test-uuid'
 
-        mock_delete_runner.assert_called_once_with(runner_data['workspace']['uuid'], 'test-uuid')
+        service: BitbucketService = BitbucketService(runner_data.name)
+        service.delete_bitbucket_runner(runner_data.workspace, runner_uuid)
+
+        mock_delete_runner.assert_called_once_with(runner_data.workspace.uuid, 'test-uuid')
 
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspace.get_workspace')
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepository.get_repository')
