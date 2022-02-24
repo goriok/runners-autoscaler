@@ -69,9 +69,9 @@ class PctRunnersIdleScaler(Strategy):
 
         # check runners count before add new runner
         if len(runners) >= MAX_RUNNERS_COUNT:
-            msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data['workspace']['name']}"
-            if self.runner_data['repository']:
-                msg = f"{msg} repository: {self.runner_data['repository']['name']}"
+            msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data.workspace.name}"
+            if self.runner_data.repository:
+                msg = f"{msg} repository: {self.runner_data.repository.name}"
 
             self.logger_adapter.warning(msg)
             self.logger_adapter.warning(
@@ -198,8 +198,8 @@ class PctRunnersIdleScaler(Strategy):
                 self.create_runner(i)
 
         # TODO add max_runners per repo or max_runners per workspace
-        elif (runners_scale_threshold > float(self.runner_data['parameters']['scaleUpThreshold']) or len(online_runners) < self.runner_data['parameters']['min']) \
-                and len(online_runners) <= self.runner_data['parameters']['max'] \
+        elif (runners_scale_threshold > float(self.runner_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.parameters.min) \
+                and len(online_runners) <= self.runner_data.parameters.max \
                 and len(runners) <= MAX_RUNNERS_COUNT:
 
             # TODO validate scaleDownFactor > 1
