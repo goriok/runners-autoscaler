@@ -515,7 +515,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         self.assertIn("{'ONLINE': 1}", self.caplog.text)
         self.assertIn('Max runners count: 1 reached.', self.caplog.text)
 
-    @mock.patch('autoscaler.strategy.pct_runners_idle.MAX_RUNNERS_COUNT_PER_REPOSITORY', 1)
+    @mock.patch('autoscaler.strategy.pct_runners_idle.MAX_RUNNERS_COUNT', 1)
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
     def test_create_additional_runners_exceeds_max_constant(self, mock_get_runners):
         get_runners = [
