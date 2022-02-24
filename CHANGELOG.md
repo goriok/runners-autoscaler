@@ -1,6 +1,12 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.2.0
+
+- minor: Add some additional basic validation.
+- minor: Implement job secrets delete.
+- patch: Refactor logic to use more dataclasses.
+
 ## 1.1.0
 
 - minor: README and template improvements.
