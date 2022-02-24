@@ -22,4 +22,4 @@ docker build -t "${IMAGE}" .
 docker tag "${IMAGE}" "${IMAGE}:${VERSION}"
 docker push "${IMAGE}"
 
-sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION/g" config/runners-autoscaler-job.template.yaml
+sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION/g" config/runners-autoscaler-deployment.template.yaml
