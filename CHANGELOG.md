@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.4.0
+
+- minor: Update README with Limitation and Requirements sections
+
 ## 1.3.0
 
 - minor: Use a deployment instead of a job in bitbucket-runner-control-plane namespace.
