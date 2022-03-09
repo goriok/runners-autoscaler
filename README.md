@@ -33,6 +33,7 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 - Maximum allowed count of workspace runners is equal to 100.
 - Maximum allowed count of runner groups is equal to 10.
 - Labelling naming conventions should follow [Kubernetes conventions][Kubernetes conventions].
+- If runner groups overlap e.g contain the same set of labels they will fight each other to scale the group so label sets should be unique.
 
 ### Requirements
 
@@ -109,7 +110,6 @@ constants:  # autoscaler parameters available for tuning
   runner_cool_down_period: 300  # seconds. Time reserved for runner to set up.
 
 ```
-you can create up to 10 groups.
 
 ## Documentation
 
