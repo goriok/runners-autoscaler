@@ -126,10 +126,11 @@ def update(runner_data):
         uuid=workspace_data['uuid'],
     )
 
-    runner_data['repository'] = NameUUIDData(
-        name=repository_data['name'],
-        uuid=repository_data['uuid'],
-    )
+    if repository_data:
+        runner_data['repository'] = NameUUIDData(
+            name=repository_data['name'],
+            uuid=repository_data['uuid'],
+        )
 
     # Update parameters for different strategies
     if runner_data['strategy'] == Strategies.PCT_RUNNER_IDLE.value:
