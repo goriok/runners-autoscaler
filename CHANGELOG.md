@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.5.0
+
+- minor: Fixed bugs with workspace runner groups. Updated README to include limitations around duplicate label sets.
+
 ## 1.4.0
 
 - minor: Update README with Limitation and Requirements sections

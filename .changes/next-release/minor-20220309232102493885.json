@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Fixed bugs with workspace runner groups. Updated README to include limitations around duplicate label sets."
-}
