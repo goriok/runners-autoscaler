@@ -33,6 +33,9 @@ items:
             - name: runners-autoscaler-config
               mountPath: /opt/conf/config
               readOnly: true
+            - name: runners-autoscaler-job-template
+              mountPath: /opt/conf/job_template/job.yaml.template
+              readOnly: true
             env:
               - name: BITBUCKET_USERNAME
                 value: <BITBUCKET_USERNAME>
@@ -50,3 +53,10 @@ items:
                 items:
                   - key: runners_config.yaml
                     path: runners_config.yaml
+            - name: runners-autoscaler-job-template
+              configMap:
+                name: runners-autoscaler-job-template
+                defaultMode: 0644
+                items:
+                  - key: job.yaml.template
+                    path: job.yaml.template

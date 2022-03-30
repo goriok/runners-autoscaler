@@ -1,4 +1,5 @@
 ENV='venv'
+export DEST_TEMPLATE_PATH=/tmp/
 
 .PHONY: all
 all: setup lint test

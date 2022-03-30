@@ -1,4 +1,5 @@
 import os
+import shutil
 from time import sleep
 from concurrent.futures import ThreadPoolExecutor, wait
 
@@ -16,8 +17,9 @@ MAX_GROUPS_COUNT = 10
 
 
 class StartPoller:
-    def __init__(self, config_file_path: str, poll: bool = True):
+    def __init__(self, config_file_path: str, template_file_path: str, poll: bool = True):
         self.config_file_path = config_file_path
+        self.template_file_path = template_file_path
         self.poll = poll
 
     def start(self):
@@ -33,6 +35,12 @@ class StartPoller:
 
         if not os.path.exists(config_file_path):
             fail(f'Passed runners configuration file {config_file_path} does not exist.')
+        if not os.path.exists(self.template_file_path):
+            fail(f'Passed runners job template file {self.template_file_path} does not exist.')
+        else:
+            dest_template_file_path = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')
+            shutil.copy(self.template_file_path, dest_template_file_path)
+            logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
 
         runners_data = read_yaml_file(config_file_path)
 
@@ -153,7 +161,8 @@ def update(runner_data):
 
 
 def main():
-    poller = StartPoller(config_file_path='/opt/conf/config/runners_config.yaml')
+    poller = StartPoller(config_file_path='/opt/conf/config/runners_config.yaml',
+                         template_file_path='/opt/conf/job_template/job.yaml.template')
     poller.start()
 
 
