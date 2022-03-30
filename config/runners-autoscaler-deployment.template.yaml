@@ -8,23 +8,33 @@ items:
       namespace: bitbucket-runner-control-plane
     data:
       bitbucketClientSecret: <BITBUCKET_APP_PASSWORD base64>
-  - apiVersion: batch/v1
-    kind: Job
+  - apiVersion: apps/v1
+    kind: Deployment
     metadata:
       name: runner-controller
       namespace: bitbucket-runner-control-plane
+      labels:
+        app: runner-controller
     spec:
+      selector:
+        matchLabels:
+          app: runner-controller
       template:
         metadata:
           name: runner-controller-pod
+          labels:
+            app: runner-controller
         spec:
           serviceAccountName: runners-autoscaler
           containers:
           - name: runner-controller
-            image: bitbucketpipelines/runners-autoscaler:1.1.0.121-dev
+            image: bitbucketpipelines/runners-autoscaler:1.5.0
             volumeMounts:
             - name: runners-autoscaler-config
               mountPath: /opt/conf/config
+              readOnly: true
+            - name: runners-autoscaler-job-template
+              mountPath: /opt/conf/job_template/job.yaml.template
               readOnly: true
             env:
               - name: BITBUCKET_USERNAME
@@ -43,4 +53,10 @@ items:
                 items:
                   - key: runners_config.yaml
                     path: runners_config.yaml
-          restartPolicy: Never
+            - name: runners-autoscaler-job-template
+              configMap:
+                name: runners-autoscaler-job-template
+                defaultMode: 0644
+                items:
+                  - key: job.yaml.template
+                    path: job.yaml.template

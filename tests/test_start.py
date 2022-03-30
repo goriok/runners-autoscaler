@@ -19,6 +19,7 @@ class ScaleTestCase(TestCase):
 
         poller = StartPoller(
             config_file_path='fail_config_path',
+            template_file_path='fail_config_path',
             poll=False
         )
 
@@ -47,6 +48,7 @@ class ScaleTestCase(TestCase):
 
         poller = StartPoller(
             config_file_path='tests/resources/test_config.yaml',
+            template_file_path='tests/resources/job-default.yaml',
             poll=False
         )
 
@@ -58,6 +60,7 @@ class ScaleTestCase(TestCase):
 
         poller = StartPoller(
             config_file_path='tests/resources/test_config_no_namespace.yaml',
+            template_file_path='tests/resources/job-default.yaml',
             poll=False
         )
 
@@ -72,6 +75,7 @@ class ScaleTestCase(TestCase):
 
         poller = StartPoller(
             config_file_path='tests/resources/test_config_reserved_namespace.yaml',
+            template_file_path='tests/resources/job-default.yaml',
             poll=False
         )
 
@@ -89,6 +93,7 @@ class ScaleTestCase(TestCase):
 
         poller = StartPoller(
             config_file_path='tests/resources/test_config_no_workspace.yaml',
+            template_file_path='tests/resources/job-default.yaml',
             poll=False
         )
 

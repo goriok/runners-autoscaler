@@ -1,6 +1,24 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.5.0
+
+- minor: Fixed bugs with workspace runner groups. Updated README to include limitations around duplicate label sets.
+
+## 1.4.0
+
+- minor: Update README with Limitation and Requirements sections
+
+## 1.3.0
+
+- minor: Use a deployment instead of a job in bitbucket-runner-control-plane namespace.
+
+## 1.2.0
+
+- minor: Add some additional basic validation.
+- minor: Implement job secrets delete.
+- patch: Refactor logic to use more dataclasses.
+
 ## 1.1.0
 
 - minor: README and template improvements.

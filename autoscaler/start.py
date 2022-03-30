@@ -13,8 +13,6 @@ from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
 
 
 DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})
-MIN_RUNNERS_COUNT = 0
-MAX_RUNNERS_COUNT = 100
 MAX_GROUPS_COUNT = 10
 
 
@@ -40,8 +38,9 @@ class StartPoller:
         if not os.path.exists(self.template_file_path):
             fail(f'Passed runners job template file {self.template_file_path} does not exist.')
         else:
-            shutil.copy(self.template_file_path, '/home/bitbucket/autoscaler/resources/')
-            logger.info(f'File {self.template_file_path} copied to /home/bitbucket/autoscaler/resources/')
+            dest_template_file_path = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')
+            shutil.copy(self.template_file_path, dest_template_file_path)
+            logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
 
         runners_data = read_yaml_file(config_file_path)
 
@@ -135,10 +134,11 @@ def update(runner_data):
         uuid=workspace_data['uuid'],
     )
 
-    runner_data['repository'] = NameUUIDData(
-        name=repository_data['name'],
-        uuid=repository_data['uuid'],
-    )
+    if repository_data:
+        runner_data['repository'] = NameUUIDData(
+            name=repository_data['name'],
+            uuid=repository_data['uuid'],
+        )
 
     # Update parameters for different strategies
     if runner_data['strategy'] == Strategies.PCT_RUNNER_IDLE.value:

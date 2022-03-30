@@ -14,8 +14,7 @@ from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.services.bitbucket import BitbucketService
 
 
-MAX_RUNNERS_COUNT_PER_REPOSITORY = 100
-MAX_RUNNERS_COUNT_PER_WORKSPACE = 100
+MAX_RUNNERS_COUNT = 100
 SCALE_UP_MULTIPLIER = 1.5
 SCALE_DOWN_MULTIPLIER = 0.5
 
@@ -69,7 +68,7 @@ class PctRunnersIdleScaler(Strategy):
             self.logger_adapter.debug(runners_stats)
 
         # check runners count before add new runner
-        if len(runners) >= MAX_RUNNERS_COUNT_PER_REPOSITORY:
+        if len(runners) >= MAX_RUNNERS_COUNT:
             msg = f"Max Runners count limit reached {len(runners)} per workspace {self.runner_data.workspace.name}"
             if self.runner_data.repository:
                 msg = f"{msg} repository: {self.runner_data.repository.name}"
@@ -201,7 +200,7 @@ class PctRunnersIdleScaler(Strategy):
         # TODO add max_runners per repo or max_runners per workspace
         elif (runners_scale_threshold > float(self.runner_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.parameters.min) \
                 and len(online_runners) <= self.runner_data.parameters.max \
-                and len(runners) <= MAX_RUNNERS_COUNT_PER_REPOSITORY:
+                and len(runners) <= MAX_RUNNERS_COUNT:
 
             # TODO validate scaleDownFactor > 1
             desired_runners_count = math.ceil(
