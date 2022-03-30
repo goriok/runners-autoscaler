@@ -1,6 +1,11 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.6.0
+
+- minor: Add support for the custom runner job template.
+- minor: Implement job secrets delete. Refactor logic to use more dataclasses. Add some additional basic validation.
+
 ## 1.5.0
 
 - minor: Fixed bugs with workspace runner groups. Updated README to include limitations around duplicate label sets.

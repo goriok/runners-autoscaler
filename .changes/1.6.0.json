@@ -1,0 +1,10 @@
+[
+  {
+    "description": "Add support for the custom runner job template.",
+    "type": "minor"
+  },
+  {
+    "description": "Implement job secrets delete. Refactor logic to use more dataclasses. Add some additional basic validation.",
+    "type": "minor"
+  }
+]
