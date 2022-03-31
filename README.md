@@ -213,11 +213,18 @@ If you are using AWS, you'll need to use this deployment instead `aws/escalator-
 
 ## Configuring Kubernetes Nodes
 
-If you see the file job config map at `runners-autoscaler-cm-job.yaml.template`, you will notice there's a node selector in there.
+In the job config map `runners-autoscaler-cm-job.yaml.template`, you will notice there's a `nodeSelector` in there.
 
 Therefore, the nodes where the runners will be running on need to have a label that matches it. In AWS EKS, this can be configured via [EKS Managed Node Groups][eks-node-groups].
 
 This label also must match the one you configured in [escalator config map][escalator-cm].
+
+## Tweaking Memory/Cpu resources
+Inside `runners-autoscaler-cm-job.yaml.template`, you will notice that the `resources` tag is defined.
+
+It might worthing tweaking the memory/cpu limits according to your needs.
+
+For example, if you want to use an `8Gb` instance size, it might not worth using `4Gi` since it will take slighly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
 
 ## Links
 
