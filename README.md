@@ -53,11 +53,13 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 
 ### Deployment (in Kubernetes cluster)
 
-Create in `config/` folder three files:
+Create in `config/` folder these files:
 
 `config/runners-autoscaler-rbac.yaml`,
 
 `config/runners-autoscaler-cm.yaml`,
+
+`config/runners-autoscaler-cm-job.yaml`,
 
 `config/runners-autoscaler-deployment.yaml`
 
@@ -76,11 +78,12 @@ kubectl apply -f config/runners-autoscaler-rbac.yaml
 # Create config map - modify to suit your needs
 kubectl apply -f config/runners-autoscaler-cm.yaml
 
+# Create job config map
+kubectl apply -f config/runners-autoscaler-cm-job.yaml
+
 # Create deployment
 kubectl apply -f config/runners-autoscaler-deployment.yaml
 ```
-
-
 
 ## Runner config details
 In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters
@@ -198,7 +201,23 @@ Then **desired count of runners** = ONLINE runners * scaleDownMultiplier = floor
 
 And autoscaler should automatically delete 1 ONLINE (IDLE) runner.
 
+## Scaling Kubernetes Nodes
 
+Your kubernetes cluster will need to have a node horizontal autoscaler configured.
+
+We recommend using a tool that is optimized for large batch or job based workloads such as [escalator][escalator].
+
+Please check the [deployment docs][escalator-docs].
+
+If you are using AWS, you'll need to use this deployment instead `aws/escalator-deployment-aws.yaml` instead of the regular one.
+
+## Configuring Kubernetes Nodes
+
+If you see the file job config map at `runners-autoscaler-cm-job.yaml.template`, you will notice there's a node selector in there.
+
+Therefore, the nodes where the runners will be running on need to have a label that matches it. In AWS EKS, this can be configured via [EKS Managed Node Groups][eks-node-groups].
+
+This label also must match the one you configured in [escalator config map][escalator-cm].
 
 ## Links
 
@@ -220,7 +239,10 @@ If you’re reporting an issue, please include:
 Copyright (c) 2021 Atlassian and others.
 Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
 
-
+[eks-node-groups]: https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html
+[escalator-cm]: https://github.com/atlassian/escalator/blob/master/docs/deployment/escalator-cm.yaml#L10-L11
+[escalator-docs]: https://github.com/atlassian/escalator/tree/master/docs/deployment
+[escalator]: https://github.com/atlassian/escalator/
 [community]: https://community.atlassian.com/t5/forums/postpage/board-id/bitbucket-questions?add-tags=pipelines,pipes,runner,autoscaler
 [runner]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
 [BITBUCKET_APP_PASSWORD]: https://support.atlassian.com/bitbucket-cloud/docs/app-passwords
