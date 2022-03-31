@@ -209,7 +209,7 @@ We recommend using a tool that is optimized for large batch or job based workloa
 
 Please check the [deployment docs][escalator-docs].
 
-If you are using AWS, you'll need to use this deployment instead `aws/escalator-deployment-aws.yaml` instead of the regular one.
+If you are using AWS, you'll need to use this deployment `aws/escalator-deployment-aws.yaml` instead of the regular one.
 
 ## Configuring Kubernetes Nodes
 
