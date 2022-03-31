@@ -1,0 +1,17 @@
+constants:
+  runner_cool_down_period: 30
+  runner_api_polling_interval: 1
+groups:
+  - name: Runner repository group
+    workspace: test-workspace
+    labels:
+      - test
+    namespace: bitbucket-runner-control-plane
+    strategy: percentageRunnersIdle
+    parameters:
+      min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting
+      max: 10  #
+      scaleUpThreshold: 0.5  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+      scaleDownThreshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+      scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1
+      scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1

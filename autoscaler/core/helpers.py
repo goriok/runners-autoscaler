@@ -1,6 +1,7 @@
 import base64
 import os
 import sys
+import yaml
 
 from colorama import Fore, Style
 
@@ -95,3 +96,13 @@ def validate_kubernetes_label(label):
     is_valid = False
     # logic here
     return is_valid
+
+
+def read_yaml_file(config_path):
+    try:
+        with open(config_path, 'r') as f:
+            data = yaml.safe_load(f)
+    except yaml.YAMLError:
+        fail(f"Error reading YAML file: {config_path}")
+
+    return data

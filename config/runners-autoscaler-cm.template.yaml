@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: runners-autoscaler-config
-  namespace: bitbucket-runner
+  namespace: bitbucket-runner-control-plane
 data:
   runners_config.yaml: |
     constants:
@@ -10,7 +10,7 @@ data:
       default_sleep_time_runner_delete: 5
       runner_api_polling_interval: 600
       runner_cool_down_period: 300
-    config:
+    groups:
       - name: "Runner group 1"
         workspace: "<workspace>"
         repository: "<repository>"

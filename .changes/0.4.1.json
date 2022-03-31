@@ -1,0 +1,6 @@
+[
+  {
+    "description": "Refactor rbac template with least possible privilegies.",
+    "type": "patch"
+  }
+]

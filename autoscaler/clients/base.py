@@ -1,14 +1,11 @@
 """Basic client API classes to be inherited from"""
 from json.decoder import JSONDecodeError
-import subprocess
-from subprocess import Popen, PIPE
 
 import requests
 from requests.auth import HTTPBasicAuth
 
-from autoscaler.core.exceptions import PipesHTTPError
+from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.core.logger import logger
-from autoscaler.core.helpers import fail
 
 BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
 
@@ -36,7 +33,7 @@ class BaseAPIService:
             except requests.exceptions.HTTPError as exc:
                 logger.debug(f"Got {exc}. Status: {response.status_code}")
                 if ignore_exc is None or (response.status_code not in ignore_exc):
-                    raise PipesHTTPError(response.text, status_code=response.status_code)
+                    raise AutoscalerHTTPError(response.text, status_code=response.status_code)
 
                 if ignore_exc and response.status_code in ignore_exc:
                     logger.warning(f"Obtained status {response.status_code} for {url}. Ignoring...")
@@ -46,36 +43,3 @@ class BaseAPIService:
             except JSONDecodeError:
                 data = response.text
         return data, response.status_code
-
-
-class BaseSubprocessAPIService:
-    BASE_CLI = "kubectl"
-    MAX_SUBPROCESS_TIMEOUT = 10
-
-    def run_command(self, command, fail_if_error=True):
-        logger.debug(f"RUN command: {' '.join(command)}")
-
-        try:
-            result = subprocess.run(command, capture_output=True, text=True, timeout=self.MAX_SUBPROCESS_TIMEOUT)
-            result.check_returncode()
-        except subprocess.CalledProcessError as exc:
-            msg = f"Command: {' '.join(command)}.\nOutput: {exc.stderr}"
-            if fail_if_error:
-                logger.error(msg)
-                fail(f"Return code: {exc.returncode}")
-            else:
-                logger.warning(msg)
-
-        return result.stdout, result.returncode
-
-    def run_piped_command(self, command_1, command_2):
-        p1 = Popen(command_1, stdout=PIPE)
-        p2 = Popen(command_2, stdin=p1.stdout, stdout=PIPE)
-        p1.stdout.close()
-
-        output = p2.communicate()[0]
-
-        if p2.returncode != 0:
-            fail(f"Subprocess: Return code for command: {p2.returncode}")
-
-        return output

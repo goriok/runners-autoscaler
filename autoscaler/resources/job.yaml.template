@@ -32,7 +32,7 @@ items:
             runnerNamespace: <%runnerNamespace%>
         spec:
           containers:
-            - name: bitbucket-k8s-runner
+            - name: runner
               image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner
               resources:
                 requests:
@@ -70,7 +70,7 @@ items:
                   readOnly: true
                 - name: var-run
                   mountPath: /var/run
-            - name: docker-in-docker
+            - name: docker
               image: docker:dind
               securityContext:
                 privileged: true

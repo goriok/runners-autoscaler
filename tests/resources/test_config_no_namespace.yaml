@@ -1,12 +1,11 @@
 constants:
   runner_cool_down_period: 30
   runner_api_polling_interval: 1
-config:
+groups:
   - name: Runner repository group
     workspace: test-workspace
     labels:
       - test
-    namespace: test-namespace
     strategy: percentageRunnersIdle
     parameters:
       min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting

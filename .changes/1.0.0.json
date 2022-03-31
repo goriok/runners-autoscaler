@@ -1,0 +1,6 @@
+[
+  {
+    "description": "Implemented support of multiple groups in configMap",
+    "type": "major"
+  }
+]

@@ -1,7 +1,6 @@
 """Module to interact with Bitbucket APIs:
     authentication, basic bitbucket api, bitbucket repositories, bitbucket workspaces
 """
-import enum
 import os
 import urllib.parse
 
@@ -16,14 +15,6 @@ from autoscaler.core.logger import logger
 
 
 BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
-
-
-class BitbucketRunnerStatuses(enum.Enum):
-    unregistered = 'UNREGISTERED'
-    online = 'ONLINE'
-    offline = 'OFFLINE'
-    disabled = 'DISABLED'
-    enabled = 'ENABLED'
 
 
 class Auth:

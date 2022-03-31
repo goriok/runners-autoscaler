@@ -1,0 +1,100 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: runners-autoscaler-job-template
+  namespace: bitbucket-runner-control-plane
+data:
+  job.yaml.template: |
+    apiVersion: v1
+    kind: List
+    items:
+      - apiVersion: v1
+        kind: Secret
+        metadata:
+          name: runner-oauth-credentials-<%runnerUuid%>  # mandatory, don't modify
+          labels:
+            accountUuid: <%accountUuid%>  # mandatory, don't modify
+        {%- if repositoryUuid %}
+            repositoryUuid: <%repositoryUuid%>  # mandatory, don't modify
+        {%- endif %}
+            runnerUuid: <%runnerUuid%>  # mandatory, don't modify
+            runnerNamespace: <%runnerNamespace%>  # mandatory, don't modify
+        data:
+          oauthClientId: <%oauthClientId_base64%>
+          oauthClientSecret: <%oauthClientSecret_base64%>
+      - apiVersion: batch/v1
+        kind: Job
+        metadata:
+          name: runner-<%runnerUuid%>  # mandatory, don't modify
+        spec:
+          template:
+            metadata:
+              labels:
+                customer: shared
+                accountUuid: <%accountUuid%>  # mandatory, don't modify
+                runnerUuid: <%runnerUuid%>  # mandatory, don't modify
+            {%- if repositoryUuid %}
+                repositoryUuid: <%repositoryUuid%>  # mandatory, don't modify
+            {%- endif %}
+                runnerNamespace: <%runnerNamespace%>  # mandatory, don't modify
+            spec:
+              containers:
+                - name: runner
+                  image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner  # mandatory, don't modify
+                  resources:
+                    requests:
+                      memory: "4Gi"
+                      cpu: "1000m"
+                    limits:
+                      memory: "4Gi"
+                      cpu: "1000m"
+                  env:
+                    - name: ACCOUNT_UUID  # mandatory, don't modify
+                      value: "{<%accountUuid%>}"  # mandatory, don't modify
+                {%- if repositoryUuid %}
+                    - name: REPOSITORY_UUID  # mandatory, don't modify
+                      value: "{<%repositoryUuid%>}"  # mandatory, don't modify
+                {%- endif %}
+                    - name: RUNNER_UUID  # mandatory, don't modify
+                      value: "{<%runnerUuid%>}"  # mandatory, don't modify
+                    - name: OAUTH_CLIENT_ID
+                      valueFrom:
+                        secretKeyRef:
+                          name: runner-oauth-credentials-<%runnerUuid%>
+                          key: oauthClientId
+                    - name: OAUTH_CLIENT_SECRET
+                      valueFrom:
+                        secretKeyRef:
+                          name: runner-oauth-credentials-<%runnerUuid%>
+                          key: oauthClientSecret
+                    - name: WORKING_DIRECTORY
+                      value: "/tmp"
+                  volumeMounts:
+                    - name: tmp
+                      mountPath: /tmp
+                    - name: docker-containers
+                      mountPath: /var/lib/docker/containers
+                      readOnly: true
+                    - name: var-run
+                      mountPath: /var/run
+                - name: docker
+                  image: docker:dind
+                  securityContext:
+                    privileged: true
+                  volumeMounts:
+                    - name: tmp
+                      mountPath: /tmp
+                    - name: docker-containers
+                      mountPath: /var/lib/docker/containers
+                    - name: var-run
+                      mountPath: /var/run
+              restartPolicy: OnFailure
+              volumes:
+                - name: tmp
+                - name: docker-containers
+                - name: var-run
+              nodeSelector:
+                customer: shared
+          backoffLimit: 6
+          completions: 1
+          parallelism: 1

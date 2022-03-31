@@ -27,16 +27,26 @@ Here are some of the benefits of using runners.
 
 ### Limitation
 
-This script sends requests to the BITBUCKET API in scale runners up and down.
+- This script sends requests to the BITBUCKET API in scale runners up and down.
 Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API request limits].
+- Maximum allowed count of repository runners is equal to 100.
+- Maximum allowed count of workspace runners is equal to 100.
+- Maximum allowed count of runner groups is equal to 10.
+- Labelling naming conventions should follow [Kubernetes conventions][Kubernetes conventions].
+- If runner groups overlap e.g contain the same set of labels they will fight each other to scale the group so label sets should be unique.
+
+### Requirements
+
+- Operating systems supported is only Linux/amd64 with Kubernetes.
+- Suggested memory for the controller is 8Gb (equal to t2.large or t3.large in [AWS instance types][AWS instance types]). More details about Bitbucket runners you could find in [BITBUCKET runners guide].
 
 ## Prerequisites
-- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, workspace:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
+- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
 - [optional] setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster
 
 - [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
   ```
-  eksctl create cluster --name ${NAME_CLUSTER} --version 1.21 --region us-east-1 --zones us-east-1b,us-east-1c --nodegroup-name ${NODE_GROUP_NAME} --node-type t3.medium --nodes 2 --nodes-min 1 --nodes-max 2
+  eksctl create cluster --name ${NAME_CLUSTER} --version 1.21 --region us-east-1 --zones us-east-1b,us-east-1c --nodegroup-name ${NODE_GROUP_NAME} --node-type t3.large --nodes 2 --nodes-min 1 --nodes-max 2
   ```
 
 ## How to run
@@ -57,11 +67,8 @@ Fill them with needed variables (these variables decorated with `<...>` inside t
 
 Next run commands below: 
 ```
-# Build the docker image
-docker build -t bitbucketpipelines/runners-autoscaler .
-
 # Create namespace
-kubectl create namespace bitbucket-runner
+kubectl apply -f config/runners-autoscaler-namespace.yaml
 
 # Create RBAC configuration
 kubectl apply -f config/runners-autoscaler-rbac.yaml
@@ -79,7 +86,7 @@ kubectl apply -f config/runners-autoscaler-deployment.yaml
 In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters
 
 ```yaml
-config:
+groups:
   - name: "Runner repository group"       # Name of the Runner displayed in the Bitbucket Runner UI.
     workspace: "myworkspace"              # Name of the workspace the Runner is added to. 
     repository: "my-awesome-repository"   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
@@ -90,17 +97,17 @@ config:
     strategy: "percentageRunnersIdle"     # Type of the strategy workflow.
     parameters:
       min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting
-      max: 10  # 
+      max: 10  # maximum allowed runners count
       scaleUpThreshold: 0.8  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
       scaleDownThreshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
       scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1  speed to scale up
       scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1  speed to scale down
 
-  constants:  # autoscaler parameters available for tuning
-    default_sleep_time_runner_setup: 5  # seconds
-    default_sleep_time_runner_delete: 5  # seconds
-    runner_api_polling_interval: 600  # seconds
-    runner_cool_down_period: 300  # seconds
+constants:  # autoscaler parameters available for tuning
+  default_sleep_time_runner_setup: 5  # seconds. Time between runners creation.
+  default_sleep_time_runner_delete: 5  # seconds. Time between runners deletion.
+  runner_api_polling_interval: 600  # seconds. Time between requests to Bitbucket API.
+  runner_cool_down_period: 300  # seconds. Time reserved for runner to set up.
 
 ```
 
@@ -218,5 +225,8 @@ Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
 [runner]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
 [BITBUCKET_APP_PASSWORD]: https://support.atlassian.com/bitbucket-cloud/docs/app-passwords
 [BITBUCKET API request limits]: https://support.atlassian.com/bitbucket-cloud/docs/api-request-limits/
+[BITBUCKET runners guide]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
 [kubernetes-dashboard]: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
+[Kubernetes conventions]: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/#syntax-and-character-set
 [setup cluster eksctl]: https://eksctl.io/usage/creating-and-managing-clusters/
+[AWS instance types]: https://aws.amazon.com/ec2/instance-types/

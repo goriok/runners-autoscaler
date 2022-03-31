@@ -1,0 +1,14 @@
+[
+  {
+    "description": "Add some additional basic validation.",
+    "type": "minor"
+  },
+  {
+    "description": "Implement job secrets delete.",
+    "type": "minor"
+  },
+  {
+    "description": "Refactor logic to use more dataclasses.",
+    "type": "patch"
+  }
+]

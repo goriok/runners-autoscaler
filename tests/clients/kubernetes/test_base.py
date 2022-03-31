@@ -1,87 +1,9 @@
+from kubernetes.client import ApiException
 from unittest import TestCase, mock
 
-from autoscaler.clients.kubernetes.base import (KubernetesBaseAPIService,
-                                                KubernetesSpecFileAPIService)
-from autoscaler.core.constants import (DEFAULT_RUNNER_KUBERNETES_NAMESPACE,
-                                       RUNNER_KUBERNETES_SPECS_DIR)
+from autoscaler.clients.kubernetes.base import KubernetesSpecFileAPIService, KubernetesPythonAPIService
+from autoscaler.core.exceptions import KubernetesNamespaceError, NamespaceNotFoundError, CannotCreateNamespaceError
 from tests.helpers import get_file
-
-
-class KubernetesBaseAPIServiceTestCase(TestCase):
-
-    @mock.patch('subprocess.run')
-    def test_delete_job(self, subprocess_mock):
-        subprocess_mock.return_value = mock.Mock(returncode=0)
-
-        api = KubernetesBaseAPIService()
-        api.delete_job('foo', 'bar')
-        subprocess_mock.assert_called_once_with(
-            ['kubectl', '-n', 'bar', 'delete', 'job', '-l', 'runnerUuid=foo'],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-
-    @mock.patch('subprocess.run')
-    def test_get_kubernetes_version(self, subprocess_mock):
-        subprocess_mock.return_value = mock.Mock(returncode=0)
-
-        api = KubernetesBaseAPIService()
-        api.get_kubernetes_version()
-        subprocess_mock.assert_called_once_with(['kubectl', 'version'], capture_output=True, text=True, timeout=10)
-
-    @mock.patch('subprocess.run')
-    def test_get_kubernetes_config(self, subprocess_mock):
-        subprocess_mock.return_value = mock.Mock(returncode=0)
-
-        api = KubernetesBaseAPIService()
-        api.get_kubernetes_config()
-        subprocess_mock.assert_called_once_with(
-            ['kubectl', 'config', 'view'],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
-
-    @mock.patch('subprocess.run')
-    def test_get_or_create_kubernetes_namespace_not_created(self, subprocess_mock):
-        process_mock = mock.Mock('foo', returncode=0, stdout='bar')
-
-        subprocess_mock.return_value = process_mock
-        subprocess_mock.return_value.check_returncode = mock.Mock('foo', returncode=0, stdout='bar')
-
-        api = KubernetesBaseAPIService()
-        result = api.get_or_create_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
-        self.assertEqual(False, result)
-
-    @mock.patch('subprocess.run')
-    @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
-    def test_get_or_create_kubernetes_namespace_created(self, mock_create, subprocess_mock):
-        process_mock = mock.Mock('foo', returncode=1, stdout='bar')
-
-        subprocess_mock.return_value = process_mock
-        subprocess_mock.return_value.check_returncode = mock.Mock('foo', returncode=1, stdout='bar')
-        mock_create.return_value = None
-
-        api = KubernetesBaseAPIService()
-        result = api.get_or_create_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
-        self.assertEqual(True, result)
-
-    @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
-    def test_create_kubernetes_namespace(self, mock_create):
-        mock_create.return_value = 'baz'
-
-        api = KubernetesBaseAPIService()
-        result = api.create_kubernetes_namespace(namespace=DEFAULT_RUNNER_KUBERNETES_NAMESPACE)
-        self.assertEqual('baz', result)
-
-    @mock.patch.object(KubernetesBaseAPIService.api, 'run_piped_command')
-    def test_create_apply_spec(self, mock_create):
-        mock_create.return_value = 'baz'
-
-        api = KubernetesBaseAPIService()
-        result = api.create_apply_spec('foo')
-        self.assertEqual('baz', result)
 
 
 class KubernetesSpecFileAPIServiceTestCase(TestCase):
@@ -100,39 +22,115 @@ class KubernetesSpecFileAPIServiceTestCase(TestCase):
 
         assert output == get_file('job-default.yaml')
 
-    @mock.patch('subprocess.run')
-    def test_apply_kubernetes_spec_file(self, subprocess_mock):
-        subprocess_mock.return_value = mock.Mock(returncode=0)
 
-        api = KubernetesSpecFileAPIService()
-        api.apply_kubernetes_spec_file('foo', 'bar')
-        subprocess_mock.assert_called_once_with(
-            ['kubectl', '-n', 'bar', 'apply', '-f', 'foo'],
-            capture_output=True,
-            text=True,
-            timeout=10
-        )
+class KubernetesPythonAPIServiceTestCase(TestCase):
 
-    @mock.patch('autoscaler.clients.kubernetes.base.open')
-    def test_create_kube_spec_file(self, mocked_create):
-        runner_data = {
-            'accountUuid': 'account',
-            'repositoryUuid': 'repo',
-            'runnerUuid': 'runner',
-            'oauthClientId_base64': 'testID',
-            'oauthClientSecret_base64': 'testSecret',
-            'runnerNamespace': 'namespace'
-        }
-        api = KubernetesSpecFileAPIService()
+    @mock.patch('kubernetes.config.load_incluster_config')
+    def test_load_config(self, mock_config):
+        KubernetesPythonAPIService()
 
-        api.create_kube_spec_file(runner_data)
+        mock_config.assert_called_once()
 
-        mocked_create.assert_called_once_with(f'{RUNNER_KUBERNETES_SPECS_DIR}/runner-runner.yaml', 'w')
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.create_namespaced_secret')
+    def test_create_secret(self, mock_create, mock_config):
+        mock_config.return_value = None
+        api = KubernetesPythonAPIService()
+        api.create_secret('foo', 'bar')
 
-    @mock.patch('pathlib.Path.unlink')
-    def test_delete_kube_spec_file(self, mocked_delete):
-        api = KubernetesSpecFileAPIService()
+        mock_create.assert_called_once_with(body='foo', namespace='bar')
 
-        api.delete_kube_spec_file('test')
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.BatchV1Api.create_namespaced_job')
+    def test_create_job(self, mock_create, mock_config):
+        mock_config.return_value = None
+        api = KubernetesPythonAPIService()
+        api.create_job('foo', 'bar')
 
-        mocked_delete.assert_called_once_with(missing_ok=True)
+        mock_create.assert_called_once_with(body='foo', namespace='bar')
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.delete_namespaced_secret')
+    @mock.patch('kubernetes.client.V1DeleteOptions')
+    def test_delete_secret(self, mock_client_delete, mock_delete, mock_config):
+        mock_config.return_value = None
+        mock_client_delete.return_value = None
+        api = KubernetesPythonAPIService()
+
+        api.delete_secret('foo', 'bar')
+
+        mock_delete.assert_called_once_with(name='runner-oauth-credentials-foo', namespace='bar', body=None)
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.BatchV1Api.delete_namespaced_job')
+    @mock.patch('kubernetes.client.V1DeleteOptions')
+    def test_delete_job(self, mock_client_delete, mock_delete, mock_config):
+        mock_config.return_value = None
+        mock_client_delete.return_value = None
+        api = KubernetesPythonAPIService()
+
+        api.delete_job('foo', 'bar')
+
+        mock_delete.assert_called_once_with(name='runner-foo', namespace='bar', body=None)
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.read_namespace')
+    def test_get_kubernetes_namespace(self, mock_get, mock_config):
+        mock_config.return_value = None
+        api = KubernetesPythonAPIService()
+        api.get_kubernetes_namespace('foo')
+
+        mock_get.assert_called_once_with(name='foo')
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.read_namespace')
+    def test_get_kubernetes_namespace_error(self, mock_get, mock_config):
+        mock_config.return_value = None
+        mock_get.side_effect = ApiException
+        api = KubernetesPythonAPIService()
+        with self.assertRaises(KubernetesNamespaceError):
+            api.get_kubernetes_namespace('foo')
+
+        mock_get.assert_called_once_with(name='foo')
+        self.assertRaises(KubernetesNamespaceError, api.get_kubernetes_namespace, 'foo')
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.read_namespace')
+    def test_get_kubernetes_namespace_not_found(self, mock_get, mock_config):
+        mock_config.return_value = None
+        mock_get.side_effect = ApiException(status=404)
+        api = KubernetesPythonAPIService()
+        with self.assertRaises(NamespaceNotFoundError):
+            api.get_kubernetes_namespace('foo')
+
+        mock_get.assert_called_once_with(name='foo')
+        self.assertRaises(NamespaceNotFoundError, api.get_kubernetes_namespace, 'foo')
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.create_namespace')
+    @mock.patch('kubernetes.client.V1Namespace')
+    @mock.patch('kubernetes.client.V1ObjectMeta')
+    def test_create_kubernetes_namespace(self, mock_client_create_meta, mock_client_create, mock_create, mock_config):
+        mock_config.return_value = None
+        mock_client_create.return_value = 'foo'
+        mock_client_create_meta.return_value = 'foo'
+        api = KubernetesPythonAPIService()
+        api.create_kubernetes_namespace('foo')
+
+        mock_create.assert_called_once_with('foo')
+
+    @mock.patch('kubernetes.config.load_incluster_config')
+    @mock.patch('kubernetes.client.CoreV1Api.create_namespace')
+    @mock.patch('kubernetes.client.V1Namespace')
+    @mock.patch('kubernetes.client.V1ObjectMeta')
+    def test_create_kubernetes_namespace_error(self, mock_client_create_meta, mock_client_create, mock_create, mock_config):
+        mock_config.return_value = None
+        mock_client_create.return_value = 'foo'
+        mock_client_create_meta.return_value = 'foo'
+        mock_create.side_effect = ApiException
+        api = KubernetesPythonAPIService()
+        with self.assertRaises(CannotCreateNamespaceError):
+            api.create_kubernetes_namespace('foo')
+
+        mock_create.assert_called_once_with('foo')
+        self.assertRaises(CannotCreateNamespaceError, api.create_kubernetes_namespace, 'foo')

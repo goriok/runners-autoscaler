@@ -5,29 +5,40 @@ items:
     kind: Secret
     metadata:
       name: runner-bitbucket-credentials
-      namespace: bitbucket-runner
+      namespace: bitbucket-runner-control-plane
     data:
-      bitbucketClientSecret: <bitbucket_client_secret_base64>
-  - apiVersion: batch/v1
-    kind: Job
+      bitbucketClientSecret: <BITBUCKET_APP_PASSWORD base64>
+  - apiVersion: apps/v1
+    kind: Deployment
     metadata:
       name: runner-controller
-      namespace: bitbucket-runner
+      namespace: bitbucket-runner-control-plane
+      labels:
+        app: runner-controller
     spec:
+      selector:
+        matchLabels:
+          app: runner-controller
       template:
         metadata:
           name: runner-controller-pod
+          labels:
+            app: runner-controller
         spec:
+          serviceAccountName: runners-autoscaler
           containers:
           - name: runner-controller
-            image: bitbucketpipelines/runners-autoscaler:0.3.0.110-dev
+            image: bitbucketpipelines/runners-autoscaler:1.6.0
             volumeMounts:
             - name: runners-autoscaler-config
               mountPath: /opt/conf/config
               readOnly: true
+            - name: runners-autoscaler-job-template
+              mountPath: /opt/conf/job_template/job.yaml.template
+              readOnly: true
             env:
               - name: BITBUCKET_USERNAME
-                value: <bitbucket_client_username>
+                value: <BITBUCKET_USERNAME>
               - name: BITBUCKET_APP_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -42,4 +53,10 @@ items:
                 items:
                   - key: runners_config.yaml
                     path: runners_config.yaml
-          restartPolicy: Never
+            - name: runners-autoscaler-job-template
+              configMap:
+                name: runners-autoscaler-job-template
+                defaultMode: 0644
+                items:
+                  - key: job.yaml.template
+                    path: job.yaml.template
