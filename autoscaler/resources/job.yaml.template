@@ -23,6 +23,7 @@ items:
       template:
         metadata:
           labels:
+            customer: shared
             accountUuid: <%accountUuid%>
             runnerUuid: <%runnerUuid%>
         {%- if repositoryUuid %}
@@ -33,6 +34,13 @@ items:
           containers:
             - name: runner
               image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner
+              resources:
+                requests:
+                  memory: "4Gi"
+                  cpu: "1000m"
+                limits:
+                  memory: "4Gi"
+                  cpu: "1000m"
               env:
                 - name: ACCOUNT_UUID
                   value: "{<%accountUuid%>}"
@@ -78,6 +86,8 @@ items:
             - name: tmp
             - name: docker-containers
             - name: var-run
+          nodeSelector:
+            customer: shared
       backoffLimit: 6
       completions: 1
       parallelism: 1
