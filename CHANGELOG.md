@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.6.1
+
+- patch: Add escalator configuration
+
 ## 1.6.0
 
 - minor: Add support for the custom runner job template.
