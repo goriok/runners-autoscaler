@@ -34,7 +34,7 @@ items:
               mountPath: /opt/conf/config
               readOnly: true
             - name: runners-autoscaler-job-template
-              mountPath: /opt/conf/job_template/job.yaml.template
+              mountPath: /opt/conf/job_template
               readOnly: true
             env:
               - name: BITBUCKET_USERNAME
