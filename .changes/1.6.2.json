@@ -1,0 +1,6 @@
+[
+  {
+    "description": "Fix job yaml volume mount path",
+    "type": "patch"
+  }
+]
