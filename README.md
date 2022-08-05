@@ -42,6 +42,15 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 
 ## Prerequisites
 - BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
+  ```
+  # Python3 interactive shell
+  from autoscaler.core.helpers import string_to_base64string
+  string_to_base64string("your-app-password")
+
+  or shell
+  echo -n $BITBUCKET_APP_PASSWORD | base64
+  ```
+
 - [optional] setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster
 
 - [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
