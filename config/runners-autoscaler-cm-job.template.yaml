@@ -40,7 +40,7 @@ data:
             spec:
               containers:
                 - name: runner
-                  image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner  # mandatory, don't modify
+                  image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1  # mandatory, don't modify
                   resources:
                     requests:
                       memory: "4Gi"
