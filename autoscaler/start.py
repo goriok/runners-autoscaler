@@ -28,47 +28,10 @@ class StartPoller:
         required('BITBUCKET_USERNAME')
         required('BITBUCKET_APP_PASSWORD')
 
-        # read runners parameter from the config file
-        config_file_path = self.config_file_path
-
-        logger.info(f"Config file provided {config_file_path}.")
-
-        if not os.path.exists(config_file_path):
-            fail(f'Passed runners configuration file {config_file_path} does not exist.')
-        if not os.path.exists(self.template_file_path):
-            fail(f'Passed runners job template file {self.template_file_path} does not exist.')
-        else:
-            dest_template_file_path = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')
-            shutil.copy(self.template_file_path, dest_template_file_path)
-            logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
-
-        runners_data = read_yaml_file(config_file_path)
-
-        logger.info(f"Autoscaler config: {runners_data}")
-
-        if 'constants' in runners_data:
-            runner_constants = Constants(
-                runners_data['constants'].get('default_sleep_time_runner_setup', constants.DEFAULT_SLEEP_TIME_RUNNER_DELETE),
-                runners_data['constants'].get('default_sleep_time_runner_delete', constants.DEFAULT_SLEEP_TIME_RUNNER_SETUP),
-                runners_data['constants'].get('runner_api_polling_interval', constants.BITBUCKET_RUNNER_API_POLLING_INTERVAL),
-                runners_data['constants'].get('runner_cool_down_period', constants.RUNNER_COOL_DOWN_PERIOD)
-            )
-        else:
-            runner_constants = Constants()
-
-        autoscaler_runners = [r for r in runners_data['groups']]
-
-        if len(autoscaler_runners) > MAX_GROUPS_COUNT:
-            fail(f'Your groups count {len(autoscaler_runners)} exceeds maximum allowed count of {MAX_GROUPS_COUNT}')
-
-        for i, data in enumerate(autoscaler_runners):
-            validate(data)
-
-            autoscaler_runners[i] = update(data)
-
-        logger.info(f"Autoscaler runners: {autoscaler_runners}")
         with ThreadPoolExecutor(max_workers=MAX_GROUPS_COUNT) as executor:
             while True:
+                autoscaler_runners, runner_constants = self.read_config(self.config_file_path)
+
                 futures = []
                 for runner_data in autoscaler_runners:
                     runner_data: RunnerData
@@ -93,6 +56,51 @@ class StartPoller:
                 # Added for testing.
                 if not self.poll:
                     break
+
+    def read_config(self, config_file_path):
+        # read runners parameter from the config file
+
+        logger.info(f"Config file provided {config_file_path}.")
+
+        if not os.path.exists(config_file_path):
+            fail(f'Passed runners configuration file {config_file_path} does not exist.')
+        if not os.path.exists(self.template_file_path):
+            fail(f'Passed runners job template file {self.template_file_path} does not exist.')
+        else:
+            dest_template_file_path = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')
+            shutil.copy(self.template_file_path, dest_template_file_path)
+            logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
+
+        runners_data = read_yaml_file(config_file_path)
+
+        logger.info(f"Autoscaler config: {runners_data}")
+
+        if 'constants' in runners_data:
+            runner_constants = Constants(
+                runners_data['constants'].get('default_sleep_time_runner_setup',
+                                              constants.DEFAULT_SLEEP_TIME_RUNNER_DELETE),
+                runners_data['constants'].get('default_sleep_time_runner_delete',
+                                              constants.DEFAULT_SLEEP_TIME_RUNNER_SETUP),
+                runners_data['constants'].get('runner_api_polling_interval',
+                                              constants.BITBUCKET_RUNNER_API_POLLING_INTERVAL),
+                runners_data['constants'].get('runner_cool_down_period', constants.RUNNER_COOL_DOWN_PERIOD)
+            )
+        else:
+            runner_constants = Constants()
+
+        autoscaler_runners = [r for r in runners_data['groups']]
+
+        if len(autoscaler_runners) > MAX_GROUPS_COUNT:
+            fail(f'Your groups count {len(autoscaler_runners)} exceeds maximum allowed count of {MAX_GROUPS_COUNT}')
+
+        for i, data in enumerate(autoscaler_runners):
+            validate(data)
+
+            autoscaler_runners[i] = update(data)
+
+        logger.info(f"Autoscaler runners: {autoscaler_runners}")
+
+        return autoscaler_runners, runner_constants
 
 
 def validate(runner_data):
