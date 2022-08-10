@@ -102,6 +102,7 @@ class BitbucketServiceTestCase(TestCase):
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
             }),
+            'repository': None,
             'name': 'good',
             'namespace': 'test',
             'strategy': 'custom',
@@ -215,6 +216,7 @@ class BitbucketServiceTestCase(TestCase):
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
             }),
+            'repository': None,
             'name': 'good',
             'namespace': 'test',
             'strategy': 'custom',
@@ -285,6 +287,7 @@ class BitbucketServiceTestCase(TestCase):
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
             }),
+            'repository': None,
             'name': 'good',
             'namespace': 'test',
             'strategy': 'custom',

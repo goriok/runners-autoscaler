@@ -29,14 +29,18 @@ class NameUUIDData:
 
 
 @dataclass
-class RunnerData:
+class RunnerMeta:
     workspace: NameUUIDData
     name: str
-    labels: Set[str]
     namespace: str
     strategy: str
+    repository: NameUUIDData or None
+
+
+@dataclass
+class RunnerData(RunnerMeta):
+    labels: Set[str]
     parameters: Any
-    repository: NameUUIDData = None
 
 
 @dataclass
