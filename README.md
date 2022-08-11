@@ -70,7 +70,11 @@ Create in `config/` folder these files:
 
 `config/runners-autoscaler-cm-job.yaml`,
 
-`config/runners-autoscaler-deployment.yaml`
+`config/runners-autoscaler-secret.yaml`,
+
+`config/runners-autoscaler-deployment.yaml`,
+
+`config/runners-autoscaler-deployment-cleaner.yaml`
 
 based on templates provided inside this folder. 
 
@@ -90,8 +94,14 @@ kubectl apply -f config/runners-autoscaler-cm.yaml
 # Create job config map
 kubectl apply -f config/runners-autoscaler-cm-job.yaml
 
-# Create deployment
+# Create secret
+kubectl apply -f config/runners-autoscaler-secret.yaml
+
+# Create deployment for autoscaler
 kubectl apply -f config/runners-autoscaler-deployment.yaml
+
+# Create deployment for cleaner
+kubectl apply -f config/runners-autoscaler-deployment-cleaner.yaml
 ```
 
 ## Runner config details
@@ -222,18 +232,35 @@ If you are using AWS, you'll need to use this deployment `aws/escalator-deployme
 
 ## Configuring Kubernetes Nodes
 
-In the job config map `runners-autoscaler-cm-job.yaml.template`, you will notice there's a `nodeSelector` in there.
+In the job config map `runners-autoscaler-cm-job.template.yaml`, you will notice there's a `nodeSelector` in there.
 
 Therefore, the nodes where the runners will be running on need to have a label that matches it. In AWS EKS, this can be configured via [EKS Managed Node Groups][eks-node-groups].
 
 This label also must match the one you configured in [escalator config map][escalator-cm].
 
 ## Tweaking Memory/Cpu resources
-Inside `runners-autoscaler-cm-job.yaml.template`, you will notice that the `resources` tag is defined.
+Inside `runners-autoscaler-cm-job.template.yaml`, you will notice that the `resources` tag is defined.
 
 It might worthing tweaking the memory/cpu limits according to your needs.
 
 For example, if you want to use an `8Gb` instance size, it might not worth using `4Gi` since it will take slighly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
+
+## Cleaner
+The Runner Autoscaler Cleaner (next cleaner) is the application configured in `deployment-cleaner.template.yaml` that allows you automatically clean (delete) unhealthy runners and linked jobs.
+
+Implementation based on the next algorithm:
+
+Check runners on Bitbucket Cloud, that do not have status "ONLINE".
+
+Check for the runners, that was created more than some period of time ago. You can tune it with "runner_cool_down_period" variable from ConfigMap runner-config.
+
+For each runner found get it UUID and delete.
+
+Find jobs on kubernetes labeled with runners UUIDs if any.
+
+Delete jobs found since they are unhealthy.
+
+Repeat cleaner logic after some period of time. You can tune it with "runner_api_polling_interval" variable from ConfigMap runner-config.
 
 ## Links
 
