@@ -1,25 +1,27 @@
 #!/usr/bin/env bash
 #
-# Release to dockerhub.
+# Release to dockerhub registry.
 #
 # Required globals:
-#   DOCKERHUB_USERNAME
-#   DOCKERHUB_PASSWORD
+#   REGISTRY_USERNAME
+#   REGISTRY_PASSWORD
+#   REGISTRY_URL
 
 set -ex
 
 validate() {
   # mandatory parameters
-  : DOCKERHUB_USERNAME="${$DOCKERHUB_USERNAME:?'DOCKERHUB_USERNAME variable missing.'}"
-  : DOCKERHUB_PASSWORD="${DOCKERHUB_PASSWORD:?'DOCKERHUB_PASSWORD variable missing.'}"
+  : REGISTRY_USERNAME="${REGISTRY_USERNAME:?'REGISTRY_USERNAME variable missing.'}"
+  : REGISTRY_PASSWORD="${REGISTRY_PASSWORD:?'REGISTRY_PASSWORD variable missing.'}"
+  : REGISTRY_URL="${REGISTRY_URL:?'REGISTRY_URL variable missing.'}"
 }
 
 IMAGE=$1
 VERSION=$(semversioner current-version)
 
-echo "${DOCKERHUB_PASSWORD}" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+echo "${REGISTRY_PASSWORD}" | docker login --username "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_URL"
 docker build -t "${IMAGE}" .
-docker tag "${IMAGE}" "${IMAGE}:${VERSION}"
-docker push "${IMAGE}"
+docker tag "${IMAGE}" "${REGISTRY_URL}/${IMAGE}:${VERSION}"
+docker push "${REGISTRY_URL}/${IMAGE}:${VERSION}"
 
 sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION/g" config/runners-autoscaler-deployment.template.yaml
