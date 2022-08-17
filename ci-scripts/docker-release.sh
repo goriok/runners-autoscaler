@@ -25,3 +25,4 @@ docker tag "${IMAGE}" "${REGISTRY_URL}/${IMAGE}:${VERSION}"
 docker push "${REGISTRY_URL}/${IMAGE}:${VERSION}"
 
 sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION/g" config/runners-autoscaler-deployment.template.yaml
+sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION/g" config/runners-autoscaler-deployment-cleaner.template.yaml
