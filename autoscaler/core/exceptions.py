@@ -36,3 +36,23 @@ class CannotCreateNamespaceError(KubernetesNamespaceError):
 class NamespaceNotFoundError(KubernetesNamespaceError):
     """Raised when namespace not found."""
     pass
+
+
+class KubernetesJobError(KubernetesError):
+    """Base class for all Kubernetes job exceptions."""
+    pass
+
+
+class JobNotFoundError(KubernetesNamespaceError):
+    """Raised when job not found."""
+    pass
+
+
+class KubernetesSecretError(KubernetesError):
+    """Base class for all Kubernetes secret exceptions."""
+    pass
+
+
+class SecretNotFoundError(KubernetesNamespaceError):
+    """Raised when secret not found."""
+    pass

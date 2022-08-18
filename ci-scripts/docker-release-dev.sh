@@ -1,25 +1,28 @@
 #!/usr/bin/env bash
 #
-# Release dev version to dockerhub.
+# Release dev version to dockerhub registry.
 #
 # Required globals:
-#   DOCKERHUB_USERNAME
-#   DOCKERHUB_PASSWORD
+#   REGISTRY_USERNAME
+#   REGISTRY_PASSWORD
+#   REGISTRY_URL
 
 set -ex
 
 validate() {
   # mandatory parameters
-  : DOCKERHUB_USERNAME="${$DOCKERHUB_USERNAME:?'DOCKERHUB_USERNAME variable missing.'}"
-  : DOCKERHUB_PASSWORD="${DOCKERHUB_PASSWORD:?'DOCKERHUB_PASSWORD variable missing.'}"
+  : REGISTRY_USERNAME="${REGISTRY_USERNAME:?'REGISTRY_USERNAME variable missing.'}"
+  : REGISTRY_PASSWORD="${REGISTRY_PASSWORD:?'REGISTRY_PASSWORD variable missing.'}"
+  : REGISTRY_URL="${REGISTRY_URL:?'REGISTRY_URL variable missing.'}"
 }
 
 IMAGE=$1
 VERSION=$(semversioner current-version)
 
-echo "${DOCKERHUB_PASSWORD}" | docker login --username "$DOCKERHUB_USERNAME" --password-stdin
+echo "${REGISTRY_PASSWORD}" | docker login --username "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_URL"
 docker build -t "${IMAGE}" .
-docker tag "${IMAGE}" "${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
-docker push "${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
+docker tag "${IMAGE}" "${REGISTRY_URL}/${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
+docker push "${REGISTRY_URL}/${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
 
 sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION\.$BITBUCKET_BUILD_NUMBER-dev/g" config/runners-autoscaler-deployment.template.yaml
+sed -i "s/bitbucketpipelines\/runners-autoscaler:.*/bitbucketpipelines\/runners-autoscaler:$VERSION\.$BITBUCKET_BUILD_NUMBER-dev/g" config/runners-autoscaler-deployment-cleaner.template.yaml

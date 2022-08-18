@@ -1,31 +1,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: runner-controller
+  name: runner-controller-cleaner
   namespace: bitbucket-runner-control-plane
   labels:
-    app: runner-controller
+    app: runner-controller-cleaner
 spec:
   selector:
     matchLabels:
-      app: runner-controller
+      app: runner-controller-cleaner
   template:
     metadata:
-      name: runner-controller-pod
+      name: runner-controller-cleaner-pod
       labels:
-        app: runner-controller
+        app: runner-controller-cleaner
     spec:
       serviceAccountName: runners-autoscaler
       containers:
-      - name: runner-controller
+      - name: runner-controller-cleaner
         image: bitbucketpipelines/runners-autoscaler:1.6.2.166-dev
-        volumeMounts:
-        - name: runners-autoscaler-config
-          mountPath: /opt/conf/config
-          readOnly: true
-        - name: runners-autoscaler-job-template
-          mountPath: /opt/conf/job_template
-          readOnly: true
+        command: ["python"]
+        args: ["autoscaler/cleaner.py"]
         env:
           - name: BITBUCKET_USERNAME
             value: <BITBUCKET_USERNAME>
@@ -34,6 +29,10 @@ spec:
               secretKeyRef:
                 name: runner-bitbucket-credentials
                 key: bitbucketClientSecret
+        volumeMounts:
+        - name: runners-autoscaler-config
+          mountPath: /opt/conf/config
+          readOnly: true
         imagePullPolicy: IfNotPresent
       volumes:
         - name: runners-autoscaler-config
@@ -43,10 +42,3 @@ spec:
             items:
               - key: runners_config.yaml
                 path: runners_config.yaml
-        - name: runners-autoscaler-job-template
-          configMap:
-            name: runners-autoscaler-job-template
-            defaultMode: 0644
-            items:
-              - key: job.yaml.template
-                path: job.yaml.template

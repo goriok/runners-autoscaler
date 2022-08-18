@@ -6,7 +6,7 @@ all: setup lint test
 
 .PHONY: setup
 setup:
-	@# It assumes the default python3 installation for Mac OS is pyhton 3.8
+	@# It assumes the default python3 installation for Mac OS is python 3.8
 	@test -d $(ENV) || python3 -m venv $(ENV)
 	@$(ENV)/bin/python3 -m pip install --upgrade pip
 	@$(ENV)/bin/python3 -m pip install -r requirements-dev.txt
@@ -20,7 +20,7 @@ lint:
 
 .PHONY: test
 test:
-	@$(ENV)/bin/python -m pytest -p no:cacheprovider tests/ --verbose --cov autoscaler --cov-fail=90
+	@$(ENV)/bin/python -m pytest -p no:cacheprovider tests/ --verbose --cov autoscaler --cov-fail-under=90
 
 .PHONY: clean
 clean:

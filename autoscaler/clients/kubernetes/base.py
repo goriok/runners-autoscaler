@@ -3,7 +3,7 @@ from jinja2 import PackageLoader, Environment
 from kubernetes import config as k8s_config, client as k8s_client
 from kubernetes.client import ApiException
 
-from autoscaler.core.exceptions import CannotCreateNamespaceError, NamespaceNotFoundError, KubernetesNamespaceError
+import autoscaler.core.exceptions as core_exc
 from autoscaler.core.constants import TEMPLATE_FILE_NAME
 
 
@@ -47,25 +47,37 @@ class KubernetesPythonAPIService:
 
     def delete_secret(self, runner_uuid, namespace):
         core_v1 = self.client.CoreV1Api()
-        core_v1.delete_namespaced_secret(
-            name=f"runner-oauth-credentials-{runner_uuid}",
-            namespace=namespace,
-            body=self.client.V1DeleteOptions(
-                propagation_policy='Foreground',
-                grace_period_seconds=5
+        try:
+            core_v1.delete_namespaced_secret(
+                name=f"runner-oauth-credentials-{runner_uuid}",
+                namespace=namespace,
+                body=self.client.V1DeleteOptions(
+                    propagation_policy='Foreground',
+                    grace_period_seconds=5
+                )
             )
-        )
+        except ApiException as e:
+            if e.status == 404:
+                raise core_exc.SecretNotFoundError from e
+
+            raise core_exc.KubernetesSecretError(str(e)) from e
 
     def delete_job(self, runner_uuid, namespace):
         batch_v1 = self.client.BatchV1Api()
-        batch_v1.delete_namespaced_job(
-            name=f"runner-{runner_uuid}",
-            namespace=namespace,
-            body=self.client.V1DeleteOptions(
-                propagation_policy='Foreground',
-                grace_period_seconds=5
+        try:
+            batch_v1.delete_namespaced_job(
+                name=f"runner-{runner_uuid}",
+                namespace=namespace,
+                body=self.client.V1DeleteOptions(
+                    propagation_policy='Foreground',
+                    grace_period_seconds=5
+                )
             )
-        )
+        except ApiException as e:
+            if e.status == 404:
+                raise core_exc.JobNotFoundError from e
+
+            raise core_exc.KubernetesJobError(str(e)) from e
 
     def get_kubernetes_namespace(self, namespace):
         core_v1 = self.client.CoreV1Api()
@@ -73,9 +85,9 @@ class KubernetesPythonAPIService:
             core_v1.read_namespace(name=namespace)
         except ApiException as e:
             if e.status == 404:
-                raise NamespaceNotFoundError from e
+                raise core_exc.NamespaceNotFoundError from e
 
-            raise KubernetesNamespaceError(str(e)) from e
+            raise core_exc.KubernetesNamespaceError(str(e)) from e
 
     def create_kubernetes_namespace(self, namespace):
         core_v1 = self.client.CoreV1Api()
@@ -84,4 +96,4 @@ class KubernetesPythonAPIService:
                 k8s_client.V1Namespace(metadata=k8s_client.V1ObjectMeta(name=namespace))
             )
         except ApiException as e:
-            raise CannotCreateNamespaceError(str(e)) from e
+            raise core_exc.CannotCreateNamespaceError(str(e)) from e

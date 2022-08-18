@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
+
 import yaml
+
+import autoscaler.core.exceptions as core_exc
 from autoscaler.clients.kubernetes.base import KubernetesPythonAPIService, KubernetesSpecFileAPIService
-from autoscaler.core.exceptions import NamespaceNotFoundError
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
 
 
@@ -52,7 +54,7 @@ class KubernetesService(KubernetesServiceInterface):
         found = True
         try:
             kube_python_api.get_kubernetes_namespace(namespace=namespace)
-        except NamespaceNotFoundError:
+        except core_exc.NamespaceNotFoundError:
             self.logger_adapter.info(f"Namespace {namespace} not found.")
             found = False
         else:
@@ -89,8 +91,18 @@ class KubernetesService(KubernetesServiceInterface):
 
         kube_python_api = KubernetesPythonAPIService()
 
-        kube_python_api.delete_job(runner_uuid, namespace)
+        try:
+            kube_python_api.delete_job(runner_uuid, namespace)
+        except core_exc.JobNotFoundError as e:
+            self.logger_adapter.warning(f"Warning: {str(e)}")
+        except core_exc.KubernetesJobError as e:
+            raise e
 
-        kube_python_api.delete_secret(runner_uuid, namespace)
+        try:
+            kube_python_api.delete_secret(runner_uuid, namespace)
+        except core_exc.SecretNotFoundError as e:
+            self.logger_adapter.warning(f"Warning: {str(e)}")
+        except core_exc.KubernetesSecretError as e:
+            raise e
 
         self.logger_adapter.info("Job deleted.")

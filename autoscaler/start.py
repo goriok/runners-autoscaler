@@ -1,7 +1,7 @@
 import os
 import shutil
-from time import sleep
 from concurrent.futures import ThreadPoolExecutor, wait
+from time import sleep
 
 import autoscaler.core.constants as constants
 from autoscaler.core.helpers import read_yaml_file, required, enable_debug, fail
@@ -30,7 +30,7 @@ class StartPoller:
 
         with ThreadPoolExecutor(max_workers=MAX_GROUPS_COUNT) as executor:
             while True:
-                autoscaler_runners, runner_constants = self.read_config(self.config_file_path)
+                autoscaler_runners, runner_constants = self.read_config()
 
                 futures = []
                 for runner_data in autoscaler_runners:
@@ -57,13 +57,13 @@ class StartPoller:
                 if not self.poll:
                     break
 
-    def read_config(self, config_file_path):
+    def read_config(self):
         # read runners parameter from the config file
 
-        logger.info(f"Config file provided {config_file_path}.")
+        logger.info(f"Config file provided {self.config_file_path}.")
 
-        if not os.path.exists(config_file_path):
-            fail(f'Passed runners configuration file {config_file_path} does not exist.')
+        if not os.path.exists(self.config_file_path):
+            fail(f'Passed runners configuration file {self.config_file_path} does not exist.')
         if not os.path.exists(self.template_file_path):
             fail(f'Passed runners job template file {self.template_file_path} does not exist.')
         else:
@@ -71,7 +71,7 @@ class StartPoller:
             shutil.copy(self.template_file_path, dest_template_file_path)
             logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
 
-        runners_data = read_yaml_file(config_file_path)
+        runners_data = read_yaml_file(self.config_file_path)
 
         logger.info(f"Autoscaler config: {runners_data}")
 
