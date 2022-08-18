@@ -1,4 +1,0 @@
-{
-  "type": "patch",
-  "description": "Bump runner's image version in the base job template."
-}

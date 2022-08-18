@@ -1,6 +1,14 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.7.0
+
+- minor: Add support for autoupdate runners configuration.
+- minor: Implement automatical cleaner of unhealthy runners.
+- patch: Bump runner's image version in the base job template.
+- patch: Internal maintenance: Bump requirements-dev.txt
+- patch: Internal maintenance: Update release process to use Atlassian registry.
+
 ## 1.6.2
 
 - patch: Fix job yaml volume mount path

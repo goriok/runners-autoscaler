@@ -1,0 +1,22 @@
+[
+  {
+    "description": "Add support for autoupdate runners configuration.",
+    "type": "minor"
+  },
+  {
+    "description": "Implement automatical cleaner of unhealthy runners.",
+    "type": "minor"
+  },
+  {
+    "description": "Bump runner's image version in the base job template.",
+    "type": "patch"
+  },
+  {
+    "description": "Internal maintenance: Bump requirements-dev.txt",
+    "type": "patch"
+  },
+  {
+    "description": "Internal maintenance: Update release process to use Atlassian registry.",
+    "type": "patch"
+  }
+]
