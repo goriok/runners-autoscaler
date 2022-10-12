@@ -4,10 +4,11 @@ from unittest import TestCase, mock
 
 import pytest
 
-from autoscaler.cleaner import StartCleaner, Cleaner
+from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner
 from autoscaler.core.constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from autoscaler.core.help_classes import Constants, RunnerMeta, NameUUIDData
 from autoscaler.services.kubernetes import KubernetesInMemoryService
+from autoscaler.start_cleaner import StartCleaner
 from tests.helpers import capture_output
 
 
@@ -33,7 +34,7 @@ class StartCleanerTestCase(TestCase):
         self.assertIn('Passed runners configuration file fail_config_path does not exist.', out.getvalue())
 
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
-    @mock.patch('autoscaler.cleaner.Cleaner.run')
+    @mock.patch('autoscaler.cleaner.pct_runner_idle_cleaner.Cleaner.run')
     @mock.patch('autoscaler.services.kubernetes.KubernetesService.init')
     def test_main(
             self,
@@ -171,7 +172,7 @@ class CleanerTestCase(TestCase):
             ]
         )
 
-    @mock.patch('autoscaler.cleaner.Cleaner.get_runners')
+    @mock.patch('autoscaler.cleaner.pct_runner_idle_cleaner.Cleaner.get_runners')
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.delete_bitbucket_runner')
     def test_delete_runners_delete_part(self, mock_delete_runner, mock_get_runners):
         get_runners = [
@@ -239,7 +240,7 @@ class CleanerTestCase(TestCase):
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-    @mock.patch('autoscaler.cleaner.Cleaner.get_runners')
+    @mock.patch('autoscaler.cleaner.pct_runner_idle_cleaner.Cleaner.get_runners')
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.delete_bitbucket_runner')
     def test_delete_runners(self, mock_delete_runner, mock_get_runners):
         get_runners = [
@@ -331,7 +332,7 @@ class CleanerTestCase(TestCase):
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-    @mock.patch('autoscaler.cleaner.Cleaner.get_runners')
+    @mock.patch('autoscaler.cleaner.pct_runner_idle_cleaner.Cleaner.get_runners')
     def test_run_nothing_to_do(self, mock_get_runners):
         get_runners = [
             {

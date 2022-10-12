@@ -15,3 +15,9 @@ BITBUCKET_RUNNER_API_POLLING_INTERVAL = 10 * 60  # seconds
 
 # RUNNER COOL DOWN PERIOD in seconds prevent delete fresh runners created less than period
 RUNNER_COOL_DOWN_PERIOD = 5 * 60  # seconds
+
+# Max allowed groups for runner config map
+MAX_GROUPS_COUNT = 10
+
+# Default labels from Bitbucket API
+DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})

@@ -58,7 +58,7 @@ class KubernetesPythonAPIService:
             )
         except ApiException as e:
             if e.status == 404:
-                raise core_exc.SecretNotFoundError from e
+                raise core_exc.SecretNotFoundError(str(e)) from e
 
             raise core_exc.KubernetesSecretError(str(e)) from e
 
@@ -75,7 +75,7 @@ class KubernetesPythonAPIService:
             )
         except ApiException as e:
             if e.status == 404:
-                raise core_exc.JobNotFoundError from e
+                raise core_exc.JobNotFoundError(str(e)) from e
 
             raise core_exc.KubernetesJobError(str(e)) from e
 
@@ -85,7 +85,7 @@ class KubernetesPythonAPIService:
             core_v1.read_namespace(name=namespace)
         except ApiException as e:
             if e.status == 404:
-                raise core_exc.NamespaceNotFoundError from e
+                raise core_exc.NamespaceNotFoundError(str(e)) from e
 
             raise core_exc.KubernetesNamespaceError(str(e)) from e
 
