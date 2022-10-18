@@ -20,7 +20,7 @@ spec:
       - name: runner-controller-cleaner
         image: bitbucketpipelines/runners-autoscaler:1.7.0
         command: ["python"]
-        args: ["autoscaler/cleaner.py"]
+        args: ["autoscaler/start_cleaner.py"]
         env:
           - name: BITBUCKET_USERNAME
             value: <BITBUCKET_USERNAME>

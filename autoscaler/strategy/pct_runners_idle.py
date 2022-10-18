@@ -1,5 +1,4 @@
 import math
-import os
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
@@ -154,8 +153,7 @@ class PctRunnersIdleScaler(Strategy):
             runners_stats = dict(Counter([r['state'].get('status') for r in runners]))
             self.logger_adapter.info(runners_stats)
 
-        if os.getenv('DEBUG') == 'true':
-            self.logger_adapter.debug(runners)
+        self.logger_adapter.debug(runners)
 
         online_runners = [
             r for r in runners if
@@ -169,8 +167,7 @@ class PctRunnersIdleScaler(Strategy):
         runners_busy = [r for r in online_runners if 'step' in r['state']]
 
         self.logger_adapter.info(f"Found IDLE runners with labels {self.runner_data.labels}: {len(runners_idle)}")
-        if os.getenv('DEBUG') == 'true':
-            self.logger_adapter.debug(runners_idle)
+        self.logger_adapter.debug(runners_idle)
 
         runners_scale_threshold = len(runners_busy) / len(online_runners) if online_runners else 0
         self.logger_adapter.info(f'Current runners threshold: {round(runners_scale_threshold, 2)}')
@@ -195,6 +192,12 @@ class PctRunnersIdleScaler(Strategy):
             self.logger_adapter.info(msg_autoscaler)
 
             for i in range(count_runners_to_create):
+                # Do not try to create new runners when total number of runners
+                # reached max allowed by API. Still show the message warning
+                # when total number of runners is equal the MAX_RUNNERS_COUNT.
+                if len(runners) + i > MAX_RUNNERS_COUNT:
+                    break
+
                 self.create_runner(i)
 
         # TODO add max_runners per repo or max_runners per workspace
@@ -225,6 +228,12 @@ class PctRunnersIdleScaler(Strategy):
             self.logger_adapter.info(msg_autoscaler)
 
             for i in range(count_runners_to_create):
+                # Do not try to create new runners when total number of runners
+                # reached max allowed by API. Still show the message warning
+                # when total number of runners is equal the MAX_RUNNERS_COUNT.
+                if len(runners) + i > MAX_RUNNERS_COUNT:
+                    break
+
                 self.create_runner(i)
 
         elif runners_scale_threshold < float(self.runner_data.parameters.scale_down_threshold) and \
