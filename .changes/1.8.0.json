@@ -1,0 +1,14 @@
+[
+  {
+    "description": "Refactored project structure. Removed logic dublicates for start main and start cleaner. Changed entrypoint for cleaner.",
+    "type": "minor"
+  },
+  {
+    "description": "Fixed bug with logging when no kubernetes job/secret/namespace found.",
+    "type": "patch"
+  },
+  {
+    "description": "Improved logic when runners reach max allowed total by Bitbucket API.",
+    "type": "patch"
+  }
+]

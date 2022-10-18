@@ -1,4 +1,0 @@
-{
-  "type": "patch",
-  "description": "Improved logic when runners reach max allowed total by Bitbucket API."
-}

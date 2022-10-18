@@ -1,6 +1,12 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.8.0
+
+- minor: Refactored project structure. Removed logic dublicates for start main and start cleaner. Changed entrypoint for cleaner.
+- patch: Fixed bug with logging when no kubernetes job/secret/namespace found.
+- patch: Improved logic when runners reach max allowed total by Bitbucket API.
+
 ## 1.7.0
 
 - minor: Add support for autoupdate runners configuration.

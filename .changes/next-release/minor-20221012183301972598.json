@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Refactored project structure. Removed logic dublicates for start main and start cleaner. Changed entrypoint for cleaner."
-}
