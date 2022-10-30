@@ -8,6 +8,26 @@ definitions:
       image: python:3.9
       script:
         - make setup lint test
+        # build docker image artifact
+        - export IMAGE_NAME=bitbucketpipelines/${BITBUCKET_REPO_SLUG}
+        - export IMAGE_VERSION=pipelines-${BITBUCKET_BUILD_NUMBER}
+        - docker build -t $IMAGE_NAME:$IMAGE_VERSION .
+        - docker save --output docker-image.tar.gz $IMAGE_NAME:$IMAGE_VERSION
+        - pipe: snyk/snyk-scan:0.5.3
+          variables:
+            SNYK_TOKEN: $SNYK_TOKEN
+            LANGUAGE: "docker"
+            IMAGE_NAME: $IMAGE_NAME:$IMAGE_VERSION
+            TARGET_FILE: "Dockerfile"
+            SEVERITY_THRESHOLD: "high"
+            DONT_BREAK_BUILD: "true"
+            CODE_INSIGHTS_RESULTS: "true" # Optional - Generates a code insights report in pull request view
+            MONITOR: "true"
+      services:
+        - docker
+      artifacts:
+        - docker-image.tar.gz
+
 
   release-dev: &release-dev
     step:
@@ -15,6 +35,7 @@ definitions:
       image: python:3.9
       trigger: manual
       script:
+        - docker load --input docker-image.tar.gz
         - pip install semversioner
         - ./ci-scripts/docker-release-dev.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
         - ./ci-scripts/git-release-dev.sh

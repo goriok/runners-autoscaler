@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "description": "Internal maintainance: Update CI workflow. Add snyk-scan for docker image."
+}

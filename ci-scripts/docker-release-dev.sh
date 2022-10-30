@@ -19,8 +19,9 @@ validate() {
 IMAGE=$1
 VERSION=$(semversioner current-version)
 
+validate
 echo "${REGISTRY_PASSWORD}" | docker login --username "$REGISTRY_USERNAME" --password-stdin "$REGISTRY_URL"
-docker build -t "${IMAGE}" .
+
 docker tag "${IMAGE}" "${REGISTRY_URL}/${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
 docker push "${REGISTRY_URL}/${IMAGE}:${VERSION}.${BITBUCKET_BUILD_NUMBER}-dev"
 
