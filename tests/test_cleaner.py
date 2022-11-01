@@ -6,7 +6,7 @@ import pytest
 
 from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner
 from autoscaler.core.constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
-from autoscaler.core.help_classes import Constants, RunnerMeta, NameUUIDData
+from autoscaler.core.validators import Constants, GroupMeta, NameUUIDData
 from autoscaler.services.kubernetes import KubernetesInMemoryService
 from autoscaler.start_cleaner import StartCleaner
 from tests.helpers import capture_output
@@ -58,7 +58,9 @@ class StartCleanerTestCase(TestCase):
 
         self.assertEqual(mock_run.call_count, 2)
 
-    def test_main_namespace_required(self):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
+    def test_main_namespace_required(self, mock_skip_update):
+        mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
 
         cleaner = StartCleaner(
             config_file_path='tests/resources/test_config_no_namespace.yaml',
@@ -70,9 +72,11 @@ class StartCleanerTestCase(TestCase):
                 cleaner.run()
 
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Namespace required for runner.', out.getvalue())
+        self.assertIn('namespace\n  field required', out.getvalue())
 
-    def test_main_namespace_reserved(self):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
+    def test_main_namespace_reserved(self, mock_skip_update):
+        mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
 
         cleaner = StartCleaner(
             config_file_path='tests/resources/test_config_reserved_namespace.yaml',
@@ -85,7 +89,7 @@ class StartCleanerTestCase(TestCase):
 
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
         self.assertIn(
-            f'Namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
+            f'namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
             out.getvalue()
         )
 
@@ -130,7 +134,7 @@ class CleanerTestCase(TestCase):
                 'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'
             }]
         )
-        runner_data = RunnerMeta(**{
+        runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -211,7 +215,7 @@ class CleanerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = RunnerMeta(**{
+        runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -295,7 +299,7 @@ class CleanerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = RunnerMeta(**{
+        runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -353,7 +357,7 @@ class CleanerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = RunnerMeta(**{
+        runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'

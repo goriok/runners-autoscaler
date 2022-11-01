@@ -1,11 +1,14 @@
 from concurrent.futures import ThreadPoolExecutor, wait
 from time import sleep
 
+from pydantic import ValidationError
+
 import autoscaler.core.constants as constants
 import autoscaler.core.validators as validators
 from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner
+from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.core.help_classes import Strategies
-from autoscaler.core.helpers import read_yaml_file, enable_debug, required
+from autoscaler.core.helpers import fail, enable_debug, required
 from autoscaler.core.logger import logger
 from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.services.kubernetes import KubernetesService
@@ -57,26 +60,21 @@ class StartCleaner:
         # read runners parameter from the config file
         validators.validate_config(self.config_file_path)
 
-        runners_data = read_yaml_file(self.config_file_path)
+        try:
+            runners_data = validators.RunnerCleanerData.parse_file(self.config_file_path)
+        except ValidationError as e:
+            fail(e)
+        except AutoscalerHTTPError as e:
+            fail(f'Unauthorized. Check your bitbucket credentials. {e}')
+        else:
+            logger.info(f"Autoscaler runners: {runners_data.groups}")
 
-        runner_constants = validators.init_constants(runners_data)
-
-        autoscaler_runner_groups = [r for r in runners_data['groups']]
-
-        validators.validate_group_count(len(autoscaler_runner_groups))
-
-        for i, data in enumerate(autoscaler_runner_groups):
-            validators.validate_runner_data(data, only_cleaner=True)
-
-            autoscaler_runner_groups[i] = validators.update_runner_data(data, only_cleaner=True)
-
-        logger.info(f"Autoscaler runners: {autoscaler_runner_groups}")
-
-        return autoscaler_runner_groups, runner_constants
+            return runners_data.groups, runners_data.constants
 
 
 def main():
     cleaner = StartCleaner(config_file_path='/opt/conf/config/runners_config.yaml')
+
     cleaner.run()
 
 

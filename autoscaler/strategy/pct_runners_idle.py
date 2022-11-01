@@ -4,11 +4,12 @@ from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
 from time import sleep
 
-from autoscaler.core.help_classes import BitbucketRunnerStatuses, PctRunnersIdleParameters, RunnerData, Constants
-from autoscaler.core.helpers import success, fail
 from autoscaler.core.exceptions import KubernetesNamespaceError, CannotCreateNamespaceError
+from autoscaler.core.help_classes import BitbucketRunnerStatuses
+from autoscaler.core.helpers import success, fail
 from autoscaler.core.interfaces import Strategy
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
+from autoscaler.core.validators import GroupData, Constants
 from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.services.bitbucket import BitbucketService
 
@@ -19,7 +20,7 @@ SCALE_DOWN_MULTIPLIER = 0.5
 
 
 class PctRunnersIdleScaler(Strategy):
-    def __init__(self, runner_data: RunnerData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
+    def __init__(self, runner_data: GroupData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_constants = runner_constants
         self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService(runner_data.name)
@@ -42,18 +43,6 @@ class PctRunnersIdleScaler(Strategy):
         self.validate()
 
         self.run()
-
-    @staticmethod
-    def update_parameters(runner_data: dict[str, dict]) -> PctRunnersIdleParameters:
-        # TODO create case translator camelCase -> snake_case in validators
-        return PctRunnersIdleParameters(
-            min=runner_data['parameters']['min'],
-            max=runner_data['parameters']['max'],
-            scale_up_threshold=runner_data['parameters']['scaleUpThreshold'],
-            scale_down_threshold=runner_data['parameters']['scaleDownThreshold'],
-            scale_up_multiplier=runner_data['parameters']['scaleUpMultiplier'],
-            scale_down_multiplier=runner_data['parameters']['scaleDownMultiplier']
-        )
 
     def get_runners(self):
         # TODO optimize GET requests with filters by labels

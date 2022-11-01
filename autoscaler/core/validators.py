@@ -1,10 +1,19 @@
 import os
+from typing import Any
+
+from pydantic import conlist, root_validator, validator
+from pydantic_yaml import YamlModel
 
 import autoscaler.core.constants as constants
 from autoscaler.core.helpers import fail
-from autoscaler.core.help_classes import Constants, NameUUIDData, Strategies, RunnerMeta, RunnerData
+from autoscaler.core.help_classes import Strategies
 from autoscaler.services.bitbucket import BitbucketService
-from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
+
+
+# Temporary until we decide which camelCase or snake-case we should use
+def to_camel(string):
+    words = string.split('_')
+    return f"{words[0]}{''.join(word.capitalize() for word in words[1:])}"
 
 
 def validate_config(config_file_path, template_file_path=None):
@@ -15,103 +24,88 @@ def validate_config(config_file_path, template_file_path=None):
         fail(f'Passed runners job template file {template_file_path} does not exist.')
 
 
-def init_constants(runners_data):
-    if 'constants' in runners_data:
-        return Constants(
-            runners_data['constants'].get('default_sleep_time_runner_setup',
-                                          constants.DEFAULT_SLEEP_TIME_RUNNER_DELETE),
-            runners_data['constants'].get('default_sleep_time_runner_delete',
-                                          constants.DEFAULT_SLEEP_TIME_RUNNER_SETUP),
-            runners_data['constants'].get('runner_api_polling_interval',
-                                          constants.BITBUCKET_RUNNER_API_POLLING_INTERVAL),
-            runners_data['constants'].get('runner_cool_down_period', constants.RUNNER_COOL_DOWN_PERIOD)
+class Constants(YamlModel):
+    default_sleep_time_runner_setup: int = constants.DEFAULT_SLEEP_TIME_RUNNER_SETUP
+    default_sleep_time_runner_delete: int = constants.DEFAULT_SLEEP_TIME_RUNNER_DELETE
+    runner_api_polling_interval: int = constants.BITBUCKET_RUNNER_API_POLLING_INTERVAL
+    runner_cool_down_period: int = constants.RUNNER_COOL_DOWN_PERIOD
+
+
+class NameUUIDData(YamlModel):
+    name: str
+    uuid: str
+
+
+class PctRunnersIdleParameters(YamlModel):
+    min: int
+    max: int
+    scale_up_threshold: float
+    scale_down_threshold: float
+    scale_up_multiplier: float
+    scale_down_multiplier: float
+
+    class Config:
+        alias_generator = to_camel
+
+
+class GroupMeta(YamlModel):
+    workspace: NameUUIDData
+    name: str
+    namespace: str
+    strategy: str
+    repository: NameUUIDData | None = None
+
+    @root_validator(pre=True)
+    @classmethod
+    def update_to_uuid(cls, values):
+        workspace_name, repository_name = values.get('workspace'), values.get('repository')
+        assert workspace_name, 'Workspace required for runner.'
+
+        values['workspace'], values['repository'] = BitbucketService.get_bitbucket_workspace_repository_uuids(
+            workspace_name=workspace_name,
+            repository_name=repository_name
         )
-    else:
-        return Constants()
+        return values
+
+    @validator('strategy')
+    @classmethod
+    def strategy_supported(cls, strategy, values):
+        assert strategy in GroupData.Strategy.supported_strategies, f'{values["name"]}: strategy {strategy} not supported.'
+        return strategy
+
+    @validator('namespace')
+    @classmethod
+    def namespace_reserved(cls, namespace, values):
+        assert namespace != constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE, f'{values["name"]}: namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.'
+        return namespace
 
 
-def validate_group_count(group_count):
-    if group_count > constants.MAX_GROUPS_COUNT:
-        fail(f'Your groups count {group_count} exceeds maximum allowed count of {constants.MAX_GROUPS_COUNT}')
+class GroupData(GroupMeta):
+    labels: set[str]
+    parameters: Any
+
+    class Strategy:
+        supported_strategies = (Strategies.PCT_RUNNER_IDLE.value,)
+
+    @root_validator
+    @classmethod
+    def update_group_data(cls, values):
+        strategy, parameters = values.get('strategy'), values.get('parameters')
+        # Update labels
+        values['labels'].update(set(constants.DEFAULT_LABELS))
+
+        # Update parameters for different strategies
+        if strategy == Strategies.PCT_RUNNER_IDLE.value:
+            values['parameters'] = PctRunnersIdleParameters.parse_obj(parameters)
+
+        return values
 
 
-def validate_runner_common_data(runner_data):
-    # TODO validate args. Refactor conditional blocks with validator usage.
-    # TODO optimize this logic
-    if runner_data.get('namespace') is None:
-        fail('Namespace required for runner.')
-    elif runner_data['namespace'] == constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE:
-        fail(f'Namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.')
-
-    if runner_data.get('name') is None:
-        fail('Group name required for runner.')
-
-    if runner_data.get('workspace') is None:
-        fail('Workspace required for runner.')
-
-    if runner_data.get('repository') is None:
-        runner_data['repository'] = None
-
-    if runner_data.get('strategy') is None:
-        fail('Strategy required for runner.')
+class RunnerData(YamlModel):
+    constants: Constants = Constants.parse_obj(dict())
+    groups: conlist(GroupData, min_items=1)
 
 
-def validate_runner_data(runner_data, only_cleaner=None):
-    validate_runner_common_data(runner_data)
-
-    if only_cleaner:
-        return
-
-    if runner_data.get('parameters') is None:
-        fail('Parameters required for runner.')
-
-
-def update_runner_data(runner_data, only_cleaner=None):
-    workspace_data, repository_data = BitbucketService.get_bitbucket_workspace_repository_uuids(
-        workspace_name=runner_data['workspace'],
-        repository_name=runner_data['repository']
-    )
-
-    workspace = NameUUIDData(
-        name=workspace_data['name'],
-        uuid=workspace_data['uuid'],
-    )
-
-    repository = None
-    if repository_data:
-        repository = NameUUIDData(
-            name=repository_data['name'],
-            uuid=repository_data['uuid'],
-        )
-
-    if only_cleaner:
-        return RunnerMeta(
-            workspace=workspace,
-            repository=repository,
-            name=runner_data['name'],
-            namespace=runner_data['namespace'],
-            strategy=runner_data['strategy']
-        )
-
-    labels = set(constants.DEFAULT_LABELS)
-    labels.update(runner_data.get('labels'))
-
-    # Update parameters for different strategies
-    parameters = None
-    if runner_data['strategy'] == Strategies.PCT_RUNNER_IDLE.value:
-        try:
-            parameters = PctRunnersIdleScaler.update_parameters(runner_data)
-        except KeyError as e:
-            fail(f"{runner_data['name']}: parameter is missing {e}")
-    else:
-        fail(f'{runner_data["name"]}: strategy {runner_data["strategy"]} not supported.')
-
-    return RunnerData(
-        workspace=workspace,
-        repository=repository,
-        name=runner_data['name'],
-        labels=labels,
-        namespace=runner_data['namespace'],
-        strategy=runner_data['strategy'],
-        parameters=parameters
-    )
+class RunnerCleanerData(YamlModel):
+    constants: Constants = Constants.parse_obj(dict())
+    groups: conlist(GroupMeta, min_items=1)

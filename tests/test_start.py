@@ -56,7 +56,9 @@ class ScaleTestCase(TestCase):
 
         self.assertEqual(mock_process.call_count, 2)
 
-    def test_main_namespace_required(self):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
+    def test_main_namespace_required(self, mock_skip_update):
+        mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
 
         poller = StartPoller(
             config_file_path='tests/resources/test_config_no_namespace.yaml',
@@ -69,9 +71,11 @@ class ScaleTestCase(TestCase):
                 poller.start()
 
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Namespace required for runner.', out.getvalue())
+        self.assertIn('namespace\n  field required', out.getvalue())
 
-    def test_main_namespace_reserved(self):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
+    def test_main_namespace_reserved(self, mock_skip_update):
+        mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
 
         poller = StartPoller(
             config_file_path='tests/resources/test_config_reserved_namespace.yaml',
@@ -85,7 +89,7 @@ class ScaleTestCase(TestCase):
 
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
         self.assertIn(
-            f'Namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
+            f'namespace name `{DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.',
             out.getvalue()
         )
 

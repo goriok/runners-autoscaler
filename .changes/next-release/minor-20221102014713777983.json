@@ -1,0 +1,4 @@
+{
+  "type": "minor",
+  "description": "Bump docker image version to 3.10-slim."
+}

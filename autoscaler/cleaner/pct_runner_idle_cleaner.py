@@ -3,15 +3,16 @@ from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
 from time import sleep
 
-from autoscaler.core.help_classes import Constants, RunnerMeta, BitbucketRunnerStatuses
+from autoscaler.core.help_classes import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
+from autoscaler.core.validators import GroupMeta, Constants
 from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.services.kubernetes import KubernetesService
 
 
 class Cleaner:
-    def __init__(self, runner_data: RunnerMeta, runner_constants: Constants, kubernetes_service=None, runner_service=None):
+    def __init__(self, runner_data: GroupMeta, runner_constants: Constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_constants = runner_constants
         self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService(runner_data.name)
