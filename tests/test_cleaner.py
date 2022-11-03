@@ -93,7 +93,9 @@ class StartCleanerTestCase(TestCase):
             out.getvalue()
         )
 
-    def test_main_workspace_required(self):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
+    def test_main_workspace_required(self, mock_skip_update):
+        mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
 
         cleaner = StartCleaner(
             config_file_path='tests/resources/test_config_no_workspace.yaml',
@@ -105,7 +107,7 @@ class StartCleanerTestCase(TestCase):
                 cleaner.run()
 
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
-        self.assertIn('Workspace required for runner.', out.getvalue())
+        self.assertIn('workspace\n  field required', out.getvalue())
 
 
 @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test', 'DEBUG': 'true'})

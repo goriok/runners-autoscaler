@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, Optional
 
 from pydantic import conlist, root_validator, validator
 from pydantic_yaml import YamlModel
@@ -49,50 +49,63 @@ class PctRunnersIdleParameters(YamlModel):
 
 
 class GroupMeta(YamlModel):
-    workspace: NameUUIDData
+    workspace: str
     name: str
     namespace: str
     strategy: str
-    repository: NameUUIDData | None = None
+    repository: Optional[str] = None
 
-    @root_validator(pre=True)
-    @classmethod
-    def update_to_uuid(cls, values):
-        workspace_name, repository_name = values.get('workspace'), values.get('repository')
-        assert workspace_name, 'Workspace required for runner.'
-
-        values['workspace'], values['repository'] = BitbucketService.get_bitbucket_workspace_repository_uuids(
-            workspace_name=workspace_name,
-            repository_name=repository_name
-        )
-        return values
+    class Strategy:
+        supported_strategies = (Strategies.PCT_RUNNER_IDLE.value,)
 
     @validator('strategy')
     @classmethod
     def strategy_supported(cls, strategy, values):
-        assert strategy in GroupData.Strategy.supported_strategies, f'{values["name"]}: strategy {strategy} not supported.'
+        if strategy not in GroupMeta.Strategy.supported_strategies:
+            raise ValueError(f'{values["name"]}: strategy {strategy} not supported.')
         return strategy
 
     @validator('namespace')
     @classmethod
     def namespace_reserved(cls, namespace, values):
-        assert namespace != constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE, f'{values["name"]}: namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.'
+        if namespace == constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE:
+            raise ValueError(f'{values["name"]}: namespace name `{constants.DEFAULT_RUNNER_KUBERNETES_NAMESPACE}` is reserved and not available.')
         return namespace
+
+    @root_validator
+    @classmethod
+    def update_to_uuid(cls, values):
+        workspace_name, repository_name = values.get('workspace'), values.get('repository')
+
+        workspace_data, repository_data = BitbucketService.get_bitbucket_workspace_repository_uuids(
+            workspace_name=workspace_name,
+            repository_name=repository_name
+        )
+
+        # Update workspace data
+        values['workspace'] = NameUUIDData.parse_obj(workspace_data)
+        if repository_name is not None:
+            # Update repository data
+            values['repository'] = NameUUIDData.parse_obj(repository_data)
+
+        return values
 
 
 class GroupData(GroupMeta):
     labels: set[str]
     parameters: Any
 
-    class Strategy:
-        supported_strategies = (Strategies.PCT_RUNNER_IDLE.value,)
+    @validator('labels')
+    @classmethod
+    def update_labels(cls, labels):
+        # Update labels
+        labels.update(set(constants.DEFAULT_LABELS))
+        return labels
 
     @root_validator
     @classmethod
-    def update_group_data(cls, values):
+    def update_parameters(cls, values):
         strategy, parameters = values.get('strategy'), values.get('parameters')
-        # Update labels
-        values['labels'].update(set(constants.DEFAULT_LABELS))
 
         # Update parameters for different strategies
         if strategy == Strategies.PCT_RUNNER_IDLE.value:
