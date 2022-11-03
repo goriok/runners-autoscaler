@@ -5,7 +5,7 @@ definitions:
   test: &test
     step:
       name: Test
-      image: python:3.9
+      image: python:3.10
       script:
         - make setup lint test
         # build docker image artifact
@@ -32,7 +32,7 @@ definitions:
   release-dev: &release-dev
     step:
       name: Release development version
-      image: python:3.9
+      image: python:3.10
       trigger: manual
       script:
         - docker load --input docker-image.tar.gz
@@ -46,8 +46,9 @@ definitions:
   push: &push
     step:
       name: Push and Tag
-      image: python:3.9
+      image: python:3.10
       script:
+        - docker load --input docker-image.tar.gz
         - pip install semversioner
         - ./ci-scripts/bump-version.sh
         - ./ci-scripts/docker-release.sh bitbucketpipelines/${BITBUCKET_REPO_SLUG}
