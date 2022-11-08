@@ -11,8 +11,8 @@ definitions:
         # build docker image artifact
         - export IMAGE_NAME=bitbucketpipelines/${BITBUCKET_REPO_SLUG}
         - export IMAGE_VERSION=pipelines-${BITBUCKET_BUILD_NUMBER}
-        - docker build -t $IMAGE_NAME:$IMAGE_VERSION .
-        - docker save --output docker-image.tar.gz $IMAGE_NAME:$IMAGE_VERSION
+        - docker build -t $IMAGE_NAME:$IMAGE_VERSION -t $IMAGE_NAME:latest .
+        - docker save --output docker-image.tar.gz $IMAGE_NAME
         - pipe: snyk/snyk-scan:0.5.3
           variables:
             SNYK_TOKEN: $SNYK_TOKEN
