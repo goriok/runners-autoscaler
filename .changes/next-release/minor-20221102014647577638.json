@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Refactor validation with pydantic."
-}

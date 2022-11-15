@@ -1,6 +1,11 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.10.0
+
+- minor: Bump docker image version to 3.10-slim.
+- minor: Refactor validation with pydantic.
+
 ## 1.9.0
 
 - minor: Bump runners controller image to version python:3.10-slim.
