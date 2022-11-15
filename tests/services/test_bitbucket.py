@@ -3,7 +3,7 @@ from unittest import TestCase, mock
 
 import pytest
 
-from autoscaler.core.help_classes import RunnerData, NameUUIDData
+from autoscaler.core.validators import GroupData, NameUUIDData
 from autoscaler.services.bitbucket import BitbucketService
 
 
@@ -36,7 +36,7 @@ class BitbucketServiceTestCase(TestCase):
             ]
         }
 
-        runner_data = RunnerData(**{
+        runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -97,7 +97,7 @@ class BitbucketServiceTestCase(TestCase):
             ]
         }
 
-        runner_data = RunnerData(**{
+        runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -155,7 +155,7 @@ class BitbucketServiceTestCase(TestCase):
             }
         }
 
-        runner_data = RunnerData(**{
+        runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -211,7 +211,7 @@ class BitbucketServiceTestCase(TestCase):
             }
         }
 
-        runner_data = RunnerData(**{
+        runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -247,7 +247,7 @@ class BitbucketServiceTestCase(TestCase):
     def test_delete_bitbucket_runner(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
-        runner_data = RunnerData(**{
+        runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'
@@ -282,7 +282,7 @@ class BitbucketServiceTestCase(TestCase):
     def test_delete_bitbucket_runner_no_repo(self, mock_delete_runner):
         mock_delete_runner.return_value = None
 
-        runner_data = RunnerData(**{
+        runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
                 'uuid': 'workspace-test_uuid'

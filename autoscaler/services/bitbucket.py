@@ -1,6 +1,5 @@
 from autoscaler.clients.bitbucket.base import BitbucketRepository, BitbucketRepositoryRunner, BitbucketWorkspace, BitbucketWorkspaceRunner
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
-from autoscaler.core.help_classes import NameUUIDData
 from autoscaler.core.helpers import string_to_base64string
 
 
@@ -8,7 +7,7 @@ class BitbucketService:
     def __init__(self, group_name):
         self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': group_name})
 
-    def get_bitbucket_runners(self, workspace: NameUUIDData, repository: NameUUIDData = None):
+    def get_bitbucket_runners(self, workspace, repository=None):
         msg = f"Getting runners on Bitbucket workspace: {workspace.name}"
 
         if repository:
@@ -24,7 +23,7 @@ class BitbucketService:
 
         return runners_data['values']
 
-    def create_bitbucket_runner(self, workspace: NameUUIDData, name, labels, repository: NameUUIDData = None):
+    def create_bitbucket_runner(self, workspace, name, labels, repository=None):
         start_msg = f"Starting to setup runner on Bitbucket workspace: {workspace.name}"
         create_complete_msg = f"Runner created on Bitbucket workspace: {workspace.name}"
 
@@ -58,7 +57,7 @@ class BitbucketService:
 
         return runner_data
 
-    def delete_bitbucket_runner(self, workspace: NameUUIDData, runner_uuid, repository: NameUUIDData = None):
+    def delete_bitbucket_runner(self, workspace, runner_uuid, repository=None):
         msg = f"Starting to delete runner {runner_uuid} from Bitbucket workspace: {workspace.name}"
 
         if repository:

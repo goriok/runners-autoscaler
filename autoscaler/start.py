@@ -3,11 +3,14 @@ import shutil
 from concurrent.futures import ThreadPoolExecutor, wait
 from time import sleep
 
+from pydantic import ValidationError
+
 import autoscaler.core.constants as constants
 import autoscaler.core.validators as validators
-from autoscaler.core.helpers import read_yaml_file, required, enable_debug
+from autoscaler.core.helpers import required, enable_debug, fail
 from autoscaler.core.help_classes import Strategies
 from autoscaler.core.logger import logger
+from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
@@ -63,29 +66,24 @@ class StartPoller:
         shutil.copy(self.template_file_path, dest_template_file_path)
         logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
 
-        runners_data = read_yaml_file(self.config_file_path)
+        try:
+            runners_data = validators.RunnerData.parse_file(self.config_file_path)
+        except ValidationError as e:
+            fail(e)
+        except AutoscalerHTTPError as e:
+            fail(f'Unauthorized. Check your bitbucket credentials. {e}')
+        else:
+            logger.info(f"Autoscaler config: {runners_data}")
 
-        logger.info(f"Autoscaler config: {runners_data}")
+            logger.info(f"Autoscaler runners: {runners_data.groups}")
 
-        runner_constants = validators.init_constants(runners_data)
-
-        autoscaler_runner_groups = [r for r in runners_data['groups']]
-
-        validators.validate_group_count(len(autoscaler_runner_groups))
-
-        for i, data in enumerate(autoscaler_runner_groups):
-            validators.validate_runner_data(data)
-
-            autoscaler_runner_groups[i] = validators.update_runner_data(data)
-
-        logger.info(f"Autoscaler runners: {autoscaler_runner_groups}")
-
-        return autoscaler_runner_groups, runner_constants
+            return runners_data.groups, runners_data.constants
 
 
 def main():
     poller = StartPoller(config_file_path='/opt/conf/config/runners_config.yaml',
                          template_file_path='/opt/conf/job_template/job.yaml.template')
+
     poller.start()
 
 
