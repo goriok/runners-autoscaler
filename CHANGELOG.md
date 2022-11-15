@@ -1,6 +1,11 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 1.9.0
+
+- minor: Bump runners controller image to version python:3.10-slim.
+- patch: Internal maintainance: Update CI workflow. Add snyk-scan for docker image.
+
 ## 1.8.0
 
 - minor: Refactored project structure. Removed logic dublicates for start main and start cleaner. Changed entrypoint for cleaner.

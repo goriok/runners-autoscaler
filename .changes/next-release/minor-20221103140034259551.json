@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Bump runners controller image to version python:3.10-slim."
-}
