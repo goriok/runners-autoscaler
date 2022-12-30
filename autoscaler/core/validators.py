@@ -10,12 +10,6 @@ from autoscaler.core.help_classes import Strategies
 from autoscaler.services.bitbucket import BitbucketService
 
 
-# Temporary until we decide which camelCase or snake-case we should use
-def to_camel(string):
-    words = string.split('_')
-    return f"{words[0]}{''.join(word.capitalize() for word in words[1:])}"
-
-
 def validate_config(config_file_path, template_file_path=None):
     if not os.path.exists(config_file_path):
         fail(f'Passed runners configuration file {config_file_path} does not exist.')
@@ -43,9 +37,6 @@ class PctRunnersIdleParameters(YamlModel):
     scale_down_threshold: float
     scale_up_multiplier: float
     scale_down_multiplier: float
-
-    class Config:
-        alias_generator = to_camel
 
 
 class GroupMeta(YamlModel):

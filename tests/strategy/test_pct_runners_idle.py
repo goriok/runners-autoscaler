@@ -117,10 +117,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 10,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
@@ -173,10 +173,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 10,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
@@ -259,10 +259,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 10,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
@@ -352,10 +352,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 10,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
@@ -413,10 +413,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 10,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
@@ -486,10 +486,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 1,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
@@ -554,10 +554,10 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             'parameters': PctRunnersIdleParameters(**{
                 'min': 1,
                 'max': 2,
-                'scaleUpThreshold': 0.5,
-                'scaleDownThreshold': 0.2,
-                'scaleUpMultiplier': 1.5,
-                'scaleDownMultiplier': 0.5
+                'scale_up_threshold': 0.5,
+                'scale_down_threshold': 0.2,
+                'scale_up_multiplier': 1.5,
+                'scale_down_multiplier': 0.5
             })
         })
 
