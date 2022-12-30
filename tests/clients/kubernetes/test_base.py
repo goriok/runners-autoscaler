@@ -10,12 +10,12 @@ class KubernetesSpecFileAPIServiceTestCase(TestCase):
 
     def test_generate_kube_spec_file(self):
         runner_data = {
-            'accountUuid': 'account',
-            'repositoryUuid': 'repo',
-            'runnerUuid': 'runner',
-            'oauthClientId_base64': 'testID',
-            'oauthClientSecret_base64': 'testSecret',
-            'runnerNamespace': 'namespace'
+            'account_uuid': 'account',
+            'repository_uuid': 'repo',
+            'runner_uuid': 'runner',
+            'oauth_client_id_base64': 'testID',
+            'oauth_client_secret_base64': 'testSecret',
+            'runner_namespace': 'namespace'
         }
         api = KubernetesSpecFileAPIService()
         output = api.generate_kube_spec_file(runner_data=runner_data)

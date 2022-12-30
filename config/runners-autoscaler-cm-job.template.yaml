@@ -11,32 +11,32 @@ data:
       - apiVersion: v1
         kind: Secret
         metadata:
-          name: runner-oauth-credentials-<%runnerUuid%>  # mandatory, don't modify
+          name: runner-oauth-credentials-<%runner_uuid%>  # mandatory, don't modify
           labels:
-            accountUuid: <%accountUuid%>  # mandatory, don't modify
-        {%- if repositoryUuid %}
-            repositoryUuid: <%repositoryUuid%>  # mandatory, don't modify
+            account_uuid: <%account_uuid%>  # mandatory, don't modify
+        {%- if repository_uuid %}
+            repository_uuid: <%repository_uuid%>  # mandatory, don't modify
         {%- endif %}
-            runnerUuid: <%runnerUuid%>  # mandatory, don't modify
-            runnerNamespace: <%runnerNamespace%>  # mandatory, don't modify
+            runner_uuid: <%runner_uuid%>  # mandatory, don't modify
+            runner_namespace: <%runner_namespace%>  # mandatory, don't modify
         data:
-          oauthClientId: <%oauthClientId_base64%>
-          oauthClientSecret: <%oauthClientSecret_base64%>
+          oauth_client_id: <%oauth_client_id_base64%>
+          oauth_client_secret: <%oauth_client_secret_base64%>
       - apiVersion: batch/v1
         kind: Job
         metadata:
-          name: runner-<%runnerUuid%>  # mandatory, don't modify
+          name: runner-<%runner_uuid%>  # mandatory, don't modify
         spec:
           template:
             metadata:
               labels:
                 customer: shared
-                accountUuid: <%accountUuid%>  # mandatory, don't modify
-                runnerUuid: <%runnerUuid%>  # mandatory, don't modify
-            {%- if repositoryUuid %}
-                repositoryUuid: <%repositoryUuid%>  # mandatory, don't modify
+                account_uuid: <%account_uuid%>  # mandatory, don't modify
+                runner_uuid: <%runner_uuid%>  # mandatory, don't modify
+            {%- if repository_uuid %}
+                repository_uuid: <%repository_uuid%>  # mandatory, don't modify
             {%- endif %}
-                runnerNamespace: <%runnerNamespace%>  # mandatory, don't modify
+                runner_namespace: <%runner_namespace%>  # mandatory, don't modify
             spec:
               containers:
                 - name: runner
@@ -50,23 +50,23 @@ data:
                       cpu: "1000m"
                   env:
                     - name: ACCOUNT_UUID  # mandatory, don't modify
-                      value: "{<%accountUuid%>}"  # mandatory, don't modify
-                {%- if repositoryUuid %}
+                      value: "{<%account_uuid%>}"  # mandatory, don't modify
+                {%- if repository_uuid %}
                     - name: REPOSITORY_UUID  # mandatory, don't modify
-                      value: "{<%repositoryUuid%>}"  # mandatory, don't modify
+                      value: "{<%repository_uuid%>}"  # mandatory, don't modify
                 {%- endif %}
                     - name: RUNNER_UUID  # mandatory, don't modify
-                      value: "{<%runnerUuid%>}"  # mandatory, don't modify
+                      value: "{<%runner_uuid%>}"  # mandatory, don't modify
                     - name: OAUTH_CLIENT_ID
                       valueFrom:
                         secretKeyRef:
-                          name: runner-oauth-credentials-<%runnerUuid%>
-                          key: oauthClientId
+                          name: runner-oauth-credentials-<%runner_uuid%>
+                          key: oauth_client_id
                     - name: OAUTH_CLIENT_SECRET
                       valueFrom:
                         secretKeyRef:
-                          name: runner-oauth-credentials-<%runnerUuid%>
-                          key: oauthClientSecret
+                          name: runner-oauth-credentials-<%runner_uuid%>
+                          key: oauth_client_secret
                     - name: WORKING_DIRECTORY
                       value: "/tmp"
                   volumeMounts:

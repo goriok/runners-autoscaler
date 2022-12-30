@@ -53,7 +53,7 @@ class KubernetesServiceTestCase(TestCase):
         mock_secret.return_value.metadata.name = None
 
         runner_data = {
-            'runnerNamespace': 'test-namespace',
+            'runner_namespace': 'test-namespace',
             'uuid': '{test-uuid}',
             'name': 'good',
             'labels': ['self.hosted', 'asd', 'linux'],

@@ -182,11 +182,11 @@ class BitbucketServiceTestCase(TestCase):
         self.assertEqual(
             result,
             {
-                'accountUuid': 'workspace-test_uuid',
-                'repositoryUuid': 'repository-test_uuid',
-                'runnerUuid': 'test-uuid',
-                'oauthClientId_base64': 'dGVzdGlk',
-                'oauthClientSecret_base64': 'dGVzdHNlY3JldA==',
+                'account_uuid': 'workspace-test_uuid',
+                'repository_uuid': 'repository-test_uuid',
+                'runner_uuid': 'test-uuid',
+                'oauth_client_id_base64': 'dGVzdGlk',
+                'oauth_client_secret_base64': 'dGVzdHNlY3JldA==',
             }
         )
 
@@ -235,11 +235,11 @@ class BitbucketServiceTestCase(TestCase):
         self.assertEqual(
             result,
             {
-                'accountUuid': 'workspace-test_uuid',
-                'repositoryUuid': None,
-                'runnerUuid': 'test-uuid',
-                'oauthClientId_base64': 'dGVzdGlk',
-                'oauthClientSecret_base64': 'dGVzdHNlY3JldA==',
+                'account_uuid': 'workspace-test_uuid',
+                'repository_uuid': None,
+                'runner_uuid': 'test-uuid',
+                'oauth_client_id_base64': 'dGVzdGlk',
+                'oauth_client_secret_base64': 'dGVzdHNlY3JldA==',
             }
         )
 

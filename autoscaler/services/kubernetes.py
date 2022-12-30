@@ -36,7 +36,7 @@ class KubernetesInMemoryService(KubernetesServiceInterface):
         return self.running_jobs
 
     def setup_job(self, data):
-        runner_id = data['runnerUuid']
+        runner_id = data['runner_uuid']
         self.running_jobs[runner_id] = data
 
     def delete_job(self, runner_uuid, namespace):
@@ -80,10 +80,10 @@ class KubernetesService(KubernetesServiceInterface):
 
         kube_python_api = KubernetesPythonAPIService()
 
-        secret = kube_python_api.create_secret(job_secret_spec, data['runnerNamespace'])
+        secret = kube_python_api.create_secret(job_secret_spec, data['runner_namespace'])
         self.logger_adapter.info(f"Secret created. status={secret.metadata.name}")
 
-        job = kube_python_api.create_job(job_spec, data['runnerNamespace'])
+        job = kube_python_api.create_job(job_spec, data['runner_namespace'])
         self.logger_adapter.info(f"Job created. status={job.metadata.name}")
 
     def delete_job(self, runner_uuid, namespace):

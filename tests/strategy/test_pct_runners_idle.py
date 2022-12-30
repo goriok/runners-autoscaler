@@ -187,11 +187,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'accountUuid': 'workspace-test_uuid',
-            'repositoryUuid': 'repository-test_uuid',
-            'runnerUuid': 'test-runner-uuid',
-            'oauthClientId_base64': 'testbase64=',
-            'oauthClientSecret_base64': 'testsecret=='
+            'account_uuid': 'workspace-test_uuid',
+            'repository_uuid': 'repository-test_uuid',
+            'runner_uuid': 'test-runner-uuid',
+            'oauth_client_id_base64': 'testbase64=',
+            'oauth_client_secret_base64': 'testsecret=='
         }
 
         mock_create_runner.return_value = create_runner_data
@@ -428,11 +428,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'accountUuid': 'workspace-test_uuid',
-            'repositoryUuid': 'repository-test_uuid',
-            'runnerUuid': 'test-runner-uuid',
-            'oauthClientId_base64': 'testbase64=',
-            'oauthClientSecret_base64': 'testsecret=='
+            'account_uuid': 'workspace-test_uuid',
+            'repository_uuid': 'repository-test_uuid',
+            'runner_uuid': 'test-runner-uuid',
+            'oauth_client_id_base64': 'testbase64=',
+            'oauth_client_secret_base64': 'testsecret=='
         }
 
         mock_create_runner.return_value = create_runner_data
@@ -500,11 +500,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'accountUuid': 'workspace-test_uuid',
-            'repositoryUuid': 'repository-test_uuid',
-            'runnerUuid': 'test-runner-uuid',
-            'oauthClientId_base64': 'testbase64=',
-            'oauthClientSecret_base64': 'testsecret=='
+            'account_uuid': 'workspace-test_uuid',
+            'repository_uuid': 'repository-test_uuid',
+            'runner_uuid': 'test-runner-uuid',
+            'oauth_client_id_base64': 'testbase64=',
+            'oauth_client_secret_base64': 'testsecret=='
         }
 
         mock_create_runner.return_value = create_runner_data

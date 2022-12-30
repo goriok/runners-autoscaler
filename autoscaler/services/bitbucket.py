@@ -46,11 +46,11 @@ class BitbucketService:
 
         # TODO refactor to dataclass
         runner_data = {
-            "accountUuid": workspace.uuid,
-            "repositoryUuid": repository.uuid if repository else None,
-            "runnerUuid": data["uuid"].strip('{}'),
-            "oauthClientId_base64": string_to_base64string(data["oauth_client"]["id"]),
-            "oauthClientSecret_base64": string_to_base64string(data["oauth_client"]["secret"]),
+            "account_uuid": workspace.uuid,
+            "repository_uuid": repository.uuid if repository else None,
+            "runner_uuid": data["uuid"].strip('{}'),
+            "oauth_client_id_base64": string_to_base64string(data["oauth_client"]["id"]),
+            "oauth_client_secret_base64": string_to_base64string(data["oauth_client"]["secret"]),
         }
 
         self.logger_adapter.debug(runner_data)
