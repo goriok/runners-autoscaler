@@ -1,7 +1,7 @@
 import os
 from typing import Any, Optional
 
-from pydantic import conlist, root_validator, validator
+from pydantic import conlist, root_validator, validator, conset
 from pydantic_yaml import YamlModel
 
 import autoscaler.core.constants as constants
@@ -83,7 +83,7 @@ class GroupMeta(YamlModel):
 
 
 class GroupData(GroupMeta):
-    labels: set[str]
+    labels: conset(str, min_items=1)
     parameters: Any
 
     @validator('labels')
@@ -108,6 +108,19 @@ class GroupData(GroupMeta):
 class RunnerData(YamlModel):
     constants: Constants = Constants.parse_obj(dict())
     groups: conlist(GroupData, min_items=1)
+
+    @validator("groups")
+    def check_groups_labels_unique(cls, values):
+        group_labels_set = set()
+        for value in values:
+            if value.labels in group_labels_set:
+                raise ValueError(
+                    f"Every group should have unique set of labels."
+                    f" Duplicate labels item found: {value.labels}")
+            else:
+                group_labels_set.add(frozenset(value.labels))
+
+        return values
 
 
 class RunnerCleanerData(YamlModel):
