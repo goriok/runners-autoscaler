@@ -67,6 +67,7 @@ class StartPoller:
         logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
 
         try:
+            validators.JobTemplate.parse_file(self.template_file_path)
             runners_data = validators.RunnerData.parse_file(self.config_file_path)
         except ValidationError as e:
             fail(e)
