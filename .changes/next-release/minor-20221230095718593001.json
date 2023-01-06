@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Refactor labels and data in configMaps to snake_case."
-}
