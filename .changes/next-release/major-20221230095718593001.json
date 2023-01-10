@@ -1,4 +1,0 @@
-{
-  "type": "major",
-  "description": "Refactor labels and data in configMaps to snake_case. Breaking change! You have to update labels in your job template and constants in config map settings according to snake_case style. See Readme and template examples for more info."
-}
