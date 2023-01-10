@@ -120,10 +120,10 @@ groups:
     parameters:
       min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting
       max: 10  # maximum allowed runners count
-      scaleUpThreshold: 0.8  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-      scaleDownThreshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-      scaleUpMultiplier: 1.5  #  scaleUpMultiplier > 1  speed to scale up
-      scaleDownMultiplier: 0.5  #  0 < scaleDownMultiplier < 1  speed to scale down
+      scale_up_threshold: 0.8  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+      scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
+      scale_up_multiplier: 1.5  #  scale_up_multiplier > 1  speed to scale up
+      scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1  speed to scale down
 
 constants:  # autoscaler parameters available for tuning
   default_sleep_time_runner_setup: 5  # seconds. Time between runners creation.
@@ -156,18 +156,18 @@ Then the autoscaler calculates runners scale threshold value:
 ```
 runners scale threshold value = BUSY_ONLINE_RUNNERS / ALL_ONLINE_RUNNERS
 ```
-and compares it with scaleUpThreshold and scaleDownThreshold from the configuration file.
+and compares it with scale_up_threshold and scale_down_threshold from the configuration file.
 
-If runners scale threshold value more than scaleUpThreshold, it means that most "ONLINE" runners are BUSY (executing some pipelines job) and new runners will be created.
-If runners scale threshold value less than scaleDownThreshold, it means that most "ONLINE" runners are in IDLE state and the count of online runners should be decreased to min count.
+If runners scale threshold value more than scale_up_threshold, it means that most "ONLINE" runners are BUSY (executing some pipelines job) and new runners will be created.
+If runners scale threshold value less than scale_down_threshold, it means that most "ONLINE" runners are in IDLE state and the count of online runners should be decreased to min count.
 
-A speed to increase and decrease the count of runners could be turned with scaleUpMultiplier and scaleDownMultiplier values in the configuration file.
+A speed to increase and decrease the count of runners could be turned with scale_up_multiplier and scale_down_multiplier values in the configuration file.
 
 Finally, desired count of runners calculated by autoscaler:
 ```
-desired count of runners = ALL_ONLINE_RUNNERS * scaleUpMultiplier  # scale up case
+desired count of runners = ALL_ONLINE_RUNNERS * scale_up_multiplier  # scale up case
 or
-desired count of runners = ALL_ONLINE_RUNNERS * scaleDownMultiplier # scale down case
+desired count of runners = ALL_ONLINE_RUNNERS * scale_down_multiplier # scale down case
 ```
 
 
@@ -184,9 +184,9 @@ Then a user runs pipeline that uses this runner, so 1 (one) BUSY runner present.
 
 The autoscaler calculates **runners scale threshold** value as BUSY runners / ONLINE runners = 1/1 = **1.0**
 
-In the configuration file value of scaleUpThreshold = 0.8, the autoscaler compare it with calculated value 1.0, so new runners should be created.
+In the configuration file value of scale_up_threshold = 0.8, the autoscaler compare it with calculated value 1.0, so new runners should be created.
 
-Then the autoscaler calculates **desired count of runners** = ONLINE runners * scaleUpMultiplier = ceil(1 * 1.5) = 2
+Then the autoscaler calculates **desired count of runners** = ONLINE runners * scale_up_multiplier = ceil(1 * 1.5) = 2
 
 Action: So, autoscaler should automatically create +1 ONLINE runner in addition to the existing 1 BUSY runner.
 
@@ -200,7 +200,7 @@ User runs pipeline that still uses one runner, so BUSY runners 1.
 
 The autoscaler calculates **runners scale threshold** value BUSY/ONLINE = 1/2 = **0.5**
 
-So, value between scaleDownThreshold < runners scale threshold value < scaleUpThreshold (0.2 < 0.5 < 0.8)
+So, value between scale_down_threshold < runners scale threshold value < scale_up_threshold (0.2 < 0.5 < 0.8)
 
 Action: nothing to do.
 
@@ -214,9 +214,9 @@ Because, a user’s pipeline job finished, so BUSY runners 0.
 
 The autoscaler calculates **runners scale threshold** value BUSY/ONLINE = 0/2 = **0**
 
-The value 0 under the scaleDownThreshold = 0.2, so count of runners should be decreased.
+The value 0 under the scale_down_threshold = 0.2, so count of runners should be decreased.
 
-Then **desired count of runners** = ONLINE runners * scaleDownMultiplier = floor(2 * 0.5) = 1
+Then **desired count of runners** = ONLINE runners * scale_down_multiplier = floor(2 * 0.5) = 1
 
 And autoscaler should automatically delete 1 ONLINE (IDLE) runner.
 

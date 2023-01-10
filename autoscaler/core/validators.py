@@ -1,19 +1,13 @@
 import os
 from typing import Any, Optional
 
-from pydantic import conlist, root_validator, validator
+from pydantic import conlist, root_validator, validator, conset
 from pydantic_yaml import YamlModel
 
 import autoscaler.core.constants as constants
 from autoscaler.core.helpers import fail
 from autoscaler.core.help_classes import Strategies
 from autoscaler.services.bitbucket import BitbucketService
-
-
-# Temporary until we decide which camelCase or snake-case we should use
-def to_camel(string):
-    words = string.split('_')
-    return f"{words[0]}{''.join(word.capitalize() for word in words[1:])}"
 
 
 def validate_config(config_file_path, template_file_path=None):
@@ -43,9 +37,6 @@ class PctRunnersIdleParameters(YamlModel):
     scale_down_threshold: float
     scale_up_multiplier: float
     scale_down_multiplier: float
-
-    class Config:
-        alias_generator = to_camel
 
 
 class GroupMeta(YamlModel):
@@ -92,7 +83,7 @@ class GroupMeta(YamlModel):
 
 
 class GroupData(GroupMeta):
-    labels: set[str]
+    labels: conset(str, min_items=1)
     parameters: Any
 
     @validator('labels')
@@ -117,6 +108,19 @@ class GroupData(GroupMeta):
 class RunnerData(YamlModel):
     constants: Constants = Constants.parse_obj(dict())
     groups: conlist(GroupData, min_items=1)
+
+    @validator("groups")
+    def check_groups_labels_unique(cls, values):
+        group_labels_set = set()
+        for value in values:
+            if value.labels in group_labels_set:
+                raise ValueError(
+                    f"Every group should have unique set of labels."
+                    f" Duplicate labels item found: {value.labels}")
+            else:
+                group_labels_set.add(frozenset(value.labels))
+
+        return values
 
 
 class RunnerCleanerData(YamlModel):

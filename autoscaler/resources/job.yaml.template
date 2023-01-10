@@ -4,32 +4,32 @@ items:
   - apiVersion: v1
     kind: Secret
     metadata:
-      name: runner-oauth-credentials-<%runnerUuid%>
+      name: runner-oauth-credentials-<%runner_uuid%>
       labels:
-        accountUuid: <%accountUuid%>
-    {%- if repositoryUuid %}
-        repositoryUuid: <%repositoryUuid%>
+        account_uuid: <%account_uuid%>
+    {%- if repository_uuid %}
+        repository_uuid: <%repository_uuid%>
     {%- endif %}
-        runnerUuid: <%runnerUuid%>
-        runnerNamespace: <%runnerNamespace%>
+        runner_uuid: <%runner_uuid%>
+        runner_namespace: <%runner_namespace%>
     data:
-      oauthClientId: <%oauthClientId_base64%>
-      oauthClientSecret: <%oauthClientSecret_base64%>
+      oauth_client_id: <%oauth_client_id_base64%>
+      oauth_client_secret: <%oauth_client_secret_base64%>
   - apiVersion: batch/v1
     kind: Job
     metadata:
-      name: runner-<%runnerUuid%>
+      name: runner-<%runner_uuid%>
     spec:
       template:
         metadata:
           labels:
             customer: shared
-            accountUuid: <%accountUuid%>
-            runnerUuid: <%runnerUuid%>
-        {%- if repositoryUuid %}
-            repositoryUuid: <%repositoryUuid%>
+            account_uuid: <%account_uuid%>
+            runner_uuid: <%runner_uuid%>
+        {%- if repository_uuid %}
+            repository_uuid: <%repository_uuid%>
         {%- endif %}
-            runnerNamespace: <%runnerNamespace%>
+            runner_namespace: <%runner_namespace%>
         spec:
           containers:
             - name: runner
@@ -43,23 +43,23 @@ items:
                   cpu: "1000m"
               env:
                 - name: ACCOUNT_UUID
-                  value: "{<%accountUuid%>}"
-            {%- if repositoryUuid %}
+                  value: "{<%account_uuid%>}"
+            {%- if repository_uuid %}
                 - name: REPOSITORY_UUID
-                  value: "{<%repositoryUuid%>}"
+                  value: "{<%repository_uuid%>}"
             {%- endif %}
                 - name: RUNNER_UUID
-                  value: "{<%runnerUuid%>}"
+                  value: "{<%runner_uuid%>}"
                 - name: OAUTH_CLIENT_ID
                   valueFrom:
                     secretKeyRef:
-                      name: runner-oauth-credentials-<%runnerUuid%>
-                      key: oauthClientId
+                      name: runner-oauth-credentials-<%runner_uuid%>
+                      key: oauth_client_id
                 - name: OAUTH_CLIENT_SECRET
                   valueFrom:
                     secretKeyRef:
-                      name: runner-oauth-credentials-<%runnerUuid%>
-                      key: oauthClientSecret
+                      name: runner-oauth-credentials-<%runner_uuid%>
+                      key: oauth_client_secret
                 - name: WORKING_DIRECTORY
                   value: "/tmp"
               volumeMounts:

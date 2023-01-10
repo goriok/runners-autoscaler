@@ -76,12 +76,12 @@ class PctRunnersIdleScaler(Strategy):
             repository=self.runner_data.repository
         )
 
-        data['runnerNamespace'] = self.runner_data.namespace
+        data['runner_namespace'] = self.runner_data.namespace
 
         self.kubernetes_service.setup_job(data)
 
         success(
-            f"[{self.runner_data.name}] Successfully setup runner UUID {data['runnerUuid']} "
+            f"[{self.runner_data.name}] Successfully setup runner UUID {data['runner_uuid']} "
             f"on workspace {self.runner_data.workspace.name}\n",
             do_exit=False
         )
