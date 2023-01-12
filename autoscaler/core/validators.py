@@ -150,10 +150,10 @@ class Item(YamlModel, ABC):
 
 
 class SecretMetadataLabels(YamlModel):
-    accountUuid: str
-    repositoryUuid: str
-    runnerUuid: str
-    runnerNamespace: str
+    account_uuid: str
+    repository_uuid: str
+    runner_uuid: str
+    runner_namespace: str
 
     class Config:
         extra = Extra.allow
@@ -182,10 +182,10 @@ class SecretData(Item, type="Secret"):
 
 # job
 class JobSpecTemplateMetadataLabels(YamlModel):
-    accountUuid: str
-    repositoryUuid: str
-    runnerUuid: str
-    runnerNamespace: str
+    account_uuid: str
+    repository_uuid: str
+    runner_uuid: str
+    runner_namespace: str
 
     class Config:
         extra = Extra.allow
