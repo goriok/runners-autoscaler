@@ -4,12 +4,12 @@
 import re
 
 
-qnameCharFmt = "[A-Za-z0-9]"
-qnameExtCharFmt = "[-A-Za-z0-9_.]"
-qualifiedNameFmt = "(" + qnameCharFmt + qnameExtCharFmt + "*)?" + qnameCharFmt
-qualifiedNameErrMsg = "must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character"
-qualifiedNameMaxLength = 63
-qualified_name_pattern = f"^{qualifiedNameFmt}$"
+qname_char_fmt = "[A-Za-z0-9]"
+qname_ext_char_fmt = "[-A-Za-z0-9_.]"
+qualified_name_fmt = "(" + qname_char_fmt + qname_ext_char_fmt + "*)?" + qname_char_fmt
+qualified_name_err_msg = "must consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character"
+qualified_name_max_length = 63
+qualified_name_pattern = f"^{qualified_name_fmt}$"
 
 
 def validate_label_key(label_key):
@@ -31,53 +31,53 @@ def validate_label_key(label_key):
                 errors.append(messages)
         case _:
             errors.append(
-                "a qualified name " + regex_error(qualifiedNameErrMsg, qualifiedNameFmt, ["MyName", "my.name", "123-abc"]) +
+                "a qualified name " + regex_error(qualified_name_err_msg, qualified_name_fmt, ["MyName", "my.name", "123-abc"]) +
                 " with an optional DNS subdomain prefix and '/' (e.g. 'example.com/MyName')")
             return errors
 
     if len(name) == 0:
         errors.append("name part must be non-empty")
-    elif len(name) > qualifiedNameMaxLength:
-        errors.append(f"name part must be no more than {qualifiedNameMaxLength} characters")
+    elif len(name) > qualified_name_max_length:
+        errors.append(f"name part must be no more than {qualified_name_max_length} characters")
 
     if not re.match(qualified_name_pattern, name):
-        errors.append("name part " + regex_error(qualifiedNameErrMsg, qualifiedNameFmt, ["MyName", "my.name", "123-abc"]))
+        errors.append("name part " + regex_error(qualified_name_err_msg, qualified_name_fmt, ["MyName", "my.name", "123-abc"]))
 
     return errors
 
 
-labelValueFmt = "(" + qualifiedNameFmt + ")?"
-label_value_pattern = f"^{labelValueFmt}$"
-labelValueErrMsg = "a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character"
-LabelValueMaxLength = 63
+label_value_fmt = "(" + qualified_name_fmt + ")?"
+label_value_pattern = f"^{label_value_fmt}$"
+label_value_err_msg = "a valid label must be an empty string or consist of alphanumeric characters, '-', '_' or '.', and must start and end with an alphanumeric character"
+label_value_max_length = 63
 
 
 def validate_label_value(label_value):
     errors = []
-    if len(label_value) > LabelValueMaxLength:
-        errors.append(f"must be no more than {LabelValueMaxLength} characters")
+    if len(label_value) > label_value_max_length:
+        errors.append(f"must be no more than {label_value_max_length} characters")
     if not re.match(label_value_pattern, label_value):
-        errors.append(labelValueErrMsg)
+        errors.append(label_value_err_msg)
 
     return errors
 
 
-dns1123LabelFmt = "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
-dns1123SubdomainFmt = dns1123LabelFmt + "(\\." + dns1123LabelFmt + ")*"
-dns1123SubdomainErrorMsg = "a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
-# DNS1123SubdomainMaxLength is a subdomain's max length in DNS (RFC 1123)
-DNS1123SubdomainMaxLength = 253
-dns1123SubdomainRegexp_pattern = f"^{dns1123SubdomainFmt}$"
+dns1123_label_fmt = "[a-z0-9]([-a-z0-9]*[a-z0-9])?"
+dns1123_subdomain_fmt = dns1123_label_fmt + "(\\." + dns1123_label_fmt + ")*"
+dns1123_subdomain_error_msg = "a lowercase RFC 1123 subdomain must consist of lower case alphanumeric characters, '-' or '.', and must start and end with an alphanumeric character"
+# dns1123_subdomain_max_length is a subdomain's max length in DNS (RFC 1123)
+dns1123_subdomain_max_length = 253
+dns1123_subdomain_regexp_pattern = f"^{dns1123_subdomain_fmt}$"
 
 
-# IsDNS1123Subdomain tests for a string that conforms to the definition of a
+# is_dns1123_subdomain tests for a string that conforms to the definition of a
 # subdomain in DNS (RFC 1123)
 def is_dns1123_subdomain(value):
     errors = []
-    if len(value) > DNS1123SubdomainMaxLength:
-        errors.append(f"must be no more than {DNS1123SubdomainMaxLength} characters")
-    if not re.match(dns1123SubdomainRegexp_pattern, value):
-        errors.append(regex_error(dns1123SubdomainErrorMsg, dns1123SubdomainFmt, ["example.com"]))
+    if len(value) > dns1123_subdomain_max_length:
+        errors.append(f"must be no more than {dns1123_subdomain_max_length} characters")
+    if not re.match(dns1123_subdomain_regexp_pattern, value):
+        errors.append(regex_error(dns1123_subdomain_error_msg, dns1123_subdomain_fmt, ["example.com"]))
 
     return errors
 

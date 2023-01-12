@@ -149,6 +149,7 @@ class Item(YamlModel, ABC):
         return cls._types[item_kind](**value)
 
 
+# secret
 class SecretMetadataLabels(YamlModel):
     account_uuid: str
     runner_uuid: str
