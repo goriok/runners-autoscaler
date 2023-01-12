@@ -8,6 +8,15 @@ definitions:
       image: python:3.10
       script:
         - make setup lint test
+      services:
+        - docker
+
+
+  snyk-scan: &snyk-scan
+    step:
+      name: Snyk scan
+      image: python:3.10
+      script:
         # build docker image artifact
         - export IMAGE_NAME=bitbucketpipelines/${BITBUCKET_REPO_SLUG}
         - export IMAGE_VERSION=pipelines-${BITBUCKET_BUILD_NUMBER}
@@ -23,6 +32,7 @@ definitions:
             DONT_BREAK_BUILD: "true"
             CODE_INSIGHTS_RESULTS: "true" # Optional - Generates a code insights report in pull request view
             MONITOR: "true"
+            DEBUG: "true"
       services:
         - docker
       artifacts:
@@ -60,8 +70,10 @@ definitions:
 pipelines:
   default:
     - <<: *test
+    - <<: *snyk-scan
     - <<: *release-dev
   branches:
     master:
       - <<: *test
+      - <<: *snyk-scan
       - <<: *push

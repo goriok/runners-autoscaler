@@ -1,6 +1,12 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 2.0.0
+
+- major: Refactor labels and data in configMaps to snake_case. Breaking change! You have to update labels in your job template and constants in config map settings according to snake_case style. See Readme and template examples for more info.
+- minor: Added validation labels should be unique for every group.
+- patch: Internal maintenance: split steps for snyk-scan and test.
+
 ## 1.10.0
 
 - minor: Bump docker image version to 3.10-slim.

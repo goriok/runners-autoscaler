@@ -6,13 +6,13 @@ items:
     metadata:
       name: runner-oauth-credentials-runner
       labels:
-        accountUuid: account
-        repositoryUuid: repo
-        runnerUuid: runner
-        runnerNamespace: namespace
+        account_uuid: account
+        repository_uuid: repo
+        runner_uuid: runner
+        runner_namespace: namespace
     data:
-      oauthClientId: testID
-      oauthClientSecret: testSecret
+      oauth_client_id: testID
+      oauth_client_secret: testSecret
   - apiVersion: batch/v1
     kind: Job
     metadata:
@@ -22,10 +22,10 @@ items:
         metadata:
           labels:
             customer: shared
-            accountUuid: account
-            runnerUuid: runner
-            repositoryUuid: repo
-            runnerNamespace: namespace
+            account_uuid: account
+            runner_uuid: runner
+            repository_uuid: repo
+            runner_namespace: namespace
         spec:
           containers:
             - name: runner
@@ -48,12 +48,12 @@ items:
                   valueFrom:
                     secretKeyRef:
                       name: runner-oauth-credentials-runner
-                      key: oauthClientId
+                      key: oauth_client_id
                 - name: OAUTH_CLIENT_SECRET
                   valueFrom:
                     secretKeyRef:
                       name: runner-oauth-credentials-runner
-                      key: oauthClientSecret
+                      key: oauth_client_secret
                 - name: WORKING_DIRECTORY
                   value: "/tmp"
               volumeMounts:
