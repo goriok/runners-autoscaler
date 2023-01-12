@@ -151,7 +151,6 @@ class Item(YamlModel, ABC):
 
 class SecretMetadataLabels(YamlModel):
     account_uuid: str
-    repository_uuid: str
     runner_uuid: str
     runner_namespace: str
 
@@ -183,7 +182,6 @@ class SecretData(Item, type="Secret"):
 # job
 class JobSpecTemplateMetadataLabels(YamlModel):
     account_uuid: str
-    repository_uuid: str
     runner_uuid: str
     runner_namespace: str
 
