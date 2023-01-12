@@ -2,11 +2,12 @@ import os
 from unittest import TestCase, mock
 
 import pytest
+import requests_mock
 import requests_oauthlib
 
 from autoscaler.clients.bitbucket.base import (
     Auth, BitbucketAPIService, BitbucketRepository, BitbucketRepositoryRunner,
-    BitbucketWorkspace, BitbucketWorkspaceRunner)
+    BitbucketWorkspace, BitbucketWorkspaceRunner, ITEMS_PER_PAGE)
 from autoscaler.core.exceptions import NotAuthorized
 
 
@@ -109,17 +110,26 @@ class BitbucketWorkspaceRunnerTestCase(TestCase):
             'foo'
         )
 
-    @mock.patch.object(BitbucketWorkspaceRunner, 'make_http_request')
-    def test_get_runners(self, get_runners_request):
-        get_runners_request.return_value = (
-            {'values': ['foo', 'bar', 'baz']},
-            200
+    @requests_mock.Mocker()
+    def test_get_runners(self, requests):
+        url = f'{BitbucketWorkspaceRunner.BASE_URL}/{{{"foo"}}}/pipelines-config/runners'
+        requests.register_uri(
+            'GET', f'{url}?pagelen={ITEMS_PER_PAGE}',
+            json={'values': ['foo', 'bar', 'baz'], 'next': f'{url}?page=2&pagelen={ITEMS_PER_PAGE}'},
+            status_code=200
         )
+
+        requests.register_uri(
+            'GET', f'{url}?page=2&pagelen={ITEMS_PER_PAGE}',
+            json={'values': ['foo2', 'bar2', 'baz2']},
+            status_code=200
+        )
+
         service = BitbucketWorkspaceRunner()
         result = service.get_runners('foo')
         self.assertEqual(
             result,
-            {'values': ['foo', 'bar', 'baz']}
+            ['foo', 'bar', 'baz', 'foo2', 'bar2', 'baz2']
         )
 
     @mock.patch.object(BitbucketWorkspaceRunner, 'make_http_request')
@@ -165,17 +175,27 @@ class BitbucketRepositoryRunnerTestCase(TestCase):
             'foo'
         )
 
-    @mock.patch.object(BitbucketRepositoryRunner, 'make_http_request')
-    def test_get_runners(self, get_runners_request):
-        get_runners_request.return_value = (
-            {'values': ['foo', 'bar', 'baz']},
-            200
+    @requests_mock.Mocker()
+    def test_get_runners(self, requests):
+        url = f'{BitbucketRepositoryRunner.BASE_URL}/{{{"foo"}}}/{{{"bar"}}}/pipelines-config/runners'
+
+        requests.register_uri(
+            'GET', f'{url}?pagelen={ITEMS_PER_PAGE}',
+            json={'values': ['foo', 'bar', 'baz'], 'next': f'{url}?page=2&pagelen={ITEMS_PER_PAGE}'},
+            status_code=200
         )
+
+        requests.register_uri(
+            'GET', f'{url}?page=2&pagelen={ITEMS_PER_PAGE}',
+            json={'values': ['foo2', 'bar2', 'baz2']},
+            status_code=200
+        )
+
         service = BitbucketRepositoryRunner()
         result = service.get_runners('foo', 'bar')
         self.assertEqual(
             result,
-            {'values': ['foo', 'bar', 'baz']}
+            ['foo', 'bar', 'baz', 'foo2', 'bar2', 'baz2']
         )
 
     @mock.patch.object(BitbucketRepositoryRunner, 'make_http_request')

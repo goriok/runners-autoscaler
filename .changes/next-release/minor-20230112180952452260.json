@@ -1,0 +1,4 @@
+{
+  "type": "minor",
+  "description": "Implemented pagination to get runners from Bitbucket API."
+}
