@@ -16,25 +16,23 @@ class BitbucketServiceTestCase(TestCase):
 
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepositoryRunner.get_runners')
     def test_get_bitbucket_runners(self, get_runners_request):
-        get_runners_request.return_value = {
-            'values': [
-                {
-                    'created_on': '2021-09-29T23:28:04.683210Z',
-                    'labels': ['abc', 'fff', 'self.hosted', 'linux'],
-                    'name': 'good',
-                    'oauth_client': {
-                        'audience': 'api.fake-api.com',
-                        'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
-                        'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
-                    'state': {
-                        'status': 'ONLINE',
-                        'updated_on': '2021-09-29T23:55:14.857790Z',
-                        'version': {'current': '1.184'}
-                    },
-                    'updated_on': '2021-09-29T23:55:14.857791Z',
-                    'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
-            ]
-        }
+        get_runners_request.return_value = [
+            {
+                'created_on': '2021-09-29T23:28:04.683210Z',
+                'labels': ['abc', 'fff', 'self.hosted', 'linux'],
+                'name': 'good',
+                'oauth_client': {
+                    'audience': 'api.fake-api.com',
+                    'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
+                    'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
+                'state': {
+                    'status': 'ONLINE',
+                    'updated_on': '2021-09-29T23:55:14.857790Z',
+                    'version': {'current': '1.184'}
+                },
+                'updated_on': '2021-09-29T23:55:14.857791Z',
+                'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
+        ]
 
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
@@ -77,25 +75,23 @@ class BitbucketServiceTestCase(TestCase):
 
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspaceRunner.get_runners')
     def test_get_bitbucket_runners_no_repo(self, get_runners_request):
-        get_runners_request.return_value = {
-            'values': [
-                {
-                    'created_on': '2021-09-29T23:28:04.683210Z',
-                    'labels': ['abc', 'fff', 'self.hosted', 'linux'],
-                    'name': 'good',
-                    'oauth_client': {
-                        'audience': 'api.fake-api.com',
-                        'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
-                        'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
-                    'state': {
-                        'status': 'ONLINE',
-                        'updated_on': '2021-09-29T23:55:14.857790Z',
-                        'version': {'current': '1.184'}
-                    },
-                    'updated_on': '2021-09-29T23:55:14.857791Z',
-                    'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
-            ]
-        }
+        get_runners_request.return_value = [
+            {
+                'created_on': '2021-09-29T23:28:04.683210Z',
+                'labels': ['abc', 'fff', 'self.hosted', 'linux'],
+                'name': 'good',
+                'oauth_client': {
+                    'audience': 'api.fake-api.com',
+                    'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
+                    'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
+                'state': {
+                    'status': 'ONLINE',
+                    'updated_on': '2021-09-29T23:55:14.857790Z',
+                    'version': {'current': '1.184'}
+                },
+                'updated_on': '2021-09-29T23:55:14.857791Z',
+                'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'}
+        ]
 
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{

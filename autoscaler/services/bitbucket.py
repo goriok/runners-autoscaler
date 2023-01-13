@@ -14,14 +14,14 @@ class BitbucketService:
             self.logger_adapter.info(f"{msg} repository: {repository.name} ...")
 
             repository_runner_api = BitbucketRepositoryRunner()
-            runners_data = repository_runner_api.get_runners(workspace.uuid, repository.uuid)
+            runners = repository_runner_api.get_runners(workspace.uuid, repository.uuid)
         else:
             self.logger_adapter.info(f"{msg} ...")
 
             workspace_runner_api = BitbucketWorkspaceRunner()
-            runners_data = workspace_runner_api.get_runners(workspace.uuid)
+            runners = workspace_runner_api.get_runners(workspace.uuid)
 
-        return runners_data['values']
+        return runners
 
     def create_bitbucket_runner(self, workspace, name, labels, repository=None):
         start_msg = f"Starting to setup runner on Bitbucket workspace: {workspace.name}"

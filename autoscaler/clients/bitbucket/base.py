@@ -15,6 +15,7 @@ from autoscaler.core.logger import logger
 
 
 BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
+ITEMS_PER_PAGE = 100
 
 
 class Auth:
@@ -104,10 +105,15 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
         runner, _ = self.make_http_request(url)
         return runner
 
-    # TODO implement paging
     def get_runners(self, workspace_uuid):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners?pagelen=100'
-        runners, _ = self.make_http_request(url)
+        runners = []
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners?pagelen={ITEMS_PER_PAGE}'
+
+        while url:
+            runners_part, _ = self.make_http_request(url)
+            runners.extend(runners_part['values'])
+            url = runners_part.get('next')
+
         return runners
 
     def create_runner(self, workspace_uuid, name, labels):
@@ -132,10 +138,15 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
         runner, _ = self.make_http_request(url)
         return runner
 
-    # TODO implement paging
     def get_runners(self, workspace_uuid, repo_uuid):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners?pagelen=100'
-        runners, _ = self.make_http_request(url)
+        runners = []
+        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners?pagelen={ITEMS_PER_PAGE}'
+
+        while url:
+            runners_part, _ = self.make_http_request(url)
+            runners.extend(runners_part['values'])
+            url = runners_part.get('next')
+
         return runners
 
     def create_runner(self, workspace_uuid, repo_uuid, name, labels):
