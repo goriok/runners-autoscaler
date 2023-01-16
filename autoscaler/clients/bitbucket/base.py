@@ -10,7 +10,6 @@ from requests_oauthlib.oauth2_session import OAuth2Session
 
 from autoscaler.clients.base import BaseAPIService, BearerAuth
 from autoscaler.core.exceptions import NotAuthorized
-from autoscaler.core.helpers import decorate_with_curly_brackets
 from autoscaler.core.logger import logger
 
 
@@ -101,13 +100,13 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
     INTERVAL_BEFORE_REQUESTS = 5
 
     def get_runner(self, workspace_uuid, runner_uuid):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+        url = f'{self.BASE_URL}/{workspace_uuid}/pipelines-config/runners/{runner_uuid}'
         runner, _ = self.make_http_request(url)
         return runner
 
     def get_runners(self, workspace_uuid):
         runners = []
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners?pagelen={ITEMS_PER_PAGE}'
+        url = f'{self.BASE_URL}/{workspace_uuid}/pipelines-config/runners?pagelen={ITEMS_PER_PAGE}'
 
         while url:
             runners_part, _ = self.make_http_request(url)
@@ -117,13 +116,13 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
         return runners
 
     def create_runner(self, workspace_uuid, name, labels):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners'
+        url = f'{self.BASE_URL}/{workspace_uuid}/pipelines-config/runners'
         data = {'name': name, 'labels': labels}
         runner, _ = self.make_http_request(url, method='post', json=data, headers={'Content-Type': 'application/json'})
         return runner
 
     def delete_runner(self, workspace_uuid, runner_uuid):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+        url = f'{self.BASE_URL}/{workspace_uuid}/pipelines-config/runners/{runner_uuid}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner
 
@@ -134,13 +133,13 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
     INTERVAL_BEFORE_REQUESTS = 5
 
     def get_runner(self, workspace_uuid, repo_uuid, runner_uuid):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+        url = f'{self.BASE_URL}/{workspace_uuid}/{repo_uuid}/pipelines-config/runners/{runner_uuid}'
         runner, _ = self.make_http_request(url)
         return runner
 
     def get_runners(self, workspace_uuid, repo_uuid):
         runners = []
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners?pagelen={ITEMS_PER_PAGE}'
+        url = f'{self.BASE_URL}/{workspace_uuid}/{repo_uuid}/pipelines-config/runners?pagelen={ITEMS_PER_PAGE}'
 
         while url:
             runners_part, _ = self.make_http_request(url)
@@ -150,12 +149,12 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
         return runners
 
     def create_runner(self, workspace_uuid, repo_uuid, name, labels):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners'
+        url = f'{self.BASE_URL}/{workspace_uuid}/{repo_uuid}/pipelines-config/runners'
         data = {'name': name, 'labels': labels}
         runner, _ = self.make_http_request(url, method='post', json=data, headers={'Content-Type': 'application/json'})
         return runner
 
     def delete_runner(self, workspace_uuid, repo_uuid, runner_uuid):
-        url = f'{self.BASE_URL}/{decorate_with_curly_brackets(workspace_uuid)}/{decorate_with_curly_brackets(repo_uuid)}/pipelines-config/runners/{decorate_with_curly_brackets(runner_uuid)}'
+        url = f'{self.BASE_URL}/{workspace_uuid}/{repo_uuid}/pipelines-config/runners/{runner_uuid}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner

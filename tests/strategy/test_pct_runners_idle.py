@@ -39,11 +39,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -104,11 +104,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -160,11 +160,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -187,8 +187,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'account_uuid': 'workspace-test_uuid',
-            'repository_uuid': 'repository-test_uuid',
+            'account_uuid': '{workspace-test-uuid}',
+            'repository_uuid': '{repository-test-uuid}',
             'runner_uuid': 'test-runner-uuid',
             'oauth_client_id_base64': 'testbase64=',
             'oauth_client_secret_base64': 'testsecret=='
@@ -246,11 +246,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -277,7 +277,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -339,11 +339,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -370,7 +370,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -400,11 +400,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -428,8 +428,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'account_uuid': 'workspace-test_uuid',
-            'repository_uuid': 'repository-test_uuid',
+            'account_uuid': '{workspace-test-uuid}',
+            'repository_uuid': '{repository-test-uuid}',
             'runner_uuid': 'test-runner-uuid',
             'oauth_client_id_base64': 'testbase64=',
             'oauth_client_secret_base64': 'testsecret=='
@@ -473,11 +473,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -500,8 +500,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'account_uuid': 'workspace-test_uuid',
-            'repository_uuid': 'repository-test_uuid',
+            'account_uuid': '{workspace-test-uuid}',
+            'repository_uuid': '{repository-test-uuid}',
             'runner_uuid': 'test-runner-uuid',
             'oauth_client_id_base64': 'testbase64=',
             'oauth_client_secret_base64': 'testsecret=='
@@ -541,11 +541,11 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',

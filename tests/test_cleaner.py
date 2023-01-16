@@ -139,11 +139,11 @@ class CleanerTestCase(TestCase):
         runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -220,11 +220,11 @@ class CleanerTestCase(TestCase):
         runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -242,7 +242,7 @@ class CleanerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -304,11 +304,11 @@ class CleanerTestCase(TestCase):
         runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -326,15 +326,15 @@ class CleanerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8037'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8037}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8038'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8038}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -362,11 +362,11 @@ class CleanerTestCase(TestCase):
         runner_data = GroupMeta.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',

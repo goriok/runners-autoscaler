@@ -26,7 +26,7 @@ class Cleaner:
     def delete_runners(self, runners_to_delete):
         # delete only old runners
         runners_uuid_to_delete = [
-            r['uuid'].strip('{}') for r in runners_to_delete if du_parser.isoparse(r['created_on']) + timedelta(
+            r['uuid'] for r in runners_to_delete if du_parser.isoparse(r['created_on']) + timedelta(
                 seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
 

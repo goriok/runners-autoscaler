@@ -48,7 +48,7 @@ class BitbucketService:
         runner_data = {
             "account_uuid": workspace.uuid,
             "repository_uuid": repository.uuid if repository else None,
-            "runner_uuid": data["uuid"].strip('{}'),
+            "runner_uuid": data["uuid"],
             "oauth_client_id_base64": string_to_base64string(data["oauth_client"]["id"]),
             "oauth_client_secret_base64": string_to_base64string(data["oauth_client"]["secret"]),
         }
@@ -76,7 +76,7 @@ class BitbucketService:
         workspace_api = BitbucketWorkspace()
         workspace_response = workspace_api.get_workspace(workspace_name)
         workspace_data = {
-            'uuid': workspace_response['uuid'].strip('{}'),
+            'uuid': workspace_response['uuid'],
             'name': workspace_response['slug']
         }
 
@@ -85,7 +85,7 @@ class BitbucketService:
             repository_api = BitbucketRepository()
             repository_response = repository_api.get_repository(workspace_name, repository_name)
             repository_data = {
-                'uuid': repository_response['uuid'].strip('{}'),
+                'uuid': repository_response['uuid'],
                 'name': repository_response['slug']
             }
 

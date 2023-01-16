@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "description": "Refactor data response for workspace, reposiory, runners uuids to contain curly brackets."
+}

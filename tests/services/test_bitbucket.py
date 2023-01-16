@@ -37,11 +37,11 @@ class BitbucketServiceTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -96,7 +96,7 @@ class BitbucketServiceTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': None,
             'name': 'good',
@@ -154,11 +154,11 @@ class BitbucketServiceTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -178,9 +178,9 @@ class BitbucketServiceTestCase(TestCase):
         self.assertEqual(
             result,
             {
-                'account_uuid': 'workspace-test_uuid',
-                'repository_uuid': 'repository-test_uuid',
-                'runner_uuid': 'test-uuid',
+                'account_uuid': '{workspace-test-uuid}',
+                'repository_uuid': '{repository-test-uuid}',
+                'runner_uuid': '{test-uuid}',
                 'oauth_client_id_base64': 'dGVzdGlk',
                 'oauth_client_secret_base64': 'dGVzdHNlY3JldA==',
             }
@@ -210,7 +210,7 @@ class BitbucketServiceTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': None,
             'name': 'good',
@@ -231,9 +231,9 @@ class BitbucketServiceTestCase(TestCase):
         self.assertEqual(
             result,
             {
-                'account_uuid': 'workspace-test_uuid',
+                'account_uuid': '{workspace-test-uuid}',
                 'repository_uuid': None,
-                'runner_uuid': 'test-uuid',
+                'runner_uuid': '{test-uuid}',
                 'oauth_client_id_base64': 'dGVzdGlk',
                 'oauth_client_secret_base64': 'dGVzdHNlY3JldA==',
             }
@@ -246,11 +246,11 @@ class BitbucketServiceTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': NameUUIDData(**{
                 'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
+                'uuid': '{repository-test-uuid}'
             }),
             'name': 'good',
             'namespace': 'test',
@@ -281,7 +281,7 @@ class BitbucketServiceTestCase(TestCase):
         runner_data = GroupData.construct(**{
             'workspace': NameUUIDData(**{
                 'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
+                'uuid': '{workspace-test-uuid}'
             }),
             'repository': None,
             'name': 'good',
@@ -309,5 +309,5 @@ class BitbucketServiceTestCase(TestCase):
 
         self.assertEqual(
             result,
-            ({'uuid': 'test-workspace-uuid', 'name': 'test-workspace'}, {'uuid': 'test-repo-uuid', 'name': 'test-repo'})
+            ({'uuid': '{test-workspace-uuid}', 'name': 'test-workspace'}, {'uuid': '{test-repo-uuid}', 'name': 'test-repo'})
         )
