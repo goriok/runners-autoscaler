@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 2.1.0
+
+- minor: Implemented pagination to get runners from Bitbucket API.
+
 ## 2.0.0
 
 - major: Refactor labels and data in configMaps to snake_case. Breaking change! You have to update labels in your job template and constants in config map settings according to snake_case style. See Readme and template examples for more info.

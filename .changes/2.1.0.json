@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "description": "Implemented pagination to get runners from Bitbucket API.",
+      "type": "minor"
+    }
+  ],
+  "created_at": "2023-01-16T08:40:35.693698+00:00",
+  "version": "2.1.0"
+}
