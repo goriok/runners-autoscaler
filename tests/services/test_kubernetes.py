@@ -4,7 +4,7 @@ from unittest import TestCase, mock
 
 import pytest
 
-from autoscaler.services.kubernetes import KubernetesService
+from autoscaler.services.kubernetes import KubernetesService, KubernetesServiceData
 from autoscaler.core.exceptions import NamespaceNotFoundError
 
 
@@ -52,26 +52,17 @@ class KubernetesServiceTestCase(TestCase):
         mock_create.return_value.metadata.name = None
         mock_secret.return_value.metadata.name = None
 
-        runner_data = {
-            'runner_namespace': 'test-namespace',
-            'uuid': '{test-uuid}',
-            'name': 'good',
-            'labels': ['self.hosted', 'asd', 'linux'],
-            'state': {
-                'status': 'UNREGISTERED',
-                'version': {'version': '1.252'},
-                'updated_on': '2021-12-03T18:20:22.561088Z'
-            },
-            'created_on': '2021-12-03T18:20:22.561005Z',
-            'updated_on': '2021-12-03T18:20:22.561005Z',
-            'oauth_client': {
-                'id': 'testid',
-                'secret': 'testsecret',
-                'token_endpoint': 'https://fake-api.auth0.com/oauth/token',
-                'audience': 'api.fake-api.com'
-            }
-        }
+        runner_data = KubernetesServiceData(
+            account_uuid='test-workspace-uuid',
+            runner_uuid='test-uuid',
+            oauth_client_id_base64='test-oauth',
+            oauth_client_secret_base64='test-secret',
+            runner_namespace='test-namespace',
+            repository_uuid='test-repository-uuid'
+        )
+
         service: KubernetesService = KubernetesService('test')
+
         with self.caplog.at_level(logging.INFO):
             service.setup_job(runner_data)
 

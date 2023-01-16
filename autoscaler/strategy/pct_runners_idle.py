@@ -1,17 +1,19 @@
 import math
 from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
 from time import sleep
+from typing import Set
 
 from autoscaler.core.exceptions import KubernetesNamespaceError, CannotCreateNamespaceError
 from autoscaler.core.help_classes import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success, fail
 from autoscaler.core.interfaces import Strategy
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
-from autoscaler.core.validators import GroupData, Constants
-from autoscaler.services.kubernetes import KubernetesService
-from autoscaler.services.bitbucket import BitbucketService
+from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters
+from autoscaler.services.kubernetes import KubernetesService, KubernetesServiceData
+from autoscaler.services.bitbucket import BitbucketService, BitbucketServiceData
 
 
 MAX_RUNNERS_COUNT = 100
@@ -19,13 +21,40 @@ SCALE_UP_MULTIPLIER = 1.5
 SCALE_DOWN_MULTIPLIER = 0.5
 
 
+@dataclass
+class PctRunnersIdleData:
+    workspace: NameUUIDData
+    repository: NameUUIDData | None
+    name: str
+    namespace: str
+    strategy: str
+    labels: Set[str]
+    parameters: PctRunnersIdleParameters
+
+
 class PctRunnersIdleScaler(Strategy):
-    def __init__(self, runner_data: GroupData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
+    def __init__(self, runner_data: PctRunnersIdleData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_constants = runner_constants
         self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService(runner_data.name)
         self.runner_service = runner_service if runner_service else BitbucketService(runner_data.name)
         self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': runner_data.name})
+
+    @staticmethod
+    def convert_bitbucket_data_to_k8s_data(bitbucket_data: BitbucketServiceData, namespace) -> KubernetesServiceData:
+        """
+        Bitbucket workspace, repository and runners uuids have curly brackets i.e {some-uuid} format.
+        Kubernetes labels does not allow to use curly brackets for values so this method reformat
+        bitbucket data to kubernetes data without curly brackets and also add data for namespace.
+        """
+        return KubernetesServiceData(
+            account_uuid=bitbucket_data.account_uuid.strip('{}'),
+            repository_uuid=bitbucket_data.repository_uuid.strip('{}') if bitbucket_data.repository_uuid else None,
+            runner_uuid=bitbucket_data.runner_uuid.strip('{}'),
+            oauth_client_id_base64=bitbucket_data.oauth_client_id_base64,
+            oauth_client_secret_base64=bitbucket_data.oauth_client_secret_base64,
+            runner_namespace=namespace
+        )
 
     def validate(self):
         try:
@@ -38,7 +67,6 @@ class PctRunnersIdleScaler(Strategy):
     def process(self):
         self.logger_adapter.info(f"Working on runner group: {self.runner_data}")
 
-        # TODO add validator for autoscaler parameters
         # TODO move to k8s pod
         self.validate()
 
@@ -69,19 +97,19 @@ class PctRunnersIdleScaler(Strategy):
 
         self.logger_adapter.info(f"Runner #{count_number + 1} for namespace: {self.runner_data.namespace} setup...")
 
-        data = self.runner_service.create_bitbucket_runner(
+        bitbucket_data = self.runner_service.create_bitbucket_runner(
             workspace=self.runner_data.workspace,
             name=self.runner_data.name,
             labels=self.runner_data.labels,
             repository=self.runner_data.repository
         )
 
-        data['runner_namespace'] = self.runner_data.namespace
+        kubernetes_data = self.convert_bitbucket_data_to_k8s_data(bitbucket_data, self.runner_data.namespace)
 
-        self.kubernetes_service.setup_job(data)
+        self.kubernetes_service.setup_job(kubernetes_data)
 
         success(
-            f"[{self.runner_data.name}] Successfully setup runner UUID {data['runner_uuid']} "
+            f"[{self.runner_data.name}] Successfully setup runner UUID {bitbucket_data.runner_uuid} "
             f"on workspace {self.runner_data.workspace.name}\n",
             do_exit=False
         )
@@ -119,7 +147,8 @@ class PctRunnersIdleScaler(Strategy):
                 repository=self.runner_data.repository
             )
 
-            self.kubernetes_service.delete_job(runner_uuid, self.runner_data.namespace)
+            # Remove curly brackets, because for kubernetes service runners names are without them
+            self.kubernetes_service.delete_job(runner_uuid.strip('{}'), self.runner_data.namespace)
 
             success(
                 f"[{self.runner_data.name}] Successfully deleted runner UUID {runner_uuid} "
