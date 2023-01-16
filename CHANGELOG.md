@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 2.2.0
+
+- minor: Add kubernetes labels validator.
+
 ## 2.1.0
 
 - minor: Implemented pagination to get runners from Bitbucket API.
