@@ -129,3 +129,23 @@ class ScaleTestCase(TestCase):
             'Every group should have unique set of labels. Duplicate labels item found',
             out.getvalue()
         )
+
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
+    def test_main_non_valid_labels(self, mock_skip_update):
+        mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
+
+        poller = StartPoller(
+            config_file_path='tests/resources/test_config.yaml',
+            template_file_path='tests/resources/job-default_err.yaml',
+            poll=False
+        )
+
+        with capture_output() as out:
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                poller.start()
+
+        self.assertEqual(pytest_wrapped_e.type, SystemExit)
+        self.assertIn(
+            'Label errors',
+            out.getvalue()
+        )

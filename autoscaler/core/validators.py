@@ -1,13 +1,15 @@
 import os
-from typing import Any, Optional
+from abc import ABC
+from typing import Any, Optional, List, Dict, Literal
 
-from pydantic import conlist, root_validator, validator, conset
+from pydantic import conlist, conset, root_validator, validator, Extra
 from pydantic_yaml import YamlModel
 
 import autoscaler.core.constants as constants
 from autoscaler.core.helpers import fail
 from autoscaler.core.help_classes import Strategies
 from autoscaler.services.bitbucket import BitbucketService
+from autoscaler.utils.validation import validate_label_key, validate_label_value
 
 
 def validate_config(config_file_path, template_file_path=None):
@@ -126,3 +128,95 @@ class RunnerData(YamlModel):
 class RunnerCleanerData(YamlModel):
     constants: Constants = Constants.parse_obj(dict())
     groups: conlist(GroupMeta, min_items=1)
+
+
+# labels validators
+class Item(YamlModel, ABC):
+    _types: Dict[str, type] = {}
+
+    # register automatically all the submodels in `_types`.
+    def __init_subclass__(cls, type: Optional[str] = None):
+        cls._types[type or cls.__name__.lower()] = cls
+
+    @classmethod
+    def __get_validators__(cls):
+        yield cls.validate
+
+    @classmethod
+    def validate(cls, value: Dict[str, Any]) -> 'Item':
+        item_kind = value['kind']
+        # init with right Item submodel
+        return cls._types[item_kind](**value)
+
+
+# secret
+class SecretMetadataLabels(YamlModel):
+    account_uuid: str
+    runner_uuid: str
+    runner_namespace: str
+
+    class Config:
+        extra = Extra.allow
+
+    @root_validator
+    @classmethod
+    def validate_labels(cls, values):
+        errors = []
+        for k, v in values.items():
+            errors.extend(validate_label_key(k))
+            errors.extend(validate_label_value(v))
+        if errors:
+            raise ValueError(f"Label errors: {cls.__name__} {errors}")
+        return values
+
+
+class SecretMetadata(YamlModel):
+    name: str
+    labels: SecretMetadataLabels
+
+
+class SecretData(Item, type="Secret"):
+    metadata: SecretMetadata
+    kind: Literal["Secret"]
+
+
+# job
+class JobSpecTemplateMetadataLabels(YamlModel):
+    account_uuid: str
+    runner_uuid: str
+    runner_namespace: str
+
+    class Config:
+        extra = Extra.allow
+
+    @root_validator
+    @classmethod
+    def validate_labels(cls, values):
+        errors = []
+        for k, v in values.items():
+            errors.extend(validate_label_key(k))
+            errors.extend(validate_label_value(v))
+        if errors:
+            raise ValueError(f"Label errors: {cls.__name__} {errors}")
+        return values
+
+
+class JobSpecTemplateMetadata(YamlModel):
+    labels: JobSpecTemplateMetadataLabels
+
+
+class JobSpecTemplate(YamlModel):
+    metadata: JobSpecTemplateMetadata
+
+
+class JobSpec(YamlModel):
+    template: JobSpecTemplate
+
+
+class JobData(Item, type="Job"):
+    spec: JobSpec
+    kind: Literal["Job"]
+
+
+class JobTemplate(YamlModel):
+    items: List[Item]
