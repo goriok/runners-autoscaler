@@ -1,6 +1,11 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 2.2.2
+
+- patch: Internal maintenance: refactor Bitbucket API response to python dataclass, create dataclass for Kubernetes structure data for pctRunnerIdleStrategy. Update tests.
+- patch: Refactor data response for workspace, repository, runners uuids for Bitbucket API to contain curly brackets.
+
 ## 2.2.1
 
 - patch: Add description about version of the runner image to the job manifest.
