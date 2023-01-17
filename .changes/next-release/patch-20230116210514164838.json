@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "description": "Add description about version of the runner image to the job manifest."
+}
