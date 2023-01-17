@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "description": "Add description about version of the runner image to the job manifest.",
+      "type": "patch"
+    }
+  ],
+  "created_at": "2023-01-17T06:51:37.543068+00:00",
+  "version": "2.2.1"
+}

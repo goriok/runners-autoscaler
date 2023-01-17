@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 2.2.1
+
+- patch: Add description about version of the runner image to the job manifest.
+
 ## 2.2.0
 
 - minor: Add kubernetes labels validator.
