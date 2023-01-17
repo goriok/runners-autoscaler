@@ -1,4 +1,5 @@
 from collections import Counter
+from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
 from time import sleep
@@ -6,13 +7,22 @@ from time import sleep
 from autoscaler.core.help_classes import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
-from autoscaler.core.validators import GroupMeta, Constants
+from autoscaler.core.validators import Constants, NameUUIDData
 from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.services.kubernetes import KubernetesService
 
 
+@dataclass
+class PctRunnersIdleCleanerData:
+    workspace: NameUUIDData
+    repository: NameUUIDData | None
+    name: str
+    namespace: str
+    strategy: str
+
+
 class Cleaner:
-    def __init__(self, runner_data: GroupMeta, runner_constants: Constants, kubernetes_service=None, runner_service=None):
+    def __init__(self, runner_data: PctRunnersIdleCleanerData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_constants = runner_constants
         self.kubernetes_service = kubernetes_service if kubernetes_service else KubernetesService(runner_data.name)
@@ -25,8 +35,10 @@ class Cleaner:
 
     def delete_runners(self, runners_to_delete):
         # delete only old runners
+        # TODO: consider to change case from created_on to updated_on to not delete old runners what recently changed
+        #  their status to not ONLINE.
         runners_uuid_to_delete = [
-            r['uuid'].strip('{}') for r in runners_to_delete if du_parser.isoparse(r['created_on']) + timedelta(
+            r['uuid'] for r in runners_to_delete if du_parser.isoparse(r['created_on']) + timedelta(
                 seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
 
@@ -49,7 +61,8 @@ class Cleaner:
                 repository=self.runner_data.repository
             )
 
-            self.kubernetes_service.delete_job(runner_uuid, self.runner_data.namespace)
+            # Remove curly brackets, because for kubernetes service runners names are without them
+            self.kubernetes_service.delete_job(runner_uuid.strip('{}'), self.runner_data.namespace)
 
             success(
                 f"[{self.runner_data.name}] Successfully deleted runner UUID {runner_uuid} "

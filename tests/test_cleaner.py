@@ -4,9 +4,9 @@ from unittest import TestCase, mock
 
 import pytest
 
-from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner
+from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner, PctRunnersIdleCleanerData
 from autoscaler.core.constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
-from autoscaler.core.validators import Constants, GroupMeta, NameUUIDData
+from autoscaler.core.validators import Constants, NameUUIDData
 from autoscaler.services.kubernetes import KubernetesInMemoryService
 from autoscaler.start_cleaner import StartCleaner
 from tests.helpers import capture_output
@@ -136,19 +136,20 @@ class CleanerTestCase(TestCase):
                 'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'
             }]
         )
-        runner_data = GroupMeta.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'strategy': 'custom'
-        })
+
+        runner_data = PctRunnersIdleCleanerData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            strategy='custom'
+        )
 
         runner_count_scaler = Cleaner(
             runner_data=runner_data,
@@ -217,19 +218,19 @@ class CleanerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupMeta.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'strategy': 'percentageRunnersIdle'
-        })
+        runner_data = PctRunnersIdleCleanerData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            strategy='percentageRunnersIdle'
+        )
 
         service = Cleaner(
             runner_data=runner_data,
@@ -242,7 +243,7 @@ class CleanerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -301,19 +302,19 @@ class CleanerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupMeta.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'strategy': 'percentageRunnersIdle'
-        })
+        runner_data = PctRunnersIdleCleanerData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            strategy='percentageRunnersIdle'
+        )
 
         service = Cleaner(
             runner_data=runner_data,
@@ -326,15 +327,15 @@ class CleanerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8037'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8037}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8038'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8038}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -359,19 +360,19 @@ class CleanerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupMeta.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'strategy': 'percentageRunnersIdle'
-        })
+        runner_data = PctRunnersIdleCleanerData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            strategy='percentageRunnersIdle'
+        )
 
         cleaner = Cleaner(
             runner_data=runner_data,

@@ -46,6 +46,7 @@ develop-eggs
 .installed.cfg
 lib
 lib64
+docker-image.tar.gz
 
 # Installer logs
 pip-log.txt

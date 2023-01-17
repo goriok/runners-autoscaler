@@ -112,7 +112,7 @@ class BitbucketWorkspaceRunnerTestCase(TestCase):
 
     @requests_mock.Mocker()
     def test_get_runners(self, requests):
-        url = f'{BitbucketWorkspaceRunner.BASE_URL}/{{{"foo"}}}/pipelines-config/runners'
+        url = f'{BitbucketWorkspaceRunner.BASE_URL}/foo/pipelines-config/runners'
         requests.register_uri(
             'GET', f'{url}?pagelen={ITEMS_PER_PAGE}',
             json={'values': ['foo', 'bar', 'baz'], 'next': f'{url}?page=2&pagelen={ITEMS_PER_PAGE}'},
@@ -177,7 +177,7 @@ class BitbucketRepositoryRunnerTestCase(TestCase):
 
     @requests_mock.Mocker()
     def test_get_runners(self, requests):
-        url = f'{BitbucketRepositoryRunner.BASE_URL}/{{{"foo"}}}/{{{"bar"}}}/pipelines-config/runners'
+        url = f'{BitbucketRepositoryRunner.BASE_URL}/foo/bar/pipelines-config/runners'
 
         requests.register_uri(
             'GET', f'{url}?pagelen={ITEMS_PER_PAGE}',

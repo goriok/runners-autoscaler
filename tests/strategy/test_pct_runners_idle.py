@@ -4,9 +4,10 @@ from unittest import TestCase, mock
 
 import pytest
 
-from autoscaler.core.validators import Constants, GroupData, NameUUIDData, PctRunnersIdleParameters
+from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters
 from autoscaler.services.kubernetes import KubernetesInMemoryService
-from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
+from autoscaler.services.bitbucket import BitbucketServiceData
+from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler, PctRunnersIdleData
 from tests.helpers import capture_output
 
 
@@ -36,21 +37,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                 'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8039}'
             }]
         )
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'strategy': 'custom',
-            'labels': {'asd'},
-            'parameters': None
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            strategy='custom',
+            labels={'asd'},
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         runner_count_scaler = PctRunnersIdleScaler(
             runner_data=runner_data,
@@ -101,28 +109,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 10,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
@@ -157,28 +165,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 10,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
@@ -186,13 +194,13 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             kubernetes_service=KubernetesInMemoryService()
         )
 
-        create_runner_data = {
-            'account_uuid': 'workspace-test_uuid',
-            'repository_uuid': 'repository-test_uuid',
-            'runner_uuid': 'test-runner-uuid',
-            'oauth_client_id_base64': 'testbase64=',
-            'oauth_client_secret_base64': 'testsecret=='
-        }
+        create_runner_data = BitbucketServiceData(
+            account_uuid='{workspace-test-uuid}',
+            repository_uuid='{repository-test-uuid}',
+            runner_uuid='test-runner-uuid',
+            oauth_client_id_base64='testbase64=',
+            oauth_client_secret_base64='testsecret=='
+        )
 
         mock_create_runner.return_value = create_runner_data
 
@@ -243,28 +251,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 10,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
@@ -277,7 +285,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -336,28 +344,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 10,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
@@ -370,7 +378,7 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID 670ea89c-e64d-5923-8ccc-06d67fae8039'
+        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
@@ -397,28 +405,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 10,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         kubernetes_service = KubernetesInMemoryService()
         service = PctRunnersIdleScaler(
@@ -427,13 +435,13 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             kubernetes_service=kubernetes_service
         )
 
-        create_runner_data = {
-            'account_uuid': 'workspace-test_uuid',
-            'repository_uuid': 'repository-test_uuid',
-            'runner_uuid': 'test-runner-uuid',
-            'oauth_client_id_base64': 'testbase64=',
-            'oauth_client_secret_base64': 'testsecret=='
-        }
+        create_runner_data = BitbucketServiceData(
+            account_uuid='{workspace-test-uuid}',
+            repository_uuid='{repository-test-uuid}',
+            runner_uuid='test-runner-uuid',
+            oauth_client_id_base64='testbase64=',
+            oauth_client_secret_base64='testsecret=='
+        )
 
         mock_create_runner.return_value = create_runner_data
 
@@ -470,28 +478,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 1,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=1,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,
@@ -500,8 +508,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         )
 
         create_runner_data = {
-            'account_uuid': 'workspace-test_uuid',
-            'repository_uuid': 'repository-test_uuid',
+            'account_uuid': '{workspace-test-uuid}',
+            'repository_uuid': '{repository-test-uuid}',
             'runner_uuid': 'test-runner-uuid',
             'oauth_client_id_base64': 'testbase64=',
             'oauth_client_secret_base64': 'testsecret=='
@@ -538,28 +546,28 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
         ]
         mock_get_runners.return_value = get_runners
 
-        runner_data = GroupData.construct(**{
-            'workspace': NameUUIDData(**{
-                'name': 'workspace-test',
-                'uuid': 'workspace-test_uuid'
-            }),
-            'repository': NameUUIDData(**{
-                'name': 'repository-test',
-                'uuid': 'repository-test_uuid'
-            }),
-            'name': 'good',
-            'namespace': 'test',
-            'labels': {'self.hosted', 'test', 'linux'},
-            'strategy': 'percentageRunnersIdle',
-            'parameters': PctRunnersIdleParameters(**{
-                'min': 1,
-                'max': 2,
-                'scale_up_threshold': 0.5,
-                'scale_down_threshold': 0.2,
-                'scale_up_multiplier': 1.5,
-                'scale_down_multiplier': 0.5
-            })
-        })
+        runner_data = PctRunnersIdleData(
+            workspace=NameUUIDData(
+                name='workspace-test',
+                uuid='{workspace-test-uuid}'
+            ),
+            repository=NameUUIDData(
+                name='repository-test',
+                uuid='{repository-test-uuid}'
+            ),
+            name='good',
+            namespace='test',
+            labels={'self.hosted', 'test', 'linux'},
+            strategy='percentageRunnersIdle',
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=2,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            )
+        )
 
         service = PctRunnersIdleScaler(
             runner_data=runner_data,

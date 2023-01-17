@@ -1,10 +1,24 @@
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, asdict
 
 import yaml
 
 import autoscaler.core.exceptions as core_exc
 from autoscaler.clients.kubernetes.base import KubernetesPythonAPIService, KubernetesSpecFileAPIService
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
+
+
+@dataclass
+class KubernetesServiceData:
+    account_uuid: str
+    repository_uuid: str | None
+    runner_uuid: str
+    oauth_client_id_base64: str
+    oauth_client_secret_base64: str
+    runner_namespace: str
+
+    def __iter__(self):
+        yield from asdict(self).items()
 
 
 class KubernetesServiceInterface(ABC):
@@ -35,8 +49,8 @@ class KubernetesInMemoryService(KubernetesServiceInterface):
     def list_jobs(self):
         return self.running_jobs
 
-    def setup_job(self, data):
-        runner_id = data['runner_uuid']
+    def setup_job(self, data: KubernetesServiceData):
+        runner_id = data.runner_uuid
         self.running_jobs[runner_id] = data
 
     def delete_job(self, runner_uuid, namespace):
@@ -65,7 +79,7 @@ class KubernetesService(KubernetesServiceInterface):
             kube_python_api.create_kubernetes_namespace(namespace=namespace)
             self.logger_adapter.info(f"Namespace {namespace} created.")
 
-    def setup_job(self, data):
+    def setup_job(self, data: KubernetesServiceData):
         self.logger_adapter.info("Starting to setup the Kubernetes job ...")
 
         # TODO refactor it
@@ -80,10 +94,10 @@ class KubernetesService(KubernetesServiceInterface):
 
         kube_python_api = KubernetesPythonAPIService()
 
-        secret = kube_python_api.create_secret(job_secret_spec, data['runner_namespace'])
+        secret = kube_python_api.create_secret(job_secret_spec, data.runner_namespace)
         self.logger_adapter.info(f"Secret created. status={secret.metadata.name}")
 
-        job = kube_python_api.create_job(job_spec, data['runner_namespace'])
+        job = kube_python_api.create_job(job_spec, data.runner_namespace)
         self.logger_adapter.info(f"Job created. status={job.metadata.name}")
 
     def delete_job(self, runner_uuid, namespace):
