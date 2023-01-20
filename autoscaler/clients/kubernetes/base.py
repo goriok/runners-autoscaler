@@ -1,10 +1,10 @@
 """Module to interact with Kubernetes APIs: running commands"""
-from jinja2 import PackageLoader, Environment
+from jinja2 import FileSystemLoader, Environment
 from kubernetes import config as k8s_config, client as k8s_client
 from kubernetes.client import ApiException
 
 import autoscaler.core.exceptions as core_exc
-from autoscaler.core.constants import TEMPLATE_FILE_NAME
+from autoscaler.core.constants import TEMPLATE_FILE_NAME, DEST_TEMPLATE_FILE_PATH
 
 
 class KubernetesSpecFileAPIService:
@@ -12,9 +12,10 @@ class KubernetesSpecFileAPIService:
     def __init__(self):
         pass
 
-    def generate_kube_spec_file(self, runner_data, template_filename=TEMPLATE_FILE_NAME):
+    @staticmethod
+    def generate_kube_spec_file(runner_data, template_filename=TEMPLATE_FILE_NAME):
         # process template to k8s spec
-        template_loader = PackageLoader("autoscaler", "resources")
+        template_loader = FileSystemLoader(DEST_TEMPLATE_FILE_PATH)
         template_env = Environment(
             loader=template_loader,
             variable_start_string="<%",
