@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 2.2.3
+
+- patch: Fix initiating of the job manifest validation.
+
 ## 2.2.2
 
 - patch: Internal maintenance: refactor Bitbucket API response to python dataclass, create dataclass for Kubernetes structure data for pctRunnerIdleStrategy. Update tests.

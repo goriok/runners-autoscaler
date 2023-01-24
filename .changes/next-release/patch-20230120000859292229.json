@@ -1,4 +1,0 @@
-{
-  "type": "patch",
-  "description": "Fix initiating of the job manifest validation."
-}

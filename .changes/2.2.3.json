@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "description": "Fix initiating of the job manifest validation.",
+      "type": "patch"
+    }
+  ],
+  "created_at": "2023-01-24T10:08:44.245928+00:00",
+  "version": "2.2.3"
+}
