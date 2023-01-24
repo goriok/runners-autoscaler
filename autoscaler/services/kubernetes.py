@@ -82,9 +82,7 @@ class KubernetesService(KubernetesServiceInterface):
     def setup_job(self, data: KubernetesServiceData):
         self.logger_adapter.info("Starting to setup the Kubernetes job ...")
 
-        # TODO refactor it
-        kube_spec_file_api = KubernetesSpecFileAPIService()
-        runner_job_spec = kube_spec_file_api.generate_kube_spec_file(data)
+        runner_job_spec = KubernetesSpecFileAPIService.generate_kube_spec_file(data)
 
         self.logger_adapter.debug(runner_job_spec)
 

@@ -62,13 +62,13 @@ class StartPoller:
         # read runners parameter from the config file
         validators.validate_config(self.config_file_path, self.template_file_path)
 
-        dest_template_file_path = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')
-        shutil.copy(self.template_file_path, dest_template_file_path)
-        logger.info(f'File {self.template_file_path} copied to {dest_template_file_path}')
+        destination_path = os.path.join(constants.DEST_TEMPLATE_FILE_PATH, constants.TEMPLATE_FILE_NAME)
+        shutil.copy(self.template_file_path, destination_path)
+        logger.info(f'File {self.template_file_path} copied to {destination_path}')
 
         try:
-            validators.JobTemplate.parse_file(self.template_file_path)
             runners_data = validators.RunnerData.parse_file(self.config_file_path)
+            validators.validate_kubernetes_manifest(constants.TEMPLATE_FILE_NAME)
         except ValidationError as e:
             fail(e)
         except AutoscalerHTTPError as e:

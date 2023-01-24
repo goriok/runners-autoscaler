@@ -6,6 +6,7 @@ from pydantic import conlist, conset, root_validator, validator, Extra
 from pydantic_yaml import YamlModel
 
 import autoscaler.core.constants as constants
+from autoscaler.clients.kubernetes.base import KubernetesSpecFileAPIService
 from autoscaler.core.helpers import fail
 from autoscaler.core.help_classes import Strategies
 from autoscaler.services.bitbucket import BitbucketService
@@ -18,6 +19,19 @@ def validate_config(config_file_path, template_file_path=None):
 
     if template_file_path is not None and not os.path.exists(template_file_path):
         fail(f'Passed runners job template file {template_file_path} does not exist.')
+
+
+def validate_kubernetes_manifest(template_filename):
+    # validate a template for kubernetes manifest structure and labels
+    JobTemplate.parse_raw(KubernetesSpecFileAPIService.generate_kube_spec_file(
+        {
+            'runner_uuid': 'valid_value',
+            'account_uuid': 'valid_value',
+            'repository_uuid': 'valid_value',
+            'runner_namespace': 'valid_value'
+        },
+        template_filename=template_filename)
+    )
 
 
 class Constants(YamlModel):

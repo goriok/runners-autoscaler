@@ -1,3 +1,6 @@
+import os
+
+
 # The name of a Runner's Kubernetes job spec template
 TEMPLATE_FILE_NAME = "job.yaml.template"
 
@@ -21,3 +24,5 @@ MAX_GROUPS_COUNT = 10
 
 # Default labels from Bitbucket API
 DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})
+
+DEST_TEMPLATE_FILE_PATH = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')
