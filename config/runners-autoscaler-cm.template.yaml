@@ -19,10 +19,38 @@ data:
           - "demo5"
         namespace: "<k8s namespace>"
         strategy: "percentageRunnersIdle"
-        parameters:
-          min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting
-          max: 10  #
-          scale_up_threshold: 0.5  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-          scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-          scale_up_multiplier: 1.5  #  scale_up_multiplier > 1
-          scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1
+        strategy_data:
+          # Set up the parameters for runners to create/delete via Bitbucket API.
+          parameters:
+            min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting.
+            max: 10  #
+            scale_up_threshold: 0.5  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up.
+            scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up.
+            scale_up_multiplier: 1.5  #  scale_up_multiplier > 1.
+            scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1.
+          # Set up the resources for kubernetes job template.
+          # This section is optional. If not provided the default values for memory "4Gi" and cpu "1000m" in requests and limits will be used
+          resources:  # Autoscaler kubernetes job template resources available for tuning.
+            requests:
+              memory: "2Gi"
+              cpu: "1000m"
+            limits:
+              memory: "2Gi"
+              cpu: "1000m"
+      - name: "Runner group 2"
+        workspace: "<workspace>"
+        repository: "<repository>"
+        labels:
+          - "demo2"
+          - "demo4"
+        namespace: "<k8s namespace>"
+        strategy: "percentageRunnersIdle"
+        strategy_data:  # Example with default kubernetes job resources.
+          # Set up the parameters for runners to create/delete via Bitbucket API.
+          parameters:
+            min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting.
+            max: 10  #
+            scale_up_threshold: 0.5  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up.
+            scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up.
+            scale_up_multiplier: 1.5  #  scale_up_multiplier > 1.
+            scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1.

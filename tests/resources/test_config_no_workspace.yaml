@@ -7,10 +7,3 @@ groups:
     labels:
       - test
     strategy: percentageRunnersIdle
-    parameters:
-      min: 1  # recommended minimum 1 must be in UI because fails, when new build is starting
-      max: 10  #
-      scale_up_threshold: 0.5  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-      scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-      scale_up_multiplier: 1.5  #  scale_up_multiplier > 1
-      scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1

@@ -46,6 +46,11 @@ class NameUUIDData(YamlModel):
     uuid: str
 
 
+class MemoryCPUData(YamlModel):
+    memory: str = constants.DEFAULT_MEMORY
+    cpu: str = constants.DEFAULT_CPU
+
+
 class PctRunnersIdleParameters(YamlModel):
     min: int
     max: int
@@ -53,6 +58,16 @@ class PctRunnersIdleParameters(YamlModel):
     scale_down_threshold: float
     scale_up_multiplier: float
     scale_down_multiplier: float
+
+
+class PctRunnersIdleResources(YamlModel):
+    requests: MemoryCPUData = MemoryCPUData.parse_obj(dict())
+    limits: MemoryCPUData = MemoryCPUData.parse_obj(dict())
+
+
+class PctRunnersIdleStrategyData(YamlModel):
+    parameters: PctRunnersIdleParameters
+    resources: PctRunnersIdleResources = PctRunnersIdleResources.parse_obj(dict())
 
 
 class GroupMeta(YamlModel):
@@ -100,7 +115,7 @@ class GroupMeta(YamlModel):
 
 class GroupData(GroupMeta):
     labels: conset(str, min_items=1)
-    parameters: Any
+    strategy_data: Dict
 
     @validator('labels')
     @classmethod
@@ -109,16 +124,15 @@ class GroupData(GroupMeta):
         labels.update(set(constants.DEFAULT_LABELS))
         return labels
 
-    @root_validator
+    @validator('strategy_data')
     @classmethod
-    def update_parameters(cls, values):
-        strategy, parameters = values.get('strategy'), values.get('parameters')
-
-        # Update parameters for different strategies
+    def update_strategy_data(cls, strategy_data, values):
+        strategy = values.get('strategy')
+        # Update strategy data for different strategies
         if strategy == Strategies.PCT_RUNNER_IDLE.value:
-            values['parameters'] = PctRunnersIdleParameters.parse_obj(parameters)
+            strategy_data = PctRunnersIdleStrategyData.parse_obj(strategy_data)
 
-        return values
+        return strategy_data
 
 
 class RunnerData(YamlModel):

@@ -16,6 +16,10 @@ class KubernetesServiceData:
     oauth_client_id_base64: str
     oauth_client_secret_base64: str
     runner_namespace: str
+    requests_memory: str
+    requests_cpu: str
+    limits_memory: str
+    limits_cpu: str
 
     def __iter__(self):
         yield from asdict(self).items()

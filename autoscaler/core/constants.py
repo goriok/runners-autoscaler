@@ -22,6 +22,12 @@ RUNNER_COOL_DOWN_PERIOD = 5 * 60  # seconds
 # Max allowed groups for runner config map
 MAX_GROUPS_COUNT = 10
 
+# Default memory for Kubernetes job resources and limits
+DEFAULT_MEMORY = "4Gi"
+
+# Default cpu for Kubernetes job resources and limits
+DEFAULT_CPU = "1000m"
+
 # Default labels from Bitbucket API
 DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})
 
