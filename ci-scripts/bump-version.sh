@@ -9,6 +9,9 @@ set -ex
 ##
 previous_version=$(semversioner current-version)
 semversioner release
+# In pipelines semversioner release returns exit code 0 even if errors are present in output,
+# that's why we should catch errors manually for now.
+grep -q "Error" <<<"$(semversioner release)" && exit 1
 new_version=$(semversioner current-version)
 
 ##
