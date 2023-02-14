@@ -11,7 +11,7 @@ from autoscaler.core.help_classes import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success, fail
 from autoscaler.core.interfaces import Strategy
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
-from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleStrategyData, PctRunnersIdleResources
+from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters, KubernetesJobResources
 from autoscaler.services.kubernetes import KubernetesService, KubernetesServiceData
 from autoscaler.services.bitbucket import BitbucketService, BitbucketServiceData
 
@@ -29,7 +29,8 @@ class PctRunnersIdleData:
     namespace: str
     strategy: str
     labels: Set[str]
-    strategy_data: PctRunnersIdleStrategyData
+    parameters: PctRunnersIdleParameters
+    resources: KubernetesJobResources
 
 
 class PctRunnersIdleScaler(Strategy):
@@ -41,7 +42,7 @@ class PctRunnersIdleScaler(Strategy):
         self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': runner_data.name})
 
     @staticmethod
-    def convert_bitbucket_data_to_k8s_data(bitbucket_data: BitbucketServiceData, namespace: str, resources: PctRunnersIdleResources) -> KubernetesServiceData:
+    def convert_bitbucket_data_to_k8s_data(bitbucket_data: BitbucketServiceData, namespace: str, resources: KubernetesJobResources) -> KubernetesServiceData:
         """
         Bitbucket workspace, repository and runners uuids have curly brackets i.e {some-uuid} format.
         Kubernetes labels does not allow to use curly brackets for values so this method reformat
@@ -111,7 +112,7 @@ class PctRunnersIdleScaler(Strategy):
         kubernetes_data = self.convert_bitbucket_data_to_k8s_data(
             bitbucket_data,
             self.runner_data.namespace,
-            self.runner_data.strategy_data.resources
+            self.runner_data.resources
         )
 
         self.kubernetes_service.setup_job(kubernetes_data)
@@ -200,14 +201,14 @@ class PctRunnersIdleScaler(Strategy):
 
         msg_autoscaler = (
             f"Runners Autoscaler. "
-            f"min: {self.runner_data.strategy_data.parameters.min}, "
-            f"max: {self.runner_data.strategy_data.parameters.max}, "
+            f"min: {self.runner_data.parameters.min}, "
+            f"max: {self.runner_data.parameters.max}, "
             f"current: {len(online_runners)}"
         )
 
-        if not online_runners and self.runner_data.strategy_data.parameters.min > 0:
+        if not online_runners and self.runner_data.parameters.min > 0:
             # create new runners from 0
-            count_runners_to_create = self.runner_data.strategy_data.parameters.min
+            count_runners_to_create = self.runner_data.parameters.min
 
             msg_autoscaler = (
                 f"{msg_autoscaler}, "
@@ -227,22 +228,22 @@ class PctRunnersIdleScaler(Strategy):
                 self.create_runner(i)
 
         # TODO add max_runners per repo or max_runners per workspace
-        elif (runners_scale_threshold > float(self.runner_data.strategy_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.strategy_data.parameters.min) \
-                and len(online_runners) <= self.runner_data.strategy_data.parameters.max \
+        elif (runners_scale_threshold > float(self.runner_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.parameters.min) \
+                and len(online_runners) <= self.runner_data.parameters.max \
                 and len(runners) <= MAX_RUNNERS_COUNT:
 
             # TODO validate scaleDownFactor > 1
             desired_runners_count = math.ceil(
-                len(online_runners) * self.runner_data.strategy_data.parameters.scale_up_multiplier
+                len(online_runners) * self.runner_data.parameters.scale_up_multiplier
             )
-            if desired_runners_count <= self.runner_data.strategy_data.parameters.max:
+            if desired_runners_count <= self.runner_data.parameters.max:
                 count_runners_to_create = desired_runners_count - len(online_runners)
             else:
-                count_runners_to_create = self.runner_data.strategy_data.parameters.max - len(online_runners)
-                desired_runners_count = self.runner_data.strategy_data.parameters.max
+                count_runners_to_create = self.runner_data.parameters.max - len(online_runners)
+                desired_runners_count = self.runner_data.parameters.max
 
             if count_runners_to_create == 0:
-                self.logger_adapter.info(f"Max runners count: {self.runner_data.strategy_data.parameters.max} reached.")
+                self.logger_adapter.info(f"Max runners count: {self.runner_data.parameters.max} reached.")
                 return
 
             msg_autoscaler = (
@@ -262,19 +263,19 @@ class PctRunnersIdleScaler(Strategy):
 
                 self.create_runner(i)
 
-        elif runners_scale_threshold < float(self.runner_data.strategy_data.parameters.scale_down_threshold) and \
-                len(runners_idle) > self.runner_data.strategy_data.parameters.min:
+        elif runners_scale_threshold < float(self.runner_data.parameters.scale_down_threshold) and \
+                len(runners_idle) > self.runner_data.parameters.min:
 
             # TODO validate 0 < scaleDownFactor < 1
             desired_runners_count = math.floor(
-                len(runners_idle) * self.runner_data.strategy_data.parameters.scale_down_multiplier
+                len(runners_idle) * self.runner_data.parameters.scale_down_multiplier
             )
 
-            if desired_runners_count > self.runner_data.strategy_data.parameters.min:
+            if desired_runners_count > self.runner_data.parameters.min:
                 count_runners_to_delete = len(runners_idle) - desired_runners_count
             else:
-                count_runners_to_delete = len(runners_idle) - self.runner_data.strategy_data.parameters.min
-                desired_runners_count = self.runner_data.strategy_data.parameters.min
+                count_runners_to_delete = len(runners_idle) - self.runner_data.parameters.min
+                desired_runners_count = self.runner_data.parameters.min
 
             runners_idle_to_delete = runners_idle[:count_runners_to_delete]
 
