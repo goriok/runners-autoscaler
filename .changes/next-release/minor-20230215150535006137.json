@@ -1,0 +1,4 @@
+{
+  "type": "minor",
+  "description": "Mark runners with  label to identify that runners created by this tool. Use this label as a criteria for cleaner logic to find runners to delete."
+}

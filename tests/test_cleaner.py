@@ -185,7 +185,7 @@ class CleanerTestCase(TestCase):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
-                'labels': ['test', 'self.hosted', 'linux'],
+                'labels': ['test', 'self.hosted', 'linux', 'autoscaler.created'],
                 'name': 'good',
                 'oauth_client': {
                     'audience': 'api.fake-api.com',
@@ -214,6 +214,22 @@ class CleanerTestCase(TestCase):
                 },
                 'updated_on': '2021-09-29T23:55:14.857791Z',
                 'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8038}'
+            },
+            {
+                'created_on': '2021-09-29T23:28:04.683210Z',
+                'labels': ['test', 'self.hosted', 'linux'],
+                'name': 'good',
+                'oauth_client': {
+                    'audience': 'api.fake-api.com',
+                    'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
+                    'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
+                'state': {
+                    'status': 'OFFLINE',
+                    'updated_on': '2021-09-29T23:55:14.857790Z',
+                    'version': {'current': '1.184'}
+                },
+                'updated_on': '2021-09-29T23:55:14.857791Z',
+                'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8014}'
             }
         ]
         mock_get_runners.return_value = get_runners
@@ -253,7 +269,7 @@ class CleanerTestCase(TestCase):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
-                'labels': ['test', 'self.hosted', 'linux'],
+                'labels': ['test', 'self.hosted', 'linux', 'autoscaler.created'],
                 'name': 'good',
                 'oauth_client': {
                     'audience': 'api.fake-api.com',
@@ -269,7 +285,7 @@ class CleanerTestCase(TestCase):
             },
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
-                'labels': ['test', 'self.hosted', 'linux'],
+                'labels': ['autoscaler.created', 'test', 'self.hosted', 'linux'],
                 'name': 'good',
                 'oauth_client': {
                     'audience': 'api.fake-api.com',
@@ -285,7 +301,7 @@ class CleanerTestCase(TestCase):
             },
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
-                'labels': ['test', 'self.hosted', 'linux'],
+                'labels': ['test', 'self.hosted', 'autoscaler.created', 'linux'],
                 'name': 'good',
                 'oauth_client': {
                     'audience': 'api.fake-api.com',

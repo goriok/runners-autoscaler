@@ -261,9 +261,10 @@ The Runner Autoscaler Cleaner (next cleaner) is the application configured in `d
 
 Implementation based on the next algorithm:
 
-Check runners on Bitbucket Cloud, that do not have status "ONLINE".
-
-Check for the runners, that have their state updated more than some period of time ago. You can tune it with "runner_cool_down_period" variable from ConfigMap runner-config.
+Check runners on Bitbucket Cloud, that:
+- do not have status "ONLINE",
+- have `autoscaler.created` label (this label was automatically added when runner created by runners autoscaler tool),
+- have their state updated more than some period of time ago. You can tune it with "runner_cool_down_period" variable from ConfigMap runner-config.
 
 For each runner found get it UUID and delete.
 
