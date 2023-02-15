@@ -4,7 +4,7 @@ from unittest import TestCase, mock
 
 import pytest
 
-from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters, PctRunnersIdleStrategyData
+from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters, KubernetesJobResources
 from autoscaler.services.kubernetes import KubernetesInMemoryService
 from autoscaler.services.bitbucket import BitbucketServiceData
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler, PctRunnersIdleData
@@ -50,16 +50,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             strategy='custom',
             labels={'asd'},
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=10,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         runner_count_scaler = PctRunnersIdleScaler(
@@ -124,16 +123,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=10,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         service = PctRunnersIdleScaler(
@@ -182,16 +180,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=10,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         service = PctRunnersIdleScaler(
@@ -270,16 +267,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=10,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         service = PctRunnersIdleScaler(
@@ -365,16 +361,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=10,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         service = PctRunnersIdleScaler(
@@ -428,16 +423,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=10,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=10,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         kubernetes_service = KubernetesInMemoryService()
@@ -503,16 +497,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=1,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=1,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         service = PctRunnersIdleScaler(
@@ -573,16 +566,15 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             namespace='test',
             labels={'self.hosted', 'test', 'linux'},
             strategy='percentageRunnersIdle',
-            strategy_data=PctRunnersIdleStrategyData(
-                parameters=PctRunnersIdleParameters(
-                    min=1,
-                    max=2,
-                    scale_up_threshold=0.5,
-                    scale_down_threshold=0.2,
-                    scale_up_multiplier=1.5,
-                    scale_down_multiplier=0.5
-                )
-            )
+            parameters=PctRunnersIdleParameters(
+                min=1,
+                max=2,
+                scale_up_threshold=0.5,
+                scale_down_threshold=0.2,
+                scale_up_multiplier=1.5,
+                scale_down_multiplier=0.5
+            ),
+            resources=KubernetesJobResources()
         )
 
         service = PctRunnersIdleScaler(

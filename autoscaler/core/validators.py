@@ -60,14 +60,9 @@ class PctRunnersIdleParameters(YamlModel):
     scale_down_multiplier: float
 
 
-class PctRunnersIdleResources(YamlModel):
+class KubernetesJobResources(YamlModel):
     requests: MemoryCPUData = MemoryCPUData.parse_obj(dict())
     limits: MemoryCPUData = MemoryCPUData.parse_obj(dict())
-
-
-class PctRunnersIdleStrategyData(YamlModel):
-    parameters: PctRunnersIdleParameters
-    resources: PctRunnersIdleResources = PctRunnersIdleResources.parse_obj(dict())
 
 
 class GroupMeta(YamlModel):
@@ -115,7 +110,8 @@ class GroupMeta(YamlModel):
 
 class GroupData(GroupMeta):
     labels: conset(str, min_items=1)
-    strategy_data: Dict
+    parameters: Dict
+    resources: KubernetesJobResources = KubernetesJobResources.parse_obj(dict())
 
     @validator('labels')
     @classmethod
@@ -124,15 +120,15 @@ class GroupData(GroupMeta):
         labels.update(set(constants.DEFAULT_LABELS))
         return labels
 
-    @validator('strategy_data')
+    @validator('parameters')
     @classmethod
-    def update_strategy_data(cls, strategy_data, values):
+    def update_strategy_data(cls, parameters, values):
         strategy = values.get('strategy')
-        # Update strategy data for different strategies
+        # Update parameters for different strategies
         if strategy == Strategies.PCT_RUNNER_IDLE.value:
-            strategy_data = PctRunnersIdleStrategyData.parse_obj(strategy_data)
+            parameters = PctRunnersIdleParameters.parse_obj(parameters)
 
-        return strategy_data
+        return parameters
 
 
 class RunnerData(YamlModel):
