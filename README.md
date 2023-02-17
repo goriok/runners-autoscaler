@@ -7,7 +7,7 @@ Automate routines for Bitbucket Pipelines [self-hosted Runners][runner]
 Use this tool to set up and scale Bitbucket self-hosted runners on your own infrastructure.
 
 ### What problem does it solve?
-This tool allows you to
+This tool allows you to:
 
 - avoid manual setup runners in the Bitbucket UI.
 - setup multiple runners at once.
@@ -254,7 +254,7 @@ Inside `runners-autoscaler-cm-job.template.yaml`, you will notice that the `reso
 
 It might worthing tweaking the memory/cpu limits according to your needs.
 
-For example, if you want to use an `8Gb` instance size, it might not worth using `4Gi` since it will take slighly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
+For example, if you want to use an `8Gb` instance size, it might not worth using `4Gi` since it will take slightly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
 
 ## Cleaner
 The Runner Autoscaler Cleaner (next cleaner) is the application configured in `deployment-cleaner.template.yaml` that allows you automatically clean (delete) unhealthy runners and linked jobs.
@@ -262,6 +262,7 @@ The Runner Autoscaler Cleaner (next cleaner) is the application configured in `d
 Implementation based on the next algorithm:
 
 Check runners on Bitbucket Cloud, that:
+
 - do not have status "ONLINE",
 - have `autoscaler.created` label (this label was automatically added when runner created by runners autoscaler tool),
 - have their state updated more than some period of time ago. You can tune it with "runner_cool_down_period" variable from ConfigMap runner-config.

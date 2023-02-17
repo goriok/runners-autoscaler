@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "description": "Internal maintenance: catch semversioner error in ci-scripts to prevent script to continue when error occurred."
+}
