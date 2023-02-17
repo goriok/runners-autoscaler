@@ -15,6 +15,13 @@ groups:
       scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
       scale_up_multiplier: 1.5  #  scale_up_multiplier > 1
       scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1
+    resources:  # Autoscaler kubernetes job template resources available for tuning.
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
   - name: Runner repository group 2
     workspace: test-workspace
     labels:

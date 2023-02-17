@@ -110,22 +110,33 @@ In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parame
 ```yaml
 groups:
   - name: "Runner repository group"       # Name of the Runner displayed in the Bitbucket Runner UI.
-    workspace: "myworkspace"              # Name of the workspace the Runner is added to. 
+    workspace: "myworkspace"              # Name of the workspace the Runner is added to.
     repository: "my-awesome-repository"   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
     labels:
       - "demo1"                           # Labels for the Runner.
       - "test2"                           # Labels for the Runner.
     namespace: "runner-group-1"           # Kubernetes namespace to set up the Runner on.
     strategy: "percentageRunnersIdle"     # Type of the strategy workflow.
-    parameters:
-      min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting
-      max: 10  # maximum allowed runners count
-      scale_up_threshold: 0.8  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-      scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up
-      scale_up_multiplier: 1.5  #  scale_up_multiplier > 1  speed to scale up
-      scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1  speed to scale down
+    # Set up the parameters for runners to create/delete via Bitbucket API.
+    parameters: 
+      min: 1  # recommended minimum 1 must be in UI to prevent pipeline fails, when new build is starting.
+      max: 10  # maximum allowed runners count.
+      scale_up_threshold: 0.8  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up.
+      scale_down_threshold: 0.2  # The percentage of busy runners at which the number of desired runners are re-evaluated to scale up.
+      scale_up_multiplier: 1.5  #  scale_up_multiplier > 1  speed to scale up.
+      scale_down_multiplier: 0.5  #  0 < scale_down_multiplier < 1  speed to scale down.
+    # Set up the resources for kubernetes job template.
+    # This section is optional. If not provided the default values for memory "4Gi" and cpu "1000m" for requests and limits will be used.
+    # More information https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits
+    resources:  # autoscaler kubernetes job template resources available for tuning.
+      requests:
+        memory: "2Gi"
+        cpu: "1000m"
+      limits:
+        memory: "2Gi"
+        cpu: "1000m"
 
-constants:  # autoscaler parameters available for tuning
+constants:  # autoscaler parameters available for tuning.
   default_sleep_time_runner_setup: 5  # seconds. Time between runners creation.
   default_sleep_time_runner_delete: 5  # seconds. Time between runners deletion.
   runner_api_polling_interval: 600  # seconds. Time between requests to Bitbucket API.

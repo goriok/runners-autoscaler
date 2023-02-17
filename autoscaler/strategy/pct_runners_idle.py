@@ -11,7 +11,7 @@ from autoscaler.core.help_classes import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success, fail
 from autoscaler.core.interfaces import Strategy
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
-from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters
+from autoscaler.core.validators import Constants, NameUUIDData, PctRunnersIdleParameters, KubernetesJobResources
 from autoscaler.services.kubernetes import KubernetesService, KubernetesServiceData
 from autoscaler.services.bitbucket import BitbucketService, BitbucketServiceData
 
@@ -30,6 +30,7 @@ class PctRunnersIdleData:
     strategy: str
     labels: Set[str]
     parameters: PctRunnersIdleParameters
+    resources: KubernetesJobResources
 
 
 class PctRunnersIdleScaler(Strategy):
@@ -41,7 +42,7 @@ class PctRunnersIdleScaler(Strategy):
         self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': runner_data.name})
 
     @staticmethod
-    def convert_bitbucket_data_to_k8s_data(bitbucket_data: BitbucketServiceData, namespace) -> KubernetesServiceData:
+    def convert_bitbucket_data_to_k8s_data(bitbucket_data: BitbucketServiceData, namespace: str, resources: KubernetesJobResources) -> KubernetesServiceData:
         """
         Bitbucket workspace, repository and runners uuids have curly brackets i.e {some-uuid} format.
         Kubernetes labels does not allow to use curly brackets for values so this method reformat
@@ -53,7 +54,11 @@ class PctRunnersIdleScaler(Strategy):
             runner_uuid=bitbucket_data.runner_uuid.strip('{}'),
             oauth_client_id_base64=bitbucket_data.oauth_client_id_base64,
             oauth_client_secret_base64=bitbucket_data.oauth_client_secret_base64,
-            runner_namespace=namespace
+            runner_namespace=namespace,
+            requests_memory=resources.requests.memory,
+            requests_cpu=resources.requests.cpu,
+            limits_memory=resources.limits.memory,
+            limits_cpu=resources.limits.cpu
         )
 
     def validate(self):
@@ -104,7 +109,11 @@ class PctRunnersIdleScaler(Strategy):
             repository=self.runner_data.repository
         )
 
-        kubernetes_data = self.convert_bitbucket_data_to_k8s_data(bitbucket_data, self.runner_data.namespace)
+        kubernetes_data = self.convert_bitbucket_data_to_k8s_data(
+            bitbucket_data,
+            self.runner_data.namespace,
+            self.runner_data.resources
+        )
 
         self.kubernetes_service.setup_job(kubernetes_data)
 

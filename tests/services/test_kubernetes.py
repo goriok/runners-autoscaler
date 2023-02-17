@@ -58,7 +58,11 @@ class KubernetesServiceTestCase(TestCase):
             oauth_client_id_base64='test-oauth',
             oauth_client_secret_base64='test-secret',
             runner_namespace='test-namespace',
-            repository_uuid='test-repository-uuid'
+            repository_uuid='test-repository-uuid',
+            requests_memory='4Gi',
+            requests_cpu='1000m',
+            limits_memory='4Gi',
+            limits_cpu='1000m'
         )
 
         service: KubernetesService = KubernetesService('test')

@@ -41,13 +41,13 @@ data:
               containers:
                 - name: runner
                   image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1  # This autoscaler needs the runner image to run, you can use the latest or pin any version you want.
-                  resources:
+                  resources:  # This is memory and cpu resources section that you can configure via config map settings file.
                     requests:
-                      memory: "4Gi"
-                      cpu: "1000m"
+                      memory: "<%requests_memory%>"  # mandatory, don't modify
+                      cpu: "<%requests_cpu%>"  # mandatory, don't modify
                     limits:
-                      memory: "4Gi"
-                      cpu: "1000m"
+                      memory: "<%limits_memory%>"  # mandatory, don't modify
+                      cpu: "<%limits_cpu%>"  # mandatory, don't modify
                   env:
                     - name: ACCOUNT_UUID  # mandatory, don't modify
                       value: "{<%account_uuid%>}"  # mandatory, don't modify
