@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "description": "Mark runners with  label to identify that runners created by this tool. Use this label as a criteria for cleaner logic to find runners to delete.",
+      "type": "minor"
+    }
+  ],
+  "created_at": "2023-02-17T08:20:42.777179+00:00",
+  "version": "3.2.0"
+}

@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 3.2.0
+
+- minor: Mark runners with  label to identify that runners created by this tool. Use this label as a criteria for cleaner logic to find runners to delete.
+
 ## 3.1.0
 
 - minor: Change the logic of the runners autoscaler cleaner to check runners state updates instead of runners creation time as a condition for the delete process.
