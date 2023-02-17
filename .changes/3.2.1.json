@@ -1,0 +1,14 @@
+{
+  "changes": [
+    {
+      "description": "Internal maintenance: README improvements.",
+      "type": "patch"
+    },
+    {
+      "description": "Internal maintenance: catch semversioner error in ci-scripts to prevent script to continue when error occurred.",
+      "type": "patch"
+    }
+  ],
+  "created_at": "2023-02-17T19:55:31.863166+00:00",
+  "version": "3.2.1"
+}
