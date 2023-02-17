@@ -28,7 +28,10 @@ DEFAULT_MEMORY = "4Gi"
 # Default cpu for Kubernetes job resources and limits
 DEFAULT_CPU = "1000m"
 
+# Mark runners created by autoscaler tool
+AUTOSCALER_RUNNER = 'autoscaler.created'
+
 # Default labels from Bitbucket API
-DEFAULT_LABELS = frozenset({'self.hosted', 'linux'})
+DEFAULT_LABELS = frozenset({'self.hosted', 'linux', AUTOSCALER_RUNNER})
 
 DEST_TEMPLATE_FILE_PATH = os.getenv('DEST_TEMPLATE_PATH', default='/home/bitbucket/autoscaler/resources/')

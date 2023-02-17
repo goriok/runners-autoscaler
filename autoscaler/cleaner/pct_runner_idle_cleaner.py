@@ -4,6 +4,7 @@ from datetime import datetime, timedelta, timezone
 from dateutil import parser as du_parser
 from time import sleep
 
+from autoscaler.core.constants import AUTOSCALER_RUNNER
 from autoscaler.core.help_classes import BitbucketRunnerStatuses
 from autoscaler.core.helpers import success
 from autoscaler.core.logger import logger, GroupNamePrefixAdapter
@@ -34,23 +35,7 @@ class Cleaner:
         return self.runner_service.get_bitbucket_runners(self.runner_data.workspace, self.runner_data.repository)
 
     def delete_runners(self, runners_to_delete):
-        # delete only old runners
-        runners_uuid_to_delete = [
-            r['uuid'] for r in runners_to_delete if du_parser.isoparse(r['state']['updated_on']) + timedelta(
-                seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
-        ]
-
-        if runners_uuid_to_delete:
-            self.logger_adapter.warning(
-                f"Runners count {len(runners_uuid_to_delete)} with the next UUID will be deleted:"
-                f" {runners_uuid_to_delete}"
-            )
-        else:
-            self.logger_adapter.warning(
-                f"Nothing to delete... "
-                f"All runners are created less than coolDownPeriod: "
-                f"{self.runner_constants.runner_cool_down_period} sec ago."
-            )
+        runners_uuid_to_delete = [r['uuid'] for r in runners_to_delete]
 
         for runner_uuid in runners_uuid_to_delete:
             self.runner_service.delete_bitbucket_runner(
@@ -59,7 +44,7 @@ class Cleaner:
                 repository=self.runner_data.repository
             )
 
-            # Remove curly brackets, because for kubernetes service runners names are without them
+            # Remove curly brackets, because for kubernetes service runners names are without them.
             self.kubernetes_service.delete_job(runner_uuid.strip('{}'), self.runner_data.namespace)
 
             success(
@@ -85,15 +70,20 @@ class Cleaner:
 
         self.logger_adapter.debug(runners)
 
-        not_online_runners = [
+        # Delete runners that are not online, created by autoscaler tool, and created more than configured time ago.
+        runners_to_delete = [
             r for r in runners if
-            r['state']['status'] != BitbucketRunnerStatuses.ONLINE
+            r['state']['status'] != BitbucketRunnerStatuses.ONLINE and
+            AUTOSCALER_RUNNER in r['labels'] and
+            du_parser.isoparse(r['state']['updated_on']) + timedelta(
+                seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
 
-        self.logger_adapter.info(f"Found NOT ONLINE runners: {len(not_online_runners)}")
-        self.logger_adapter.debug(not_online_runners)
+        self.logger_adapter.info(f"Number of runners to delete found: {len(runners_to_delete)}.")
 
-        if not_online_runners:
-            self.delete_runners(not_online_runners)
+        self.logger_adapter.debug(runners_to_delete)
+
+        if runners_to_delete:
+            self.delete_runners(runners_to_delete)
         else:
             self.logger_adapter.warning("Nothing to do...\n")
