@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 3.0.0
+
+- major: Implement individual resources configuration for a kubernetes job template in each runner group. Breaking change! You have to update your job manifest according to job template and update your config map settings with new structure resources according to config map template. See Readme and template examples for more info.
+
 ## 2.2.3
 
 - patch: Fix initiating of the job manifest validation.

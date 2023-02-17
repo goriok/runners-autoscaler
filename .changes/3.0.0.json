@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "description": "Implement individual resources configuration for a kubernetes job template in each runner group. Breaking change! You have to update your job manifest according to job template and update your config map settings with new structure resources according to config map template. See Readme and template examples for more info.",
+      "type": "major"
+    }
+  ],
+  "created_at": "2023-02-17T07:25:02.809580+00:00",
+  "version": "3.0.0"
+}
