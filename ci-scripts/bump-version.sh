@@ -8,7 +8,18 @@ set -ex
 # Step 1: Generate new version
 ##
 previous_version=$(semversioner current-version)
-semversioner release
+
+# In pipelines semversioner release returns exit code 0 even if errors are present in output,
+# that's why we should catch errors manually for now.
+output=$(semversioner release)
+
+if grep -q "Error" <<<"$output"; then
+  exit 1
+else
+  # `:` means `Do nothing` in bash
+  :
+fi
+
 new_version=$(semversioner current-version)
 
 ##
