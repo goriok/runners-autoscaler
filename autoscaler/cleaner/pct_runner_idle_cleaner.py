@@ -35,10 +35,8 @@ class Cleaner:
 
     def delete_runners(self, runners_to_delete):
         # delete only old runners
-        # TODO: consider to change case from created_on to updated_on to not delete old runners what recently changed
-        #  their status to not ONLINE.
         runners_uuid_to_delete = [
-            r['uuid'] for r in runners_to_delete if du_parser.isoparse(r['created_on']) + timedelta(
+            r['uuid'] for r in runners_to_delete if du_parser.isoparse(r['state']['updated_on']) + timedelta(
                 seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
 

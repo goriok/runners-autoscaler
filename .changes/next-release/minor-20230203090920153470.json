@@ -1,0 +1,4 @@
+{
+  "type": "minor",
+  "description": "Change the logic of the runners autoscaler cleaner to check runners state updates instead of runners creation time as a condition for the delete process."
+}
