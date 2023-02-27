@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "description": "Internal maintenance: add Bitbucket Runners Autoscaler User-Agent header to requests."
+}

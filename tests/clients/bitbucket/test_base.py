@@ -20,14 +20,19 @@ class BitbucketAPIServiceTestCase(TestCase):
         self.assertEqual(api.auth.password, 'test')
 
     @mock.patch.object(requests_oauthlib.oauth2_session.OAuth2Session, 'fetch_token')
-    @mock.patch.dict(os.environ, {'BITBUCKET_OAUTH_CLIENT_ID': 'test', 'BITBUCKET_OUATH_CLIENT_SECRET': 'test'})
+    @mock.patch.dict(os.environ, {'BITBUCKET_OAUTH_CLIENT_ID': 'test', 'BITBUCKET_OAUTH_CLIENT_SECRET': 'test'})
     def test_init_bitbucket_service_token_oauth(self, mock_fetch_token):
         mock_fetch_token.return_value = {'access_token': 'oauthfaketoken.qsadfsf', 'expires_in': 600}
         api = BitbucketAPIService()
         self.assertEqual(api.auth.token, 'oauthfaketoken.qsadfsf')
         mock_fetch_token.assert_called_once_with('https://bitbucket.org/site/oauth2/access_token',
                                                  client_id=os.getenv('BITBUCKET_OAUTH_CLIENT_ID'),
-                                                 client_secret=os.getenv('BITBUCKET_OUATH_CLIENT_SECRET'),)
+                                                 client_secret=os.getenv('BITBUCKET_OAUTH_CLIENT_SECRET'),)
+
+    @mock.patch.dict(os.environ, {'BITBUCKET_ACCESS_TOKEN': 'test123'})
+    def test_init_bitbucket_service_access_token_auth(self):
+        api = BitbucketAPIService()
+        self.assertEqual(api.auth.token, 'test123')
 
     @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': ''})
     def test_init_bitbucket_service_unauthorized(self):

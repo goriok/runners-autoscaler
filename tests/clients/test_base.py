@@ -1,4 +1,3 @@
-from collections import namedtuple
 from json.decoder import JSONDecodeError
 from unittest import TestCase, mock
 
@@ -11,11 +10,11 @@ from autoscaler.core.exceptions import AutoscalerHTTPError
 class BearerAuthTestCase(TestCase):
 
     def test_bearer_auth(self):
-        auth = BearerAuth('mytoken')
-        request = namedtuple('Request', ('headers', ))
-        request.headers = {}
+        auth = BearerAuth('my-token')
+        request = requests.PreparedRequest()
+        request.prepare_headers(headers=dict())
         auth(request)
-        self.assertEqual(request.headers['Authorization'], 'Bearer mytoken')
+        self.assertEqual(request.headers['Authorization'], 'Bearer my-token')
 
 
 class BaseAPIServiceTestCase(TestCase):
@@ -30,9 +29,9 @@ class BaseAPIServiceTestCase(TestCase):
                                                           headers={'Content-Application': 'json'})
         self.assertEqual(status, 201)
         self.assertEqual(data, {'key': 'value'})
-        mock_request.assert_called_once_with('post', 'http://fake_url', auth=mock.ANY, json={'key': 'value'},
-                                             headers={'Content-Application': 'json'},
-                                             timeout=5)
+        mock_request.assert_called_once_with(
+            'post', 'http://fake_url', auth=mock.ANY, json={'key': 'value'},
+            headers={'Content-Application': 'json', 'User-Agent': 'Bitbucket Runners Autoscaler'}, timeout=5)
 
     @mock.patch('requests.request')
     def test_make_http_request_not_found(self, mock_request):
