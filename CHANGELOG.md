@@ -1,6 +1,11 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 3.2.2
+
+- patch: Internal maintenance: add Bitbucket Runners Autoscaler User-Agent header to requests.
+- patch: Internal maintenance: auth logic refactor.
+
 ## 3.2.1
 
 - patch: Internal maintenance: README improvements.

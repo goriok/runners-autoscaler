@@ -1,0 +1,14 @@
+{
+  "changes": [
+    {
+      "description": "Internal maintenance: add Bitbucket Runners Autoscaler User-Agent header to requests.",
+      "type": "patch"
+    },
+    {
+      "description": "Internal maintenance: auth logic refactor.",
+      "type": "patch"
+    }
+  ],
+  "created_at": "2023-02-28T18:47:10.155939+00:00",
+  "version": "3.2.2"
+}
