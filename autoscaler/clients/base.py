@@ -2,15 +2,13 @@
 from json.decoder import JSONDecodeError
 
 import requests
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase
 
 from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.core.logger import logger
 
-BITBUCKET_BASE_URL = 'https://api.bitbucket.org'
 
-
-class BearerAuth(HTTPBasicAuth):
+class BearerAuth(AuthBase):
     def __init__(self, token):
         self.token = token
 
@@ -22,9 +20,15 @@ class BearerAuth(HTTPBasicAuth):
 class BaseAPIService:
     MAX_REQUEST_TIMEOUT = 5
     RETRY_AFTER_DEFAULT = 10
+    DEFAULT_HEADERS = {'User-Agent': 'Bitbucket Runners Autoscaler'}
     _auth = None
 
     def make_http_request(self, url, method='get', json=None, headers=None, ignore_exc=None, **kwargs):
+        if headers:
+            headers.update(self.DEFAULT_HEADERS)
+        else:
+            headers = self.DEFAULT_HEADERS
+
         with requests.request(method, url, auth=self._auth, json=json, headers=headers,
                               timeout=self.MAX_REQUEST_TIMEOUT, **kwargs) as response:
             logger.debug(f"{method.upper()} request to {url}")

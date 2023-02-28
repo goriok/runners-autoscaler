@@ -20,10 +20,11 @@ ITEMS_PER_PAGE = 100
 class Auth:
     OAUTH_URL = 'https://bitbucket.org/site/oauth2/access_token'
 
+    #  TODO: test this
     @classmethod
     def token_oauth(cls):
         client_id = os.getenv('BITBUCKET_OAUTH_CLIENT_ID')
-        secret = os.getenv('BITBUCKET_OUATH_CLIENT_SECRET')
+        secret = os.getenv('BITBUCKET_OAUTH_CLIENT_SECRET')
 
         client = BackendApplicationClient(client_id=client_id)
         oauth = OAuth2Session(client=client)
@@ -43,6 +44,11 @@ class Auth:
 
         return HTTPBasicAuth(username, app_password)
 
+    #  TODO: test this
+    @classmethod
+    def access_token_auth(cls):
+        return BearerAuth(os.getenv('BITBUCKET_ACCESS_TOKEN'))
+
 
 class BitbucketAPIService(BaseAPIService):
     BASE_URL = BITBUCKET_BASE_URL
@@ -51,10 +57,12 @@ class BitbucketAPIService(BaseAPIService):
     _auth = None
 
     def __init__(self, auth=None):
-        if os.getenv('BITBUCKET_OAUTH_CLIENT_ID') and os.getenv('BITBUCKET_OUATH_CLIENT_SECRET'):
+        if os.getenv('BITBUCKET_OAUTH_CLIENT_ID') and os.getenv('BITBUCKET_OAUTH_CLIENT_SECRET'):
             self._auth = auth or Auth.token_oauth()
         elif os.getenv('BITBUCKET_USERNAME') and os.getenv('BITBUCKET_APP_PASSWORD'):
             self._auth = auth or Auth.basic_auth()
+        elif os.getenv('BITBUCKET_ACCESS_TOKEN'):
+            self._auth = auth or Auth.access_token_auth()
         else:
             raise NotAuthorized("Provide secret credentials to authenticate")
 
