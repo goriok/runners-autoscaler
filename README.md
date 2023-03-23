@@ -33,7 +33,7 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 - Maximum allowed count of workspace runners is equal to 100.
 - Maximum allowed count of runner groups is equal to 10.
 - Labelling naming conventions should follow [Kubernetes conventions][Kubernetes conventions].
-- If runner groups overlap e.g contain the same set of labels they will fight each other to scale the group so label sets should be unique.
+- If runner groups overlap i.e. contain the same set of labels they will fight each other to scale the group so label sets should be unique.
 
 ### Requirements
 
@@ -55,16 +55,40 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 
 - [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
   ```
-  eksctl create cluster --name ${NAME_CLUSTER} --version 1.21 --region us-east-1 --zones us-east-1b,us-east-1c --nodegroup-name ${NODE_GROUP_NAME} --node-type t3.large --nodes 2 --nodes-min 1 --nodes-max 2
+  eksctl create cluster -f cluster.yaml
   ```
+
+  _Example of the cluster.yaml manifest:_
+  ```cluster.yaml
+  apiVersion: eksctl.io/v1alpha5
+  kind: ClusterConfig
+  
+  metadata:
+    name: "pipes-runner-test"
+    region: "us-east-1"
+    version: "1.25"
+  
+  availabilityZones:
+    - "us-east-1c"
+    - "us-east-1b"
+  
+  nodeGroups:
+    - name: "pipes-runner-node"
+      labels: { customer: shared }
+      instanceType: "t3.large"
+      amiFamily: "AmazonLinux2"
+      desiredCapacity: 1
+      minSize: 1
+      maxSize: 5
+  ```
+
+  Pay attention to the nodeGroup labels, because they are important for [escalator][escalator] (see **Scaling Kubernetes Nodes** section) 
 
 ## How to run
 
 ### Deployment (in Kubernetes cluster)
 
 Create in `config/` folder these files:
-
-`config/runners-autoscaler-rbac.yaml`,
 
 `config/runners-autoscaler-cm.yaml`,
 
@@ -78,7 +102,17 @@ Create in `config/` folder these files:
 
 based on templates provided inside this folder. 
 
-Fill them with needed variables (these variables decorated with `<...>` inside template files).
+Update next files with needed variables (these variables decorated with `<...>` inside template files):
+
+`config/runners-autoscaler-cm.yaml`,
+
+`config/runners-autoscaler-secret.yaml`,
+
+`config/runners-autoscaler-deployment.yaml`,
+
+`config/runners-autoscaler-deployment-cleaner.yaml`
+
+You could extend/update any files inside `config` folder according to your requirements, but do not update/delete `mandatory do not modify` lines.
 
 Next run commands below: 
 ```
@@ -110,7 +144,7 @@ In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parame
 ```yaml
 groups:
   - name: "Runner repository group"       # Name of the Runner displayed in the Bitbucket Runner UI.
-    workspace: "myworkspace"              # Name of the workspace the Runner is added to.
+    workspace: "my-workspace"              # Name of the workspace the Runner is added to.
     repository: "my-awesome-repository"   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
     labels:
       - "demo1"                           # Labels for the Runner.
@@ -247,14 +281,18 @@ In the job config map `runners-autoscaler-cm-job.template.yaml`, you will notice
 
 Therefore, the nodes where the runners will be running on need to have a label that matches it. In AWS EKS, this can be configured via [EKS Managed Node Groups][eks-node-groups].
 
+In example in `runners-autoscaler-cm-job.template.yaml` next label present: `customer=shared`.
+So the Kubernetes node should be updated with this label:
+`kubectl label nodes <kubernetes-node> customer=shared`
+
 This label also must match the one you configured in [escalator config map][escalator-cm].
 
 ## Tweaking Memory/Cpu resources
 Inside `runners-autoscaler-cm-job.template.yaml`, you will notice that the `resources` tag is defined.
 
-It might worthing tweaking the memory/cpu limits according to your needs.
+It might be worth tweaking the memory/cpu limits according to your needs.
 
-For example, if you want to use an `8Gb` instance size, it might not worth using `4Gi` since it will take slightly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
+For example, if you want to use an `8Gb` instance size, it might not be worth using `4Gi` since it will take slightly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
 
 ## Cleaner
 The Runner Autoscaler Cleaner (next cleaner) is the application configured in `deployment-cleaner.template.yaml` that allows you automatically clean (delete) unhealthy runners and linked jobs.
