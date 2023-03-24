@@ -15,8 +15,8 @@ data:
         workspace: "<workspace>"
         repository: "<repository>"
         labels:
-          - "demo1"
-          - "demo5"
+          - "<label>"
+          - "<another.label>"
         namespace: "<k8s namespace>"
         strategy: "percentageRunnersIdle"
         # Set up the parameters for runners to create/delete via Bitbucket API.
@@ -40,8 +40,8 @@ data:
         workspace: "<workspace>"
         repository: "<repository>"
         labels:
-          - "demo2"
-          - "demo4"
+          - "<label2>"
+          - "<another.label2>"
         namespace: "<k8s namespace>"
         strategy: "percentageRunnersIdle"
         # Set up the parameters for runners to create/delete via Bitbucket API.
