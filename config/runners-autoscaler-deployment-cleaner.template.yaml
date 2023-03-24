@@ -18,7 +18,7 @@ spec:
       serviceAccountName: runners-autoscaler
       containers:
       - name: runner-controller-cleaner
-        image: bitbucketpipelines/runners-autoscaler:3.2.2
+        image: bitbucketpipelines/runners-autoscaler:3.2.3
         command: ["python"]
         args: ["autoscaler/start_cleaner.py"]
         env:
