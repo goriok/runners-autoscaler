@@ -41,81 +41,20 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 - Suggested memory for the controller is 8Gb (equal to t2.large or t3.large in [AWS instance types][AWS instance types]). More details about Bitbucket runners you could find in [BITBUCKET runners guide].
 
 ## Prerequisites
-- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`
-  ```
-  # Python3 interactive shell
-  from autoscaler.core.helpers import string_to_base64string
-  string_to_base64string("your-app-password")
+- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`. See [how to create base64 password](docs/base64-password-create.md).
 
-  or shell
-  echo -n $BITBUCKET_APP_PASSWORD | base64
-  ```
+- _optional_: setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster.
 
-- [optional] setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster
+- _optional_: details of how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]. Pay attention to the nodeGroup labels, because they are important for [escalator][escalator] (more details in [Scaling Kubernetes Nodes](docs/configuration/scaling-kubernetes-nodes.md)). Also see an example of [how to create cluster with labels](docs/deployment/create-eks-cluster-with-labels.md).
 
-- [optional] details how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]
-  ```
-  eksctl create cluster -f cluster.yaml
-  ```
-
-  _Example of the cluster.yaml manifest:_
-  ```cluster.yaml
-  apiVersion: eksctl.io/v1alpha5
-  kind: ClusterConfig
-  
-  metadata:
-    name: "pipes-runner-test"
-    region: "us-east-1"
-    version: "1.25"
-  
-  availabilityZones:
-    - "us-east-1c"
-    - "us-east-1b"
-  
-  nodeGroups:
-    - name: "pipes-runner-node"
-      labels: { customer: shared }
-      instanceType: "t3.large"
-      amiFamily: "AmazonLinux2"
-      desiredCapacity: 1
-      minSize: 1
-      maxSize: 5
-  ```
-
-  Pay attention to the nodeGroup labels, because they are important for [escalator][escalator] (see **Scaling Kubernetes Nodes** section) 
 
 ## How to run
 
 ### Deployment (in Kubernetes cluster)
+Before the start you should create files in `config` folder to use them with the commands provided below.
+See [Runners autoscaler deployment in kubernetes cluster](docs/deployment/runners-autoscaler-deployment.md) for more details.
 
-Create in `config/` folder these files:
-
-`config/runners-autoscaler-cm.yaml`,
-
-`config/runners-autoscaler-cm-job.yaml`,
-
-`config/runners-autoscaler-secret.yaml`,
-
-`config/runners-autoscaler-deployment.yaml`,
-
-`config/runners-autoscaler-deployment-cleaner.yaml`
-
-based on templates provided inside this folder. 
-
-Update next files with needed variables (these variables decorated with `<...>` inside template files):
-
-`config/runners-autoscaler-cm.yaml`,
-
-`config/runners-autoscaler-secret.yaml`,
-
-`config/runners-autoscaler-deployment.yaml`,
-
-`config/runners-autoscaler-deployment-cleaner.yaml`
-
-You could extend/update any files inside `config` folder according to your requirements, but do not update/delete `mandatory do not modify` lines.
-
-Next run commands below: 
-```
+```yaml
 # Create namespace
 kubectl apply -f config/runners-autoscaler-namespace.yaml
 
@@ -138,13 +77,13 @@ kubectl apply -f config/runners-autoscaler-deployment.yaml
 kubectl apply -f config/runners-autoscaler-deployment-cleaner.yaml
 ```
 
-## Runner config details
-In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters
+### Runner autoscaler configuration details
+In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters:
 
 ```yaml
 groups:
   - name: "Runner repository group"       # Name of the Runner displayed in the Bitbucket Runner UI.
-    workspace: "my-workspace"              # Name of the workspace the Runner is added to.
+    workspace: "my-workspace"             # Name of the workspace the Runner is added to.
     repository: "my-awesome-repository"   # Name of the repository the Runner is added to. Optional: Provide the repository name if you want the Runner to be added at the repository level.
     labels:
       - "demo1"                           # Labels for the Runner.
@@ -175,7 +114,6 @@ constants:  # autoscaler parameters available for tuning.
   default_sleep_time_runner_delete: 5  # seconds. Time between runners deletion.
   runner_api_polling_interval: 600  # seconds. Time between requests to Bitbucket API.
   runner_cool_down_period: 300  # seconds. Time reserved for runner to set up.
-
 ```
 
 ## Documentation
@@ -183,135 +121,29 @@ constants:  # autoscaler parameters available for tuning.
 This script allows you to automate routines for Bitbucket Pipelines self-hosted Runners.
 With this script you can, create runners on Bitbucket Cloud via API requests, setup Kubernetes jobs on your host, connect Bitbucket Cloud runners with Kubernetes jobs, and provide artifacts kubespec files for created Bitbucket Cloud runners.
 This scaling tool supports the next types of the workflow (strategy):
-- percentageRunnersIdle
 
-## percentageRunnersIdle strategy
+- [percentageRunnersIdle](docs/strategies/percentage-runners-idle-strategy.md)
 
-The Runner Autoscaler Controller (next autoscaler) will poll Bitbucket Cloud API based on the configuration sync period for the number of available ONLINE/BUSY runners which live in the workspace/repository and scale based on the settings provided by autoscaler configuration file.
-The autoscaler automatically scales the number of Jobs relates to the Bitbucket Runner in the Kubernetes Namespace based on custom metrics.
+Also see [Docs](docs/README.md) for deployment, configuration, cleaner, current issues and other topics related to runners autoscaler tool.
 
-Implementation based on the next scaling algorithm:
-The Runner Autoscaler Controller reads the configuration file provided by a user, periodically polls Bitbucket Cloud Runner API for available runners and automatically increases or decreases the count of "ONLINE" runners.
-At start, the autoscaler checks for the min and max count of "ONLINE" runners.
-If less than min - creates a new up to min count, if max already reached - just notify a user about max reached.
+## Configuring
+There are additional things you could configure listed below:
 
-The limit runners count per workspace/repository is 100.
+- [Scaling Kubernetes Nodes](docs/configuration/scaling-kubernetes-nodes.md)
 
-Then the autoscaler calculates runners scale threshold value: 
-```
-runners scale threshold value = BUSY_ONLINE_RUNNERS / ALL_ONLINE_RUNNERS
-```
-and compares it with scale_up_threshold and scale_down_threshold from the configuration file.
+- [Configuring Kubernetes Nodes](docs/configuration/configuring-kubernetes-nodes.md)
 
-If runners scale threshold value more than scale_up_threshold, it means that most "ONLINE" runners are BUSY (executing some pipelines job) and new runners will be created.
-If runners scale threshold value less than scale_down_threshold, it means that most "ONLINE" runners are in IDLE state and the count of online runners should be decreased to min count.
+- [Tweaking Memory/Cpu resources](docs/configuration/tweaking-memory-cpu-resources.md)
 
-A speed to increase and decrease the count of runners could be turned with scale_up_multiplier and scale_down_multiplier values in the configuration file.
+## Runners autoscaler cleaner
 
-Finally, desired count of runners calculated by autoscaler:
-```
-desired count of runners = ALL_ONLINE_RUNNERS * scale_up_multiplier  # scale up case
-or
-desired count of runners = ALL_ONLINE_RUNNERS * scale_down_multiplier # scale down case
-```
+The Runner Autoscaler Cleaner (next cleaner) is the application configured in `config/deployment-cleaner.yaml` that allows you automatically clean (delete) unhealthy runners and linked jobs.
 
+See [Runners autoscaler cleaner](docs/cleaner.md) for more details.
 
-### An example
+## Known issues
 
-a user starts autoscaler with configuration previously provided (Bitbucket workspace has 0 runners).
-
-
-#### *With the first autoscaler attempt:*
-
-The autoscaler set up a new 1 (one) "ONLINE" runner.
-
-Then a user runs pipeline that uses this runner, so 1 (one) BUSY runner present.
-
-The autoscaler calculates **runners scale threshold** value as BUSY runners / ONLINE runners = 1/1 = **1.0**
-
-In the configuration file value of scale_up_threshold = 0.8, the autoscaler compare it with calculated value 1.0, so new runners should be created.
-
-Then the autoscaler calculates **desired count of runners** = ONLINE runners * scale_up_multiplier = ceil(1 * 1.5) = 2
-
-Action: So, autoscaler should automatically create +1 ONLINE runner in addition to the existing 1 BUSY runner.
-
-
-#### *With the next autoscaler attempt:*
-
-
-The Bitbucket workspace has 2 ONLINE runners (1 BUSY and 1 IDLE).
-
-User runs pipeline that still uses one runner, so BUSY runners 1.
-
-The autoscaler calculates **runners scale threshold** value BUSY/ONLINE = 1/2 = **0.5**
-
-So, value between scale_down_threshold < runners scale threshold value < scale_up_threshold (0.2 < 0.5 < 0.8)
-
-Action: nothing to do.
-
-
-#### *With the next autoscaler attempt:*
-
-
-The Bitbucket workspace has 2 ONLINE runners (2 IDLE).
-
-Because, a user’s pipeline job finished, so BUSY runners 0.
-
-The autoscaler calculates **runners scale threshold** value BUSY/ONLINE = 0/2 = **0**
-
-The value 0 under the scale_down_threshold = 0.2, so count of runners should be decreased.
-
-Then **desired count of runners** = ONLINE runners * scale_down_multiplier = floor(2 * 0.5) = 1
-
-And autoscaler should automatically delete 1 ONLINE (IDLE) runner.
-
-## Scaling Kubernetes Nodes
-
-Your kubernetes cluster will need to have a node horizontal autoscaler configured.
-
-We recommend using a tool that is optimized for large batch or job based workloads such as [escalator][escalator].
-
-Please check the [deployment docs][escalator-docs].
-
-If you are using AWS, you'll need to use this deployment `aws/escalator-deployment-aws.yaml` instead of the regular one.
-
-## Configuring Kubernetes Nodes
-
-In the job config map `runners-autoscaler-cm-job.template.yaml`, you will notice there's a `nodeSelector` in there.
-
-Therefore, the nodes where the runners will be running on need to have a label that matches it. In AWS EKS, this can be configured via [EKS Managed Node Groups][eks-node-groups].
-
-In example in `runners-autoscaler-cm-job.template.yaml` next label present: `customer=shared`.
-So the Kubernetes node should be updated with this label:
-`kubectl label nodes <kubernetes-node> customer=shared`
-
-This label also must match the one you configured in [escalator config map][escalator-cm].
-
-## Tweaking Memory/Cpu resources
-Inside `runners-autoscaler-cm-job.template.yaml`, you will notice that the `resources` tag is defined.
-
-It might be worth tweaking the memory/cpu limits according to your needs.
-
-For example, if you want to use an `8Gb` instance size, it might not be worth using `4Gi` since it will take slightly more than half of the allocatable memory therefore it would allow only 1 runner pod per instance.
-
-## Cleaner
-The Runner Autoscaler Cleaner (next cleaner) is the application configured in `deployment-cleaner.template.yaml` that allows you automatically clean (delete) unhealthy runners and linked jobs.
-
-Implementation based on the next algorithm:
-
-Check runners on Bitbucket Cloud, that:
-
-- do not have status "ONLINE",
-- have `autoscaler.created` label (this label was automatically added when runner created by runners autoscaler tool),
-- have their state updated more than some period of time ago. You can tune it with "runner_cool_down_period" variable from ConfigMap runner-config.
-
-For each runner found get it UUID and delete.
-
-Find jobs on kubernetes labeled with runners UUIDs if any.
-
-Delete jobs found since they are unhealthy.
-
-Repeat cleaner logic after some period of time. You can tune it with "runner_api_polling_interval" variable from ConfigMap runner-config.
+- [Job creation scenario](docs/issues/jobs-creation-scenario.md)
 
 ## Links
 
@@ -333,9 +165,6 @@ If you’re reporting an issue, please include:
 Copyright (c) 2021 Atlassian and others.
 Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
 
-[eks-node-groups]: https://docs.aws.amazon.com/eks/latest/userguide/managed-node-groups.html
-[escalator-cm]: https://github.com/atlassian/escalator/blob/master/docs/deployment/escalator-cm.yaml#L10-L11
-[escalator-docs]: https://github.com/atlassian/escalator/tree/master/docs/deployment
 [escalator]: https://github.com/atlassian/escalator/
 [community]: https://community.atlassian.com/t5/forums/postpage/board-id/bitbucket-questions?add-tags=pipelines,pipes,runner,autoscaler
 [runner]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
