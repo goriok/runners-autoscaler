@@ -12,3 +12,10 @@ _Shell_
 ```bash
 echo -n $BITBUCKET_APP_PASSWORD | base64
 ```
+
+or for `oauth` id, secret
+
+```bash
+echo -n $BITBUCKET_OAUTH_CLIENT_ID | base64
+echo -n $BITBUCKET_OAUTH_CLIENT_SECRET | base64
+```

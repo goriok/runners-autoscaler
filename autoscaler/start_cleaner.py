@@ -8,7 +8,7 @@ import autoscaler.core.validators as validators
 from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner
 from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.core.help_classes import Strategies
-from autoscaler.core.helpers import fail, enable_debug, required
+from autoscaler.core.helpers import fail, enable_debug
 from autoscaler.core.logger import logger
 from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.services.kubernetes import KubernetesService
@@ -22,9 +22,8 @@ class StartCleaner:
     def run(self):
         logger.info("Runners cleaner started...")
         enable_debug()
-        # required environment variables BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
-        required('BITBUCKET_USERNAME')
-        required('BITBUCKET_APP_PASSWORD')
+        # validate Authorization
+        validators.validate_auth()
 
         with ThreadPoolExecutor(max_workers=constants.MAX_GROUPS_COUNT) as executor:
             while True:

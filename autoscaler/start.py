@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 import autoscaler.core.constants as constants
 import autoscaler.core.validators as validators
-from autoscaler.core.helpers import required, enable_debug, fail
+from autoscaler.core.helpers import enable_debug, fail
 from autoscaler.core.help_classes import Strategies
 from autoscaler.core.logger import logger
 from autoscaler.core.exceptions import AutoscalerHTTPError
@@ -24,9 +24,8 @@ class StartPoller:
 
     def start(self):
         enable_debug()
-        # required environment variables BITBUCKET_USERNAME and BITBUCKET_APP_PASSWORD
-        required('BITBUCKET_USERNAME')
-        required('BITBUCKET_APP_PASSWORD')
+        # validate Authorization
+        validators.validate_auth()
 
         with ThreadPoolExecutor(max_workers=constants.MAX_GROUPS_COUNT) as executor:
             while True:

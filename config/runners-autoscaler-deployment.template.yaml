@@ -27,6 +27,9 @@ spec:
           mountPath: /opt/conf/job_template
           readOnly: true
         env:
+          ###
+          # Choose one of the options:
+          # Basic auth
           - name: BITBUCKET_USERNAME
             value: <BITBUCKET_USERNAME>
           - name: BITBUCKET_APP_PASSWORD
@@ -34,6 +37,18 @@ spec:
               secretKeyRef:
                 name: runner-bitbucket-credentials
                 key: bitbucketClientSecret
+          # or OAUTH auth
+          - name: BITBUCKET_OAUTH_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: runner-bitbucket-credentials
+                key: bitbucketOauthClientId
+          - name: BITBUCKET_OAUTH_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: runner-bitbucket-credentials
+                key: bitbucketOauthClientSecret
+          ###
         imagePullPolicy: IfNotPresent
       volumes:
         - name: runners-autoscaler-config

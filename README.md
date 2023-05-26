@@ -41,11 +41,22 @@ Make sure you are aware of the [BITBUCKET API request limits][BITBUCKET API requ
 - Suggested memory for the controller is 8Gb (equal to t2.large or t3.large in [AWS instance types][AWS instance types]). More details about Bitbucket runners you could find in [BITBUCKET runners guide].
 
 ## Prerequisites
-- BITBUCKET_USERNAME and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD] (base64 representation with repository:read, account:read, runner:write permissions) should be created and passed in `config/runners-autoscaler-deployment.yaml`. See [how to create base64 password](docs/base64-password-create.md).
 
-- _optional_: setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster.
+### Authorization
+Choose one of the options:
 
-- _optional_: details of how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]. Pay attention to the nodeGroup labels, because they are important for [escalator][escalator] (more details in [Scaling Kubernetes Nodes](docs/configuration/scaling-kubernetes-nodes.md)). Also see an example of [how to create cluster with labels](docs/deployment/create-eks-cluster-with-labels.md).
+- `BITBUCKET_USERNAME` and [BITBUCKET_APP_PASSWORD][BITBUCKET_APP_PASSWORD];
+- [`BITBUCKET_OAUTH_CLIENT_ID` and `BITBUCKET_OAUTH_CLIENT_SECRET`][BITBUCKET_OAUTH] (make it private, add callback URL).
+
+Your secret ([`BITBUCKET_APP_PASSWORD`] or [`BITBUCKET_OAUTH_CLIENT_ID` and `BITBUCKET_OAUTH_CLIENT_SECRET`]) base64 representation with `repository:read, account:read, runner:write` permissions should be created and passed in `config/runners-autoscaler-deployment.yaml`. See [how to create base64 password](docs/base64-password-create.md).
+
+Update env section in `config/runners-autoscaler-deployment.yaml` with your chosen method.
+
+### Other
+
+_optional_: setup [kubernetes-dashboard][kubernetes-dashboard] to monitor your cluster.
+
+_optional_: details of how to [set up AWS EKS cluster with eksctl cli][setup cluster eksctl]. Pay attention to the nodeGroup labels, because they are important for [escalator][escalator] (more details in [Scaling Kubernetes Nodes](docs/configuration/scaling-kubernetes-nodes.md)). Also see an example of [how to create cluster with labels](docs/deployment/create-eks-cluster-with-labels.md).
 
 
 ## How to run
@@ -169,6 +180,7 @@ Apache 2.0 licensed, see [LICENSE.txt](LICENSE.txt) file.
 [community]: https://community.atlassian.com/t5/forums/postpage/board-id/bitbucket-questions?add-tags=pipelines,pipes,runner,autoscaler
 [runner]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
 [BITBUCKET_APP_PASSWORD]: https://support.atlassian.com/bitbucket-cloud/docs/app-passwords
+[BITBUCKET_OAUTH]: https://support.atlassian.com/bitbucket-cloud/docs/use-oauth-on-bitbucket-cloud/
 [BITBUCKET API request limits]: https://support.atlassian.com/bitbucket-cloud/docs/api-request-limits/
 [BITBUCKET runners guide]: https://support.atlassian.com/bitbucket-cloud/docs/runners/
 [kubernetes-dashboard]: https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/
