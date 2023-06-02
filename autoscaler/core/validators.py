@@ -13,6 +13,19 @@ from autoscaler.services.bitbucket import BitbucketService
 from autoscaler.utils.validation import validate_label_key, validate_label_value
 
 
+def validate_auth():
+    if not (
+        (os.getenv("BITBUCKET_USERNAME") and os.getenv("BITBUCKET_APP_PASSWORD"))
+        or (os.getenv("BITBUCKET_OAUTH_CLIENT_ID") and os.getenv("BITBUCKET_OAUTH_CLIENT_SECRET"))
+    ):
+        fail(
+            'At least one authorization method of'
+            ' (BITBUCKET_USERNAME, BITBUCKET_APP_PASSWORD)'
+            ' or (BITBUCKET_OAUTH_CLIENT_ID, BITBUCKET_OAUTH_CLIENT_SECRET)'
+            ' required.'
+        )
+
+
 def validate_config(config_file_path, template_file_path=None):
     if not os.path.exists(config_file_path):
         fail(f'Passed runners configuration file {config_file_path} does not exist.')

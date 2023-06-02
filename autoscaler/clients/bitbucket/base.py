@@ -20,7 +20,6 @@ ITEMS_PER_PAGE = 100
 class Auth:
     OAUTH_URL = 'https://bitbucket.org/site/oauth2/access_token'
 
-    #  TODO: test this
     @classmethod
     def token_oauth(cls):
         client_id = os.getenv('BITBUCKET_OAUTH_CLIENT_ID')
@@ -28,9 +27,9 @@ class Auth:
 
         client = BackendApplicationClient(client_id=client_id)
         oauth = OAuth2Session(client=client)
-        token = oauth.fetch_token('https://bitbucket.org/site/oauth2/access_token', client_id=client_id,
+        token = oauth.fetch_token(Auth.OAUTH_URL, client_id=client_id,
                                   client_secret=secret)
-        logger.info(f"Token expires in {token['expires_in']} seconds")
+        logger.debug(f"Token expires in {token['expires_in']} seconds")
         return BearerAuth(token['access_token'])
 
     @classmethod

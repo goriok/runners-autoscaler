@@ -8,13 +8,32 @@ from autoscaler.core.constants import DEFAULT_RUNNER_KUBERNETES_NAMESPACE
 from tests.helpers import capture_output
 
 
-@mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
 class ScaleTestCase(TestCase):
 
     @pytest.fixture(autouse=True)
     def inject_fixtures(self, caplog):
         self.caplog = caplog
 
+    def test_auth_not_found(self):
+
+        poller = StartPoller(
+            config_file_path='fail_config_path',
+            template_file_path='fail_config_path',
+            poll=False
+        )
+
+        with capture_output() as out:
+            with pytest.raises(SystemExit) as pytest_wrapped_e:
+                poller.start()
+
+        self.assertEqual(pytest_wrapped_e.type, SystemExit)
+        self.assertIn(
+            'At least one authorization method of'
+            ' (BITBUCKET_USERNAME, BITBUCKET_APP_PASSWORD)'
+            ' or (BITBUCKET_OAUTH_CLIENT_ID, BITBUCKET_OAUTH_CLIENT_SECRET)'
+            ' required.', out.getvalue())
+
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     def test_config_not_found(self):
 
         poller = StartPoller(
@@ -30,6 +49,7 @@ class ScaleTestCase(TestCase):
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
         self.assertIn('Passed runners configuration file fail_config_path does not exist.', out.getvalue())
 
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.process')
     @mock.patch('autoscaler.services.kubernetes.KubernetesService.init')
@@ -56,6 +76,7 @@ class ScaleTestCase(TestCase):
 
         self.assertEqual(mock_process.call_count, 2)
 
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
     def test_main_namespace_required(self, mock_skip_update):
         mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
@@ -73,6 +94,7 @@ class ScaleTestCase(TestCase):
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
         self.assertIn('namespace\n  field required', out.getvalue())
 
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
     def test_main_namespace_reserved(self, mock_skip_update):
         mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
@@ -93,6 +115,7 @@ class ScaleTestCase(TestCase):
             out.getvalue()
         )
 
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
     def test_main_workspace_required(self, mock_skip_update):
         mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
@@ -110,6 +133,7 @@ class ScaleTestCase(TestCase):
         self.assertEqual(pytest_wrapped_e.type, SystemExit)
         self.assertIn('workspace\n  field required', out.getvalue())
 
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
     def test_main_groups_labels_unique(self, mock_skip_update):
         mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
@@ -130,6 +154,7 @@ class ScaleTestCase(TestCase):
             out.getvalue()
         )
 
+    @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
     @mock.patch('autoscaler.services.bitbucket.BitbucketService.get_bitbucket_workspace_repository_uuids')
     def test_main_non_valid_labels(self, mock_skip_update):
         mock_skip_update.return_value = {'name': 'test', 'uuid': 'test'}, {'name': 'test', 'uuid': 'test'}
