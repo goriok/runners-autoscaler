@@ -1,0 +1,4 @@
+{
+  "type": "patch",
+  "description": "Bump PyYAML to version 6.*"
+}
