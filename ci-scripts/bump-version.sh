@@ -36,3 +36,6 @@ sed -i "s/:$previous_version/:$new_version/g" README.md
 
 echo "Replace version '$previous_version' to '$new_version' in autoscaler/__version__.py ..."
 echo "__version__ = '$new_version'" > autoscaler/__version__.py
+
+echo "Replace version '$previous_version' to '$new_version' in kustomize/values/kustomization.yaml ..."
+sed -i "s/newTag: $previous_version/newTag: $new_version/g" ./kustomize/values/kustomization.yaml

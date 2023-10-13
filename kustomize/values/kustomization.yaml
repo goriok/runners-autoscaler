@@ -1,0 +1,102 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- ../base
+
+# Review the ./runners_config.yaml file, specially workspace uuid and labels.
+configMapGenerator:
+  - name: runners-autoscaler-config
+    files:
+      - runners_config.yaml
+    options:
+      disableNameSuffixHash: true
+
+# The namespace for the runners autoscaler resources.
+# It is not be the same namespace for runners pods which can be specified in the runners_config.yaml.
+namespace: bitbucket-runner-control-plane
+
+commonLabels:
+  app.kubernetes.io/part-of: runners-autoscaler
+
+images:
+  - name: bitbucketpipelines/runners-autoscaler
+    newTag: 3.4.1
+
+patches:
+  - target:
+      version: v1
+      kind: Secret
+      name: runner-bitbucket-credentials
+    # There are 3 options.
+    # Choose one of them, uncomment and specify the values.
+    # PS: Values must encoded in base64.
+    # 1) OAuth - Specify the oauth client id and secret.
+    # 2) App password - Specify the bitbucket username and bitbucket app password.
+    # 3) Access Token - Specify the bitbucket access token.
+    patch: |-
+      ### Option 1 ###
+      # - op: add
+      #   path: /data/bitbucketOauthClientId
+      #   value: ""
+      # - op: add
+      #   path: /data/bitbucketOauthClientSecret
+      #   value: ""
+
+      ### Option 2 ###
+      # - op: add
+      #   path: /data/bitbucketUsername
+      #   value: ""
+      # - op: add
+      #   path: /data/bitbucketAppPassword
+      #   value: ""
+
+      ### Option 3 ###
+      # - op: add
+      #   path: /data/bitbucketAccessToken
+      #   value: ""
+
+  - target:
+      version: v1
+      kind: Deployment
+      labelSelector: "inject=runners-autoscaler-envs"
+      # Uncomment the same option you've chosen for the Secret above.
+    patch: |-
+      ### Option 1 ###
+      # - op: replace
+      #   path: /spec/template/spec/containers/0/env
+      #   value:
+      #     - name: BITBUCKET_OAUTH_CLIENT_ID
+      #       valueFrom:
+      #         secretKeyRef:
+      #           key: bitbucketOauthClientId
+      #           name: runner-bitbucket-credentials
+      #     - name: BITBUCKET_OAUTH_CLIENT_SECRET
+      #       valueFrom:
+      #         secretKeyRef:
+      #           key: bitbucketOauthClientSecret
+      #           name: runner-bitbucket-credentials
+
+      ### Option 2 ###
+      # - op: replace
+      #   path: /spec/template/spec/containers/0/env
+      #   value:
+      #     - name: BITBUCKET_USERNAME
+      #       valueFrom:
+      #         secretKeyRef:
+      #           key: bitbucketUsername
+      #           name: runner-bitbucket-credentials
+      #     - name: BITBUCKET_APP_PASSWORD
+      #       valueFrom:
+      #         secretKeyRef:
+      #           key: bitbucketAppPassword
+      #           name: runner-bitbucket-credentials
+
+      ### Option 3 ###
+      # - op: replace
+      #   path: /spec/template/spec/containers/0/env
+      #   value:
+      #     - name: BITBUCKET_ACCESS_TOKEN
+      #       valueFrom:
+      #         secretKeyRef:
+      #           key: bitbucketAccessToken
+      #           name: runner-bitbucket-credentials

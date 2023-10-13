@@ -1,4 +1,4 @@
-# Runners autoscaler deployment in kubernetes cluster
+# Runners autoscaler deployment in kubernetes cluster - YAML
 
 Create in `config/` folder these files:
 

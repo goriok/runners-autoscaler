@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: runner-controller-cleaner
+  labels:
+    app: runner-controller-cleaner
+    inject: runners-autoscaler-envs
+spec:
+  selector:
+    matchLabels:
+      app: runner-controller-cleaner
+  template:
+    metadata:
+      name: runner-controller-cleaner-pod
+      labels:
+        app: runner-controller-cleaner
+    spec:
+      serviceAccountName: runners-autoscaler
+      containers:
+      - name: runner-controller-cleaner
+        image: bitbucketpipelines/runners-autoscaler:3.4.0
+        command: ["python"]
+        args: ["autoscaler/start_cleaner.py"]
+        env: {} # to be injected via kustomize
+        volumeMounts:
+        - name: runners-autoscaler-config
+          mountPath: /opt/conf/config
+          readOnly: true
+        imagePullPolicy: IfNotPresent
+      volumes:
+        - name: runners-autoscaler-config
+          configMap:
+            name: runners-autoscaler-config
+            defaultMode: 0644
+            items:
+              - key: runners_config.yaml
+                path: runners_config.yaml
