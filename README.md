@@ -62,34 +62,10 @@ _optional_: details of how to [set up AWS EKS cluster with eksctl cli][setup clu
 ## How to run
 
 ### Deployment (in Kubernetes cluster)
-Before the start you should create files in `config` folder to use them with the commands provided below.
-See [Runners autoscaler deployment in kubernetes cluster](docs/deployment/runners-autoscaler-deployment.md) for more details.
-
-```yaml
-# Create namespace
-kubectl apply -f config/runners-autoscaler-namespace.yaml
-
-# Create RBAC configuration
-kubectl apply -f config/runners-autoscaler-rbac.yaml
-
-# Create config map - modify to suit your needs
-kubectl apply -f config/runners-autoscaler-cm.yaml
-
-# Create job config map
-kubectl apply -f config/runners-autoscaler-cm-job.yaml
-
-# Create secret
-kubectl apply -f config/runners-autoscaler-secret.yaml
-
-# Create deployment for autoscaler
-kubectl apply -f config/runners-autoscaler-deployment.yaml
-
-# Create deployment for cleaner
-kubectl apply -f config/runners-autoscaler-deployment-cleaner.yaml
-```
+See [Runners autoscaler deployment in kubernetes cluster - Kustomize](docs/deployment/runners-autoscaler-deployment-kustomize.md) or [Runners autoscaler deployment in kubernetes cluster - YAML](docs/deployment/runners-autoscaler-deployment.md) for more details.
 
 ### Runner autoscaler configuration details
-In `config/runners-autoscaler-cm.yaml` you can tune `runners_config.yaml` parameters:
+In `kustomize/values/runners_config.yaml`/`config/runners-autoscaler-cm.yaml` you can tune parameters:
 
 ```yaml
 groups:
