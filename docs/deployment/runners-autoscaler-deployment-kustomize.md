@@ -25,5 +25,5 @@ kubectl logs -f -l app=runner-controller -n bitbucket-runner-control-plane
 
 6. Verify if runners are being created.
 ```
-kuctl logs -l runner_uuid -c runner
+kubectl logs -l runner_uuid -c runner
 ```
