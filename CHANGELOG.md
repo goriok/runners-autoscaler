@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 3.5.0
+
+- minor: Add kustomize folder
+
 ## 3.4.1
 
 - patch: Bump PyYAML to version 6.*
