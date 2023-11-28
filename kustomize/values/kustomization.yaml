@@ -27,12 +27,12 @@ patches:
       version: v1
       kind: Secret
       name: runner-bitbucket-credentials
-    # There are 3 options.
+    # There are 2 options.
     # Choose one of them, uncomment and specify the values.
     # PS: Values must encoded in base64.
     # 1) OAuth - Specify the oauth client id and secret.
     # 2) App password - Specify the bitbucket username and bitbucket app password.
-    # 3) Access Token - Specify the bitbucket access token.
+
     patch: |-
       ### Option 1 ###
       # - op: add
@@ -48,11 +48,6 @@ patches:
       #   value: ""
       # - op: add
       #   path: /data/bitbucketAppPassword
-      #   value: ""
-
-      ### Option 3 ###
-      # - op: add
-      #   path: /data/bitbucketAccessToken
       #   value: ""
 
   - target:
@@ -89,14 +84,4 @@ patches:
       #       valueFrom:
       #         secretKeyRef:
       #           key: bitbucketAppPassword
-      #           name: runner-bitbucket-credentials
-
-      ### Option 3 ###
-      # - op: replace
-      #   path: /spec/template/spec/containers/0/env
-      #   value:
-      #     - name: BITBUCKET_ACCESS_TOKEN
-      #       valueFrom:
-      #         secretKeyRef:
-      #           key: bitbucketAccessToken
       #           name: runner-bitbucket-credentials

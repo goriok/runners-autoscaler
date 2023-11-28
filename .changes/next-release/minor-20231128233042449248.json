@@ -1,0 +1,4 @@
+{
+  "type": "minor",
+  "description": "Remove Option 3 from Kustomize since it is not implemented yet"
+}
