@@ -5,8 +5,8 @@ constants:
   runner_cool_down_period: 300 # value in seconds
 groups:
   - name: "Runner group 1"
-    workspace: "<workspace_uuid>"
-    # repository: "<repository_uuid>" # optional, only needed if you want repository runners
+    workspace: "{workspace_uuid}" # include the curly braces
+    # repository: "{repository_uuid}" # optional, only needed if you want repository runners - include the curly braces
     labels: # each runner will be created with this label list
       - "my.group"
     namespace: "default" # target namespace, where runner will be created.
