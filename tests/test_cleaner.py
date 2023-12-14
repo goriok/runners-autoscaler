@@ -314,6 +314,42 @@ class CleanerTestCase(TestCase):
                 },
                 'updated_on': '2021-09-29T23:55:14.857791Z',
                 'uuid': '{670ea89c-e64d-5923-8ccc-06d67fae8037}'
+            },
+            {
+                'created_on': '2021-09-29T23:28:04.683210Z',
+                'labels': ['test', 'self.hosted', 'autoscaler.created', 'linux'],
+                'name': 'good',
+                'oauth_client': {
+                    'audience': 'api.fake-api.com',
+                    'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
+                    'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
+                'state': {
+                    'status': 'DISABLED',
+                    'updated_on': '2021-09-29T23:55:14.857790Z',
+                    'version': {'current': '1.184'}
+                },
+                'updated_on': '2021-09-29T23:55:14.857791Z',
+                'uuid': '{abcdabcd-e64d-5923-8ccc-abcdabcdabcd}'
+            },
+            {
+                'created_on': '2021-09-29T23:28:04.683210Z',
+                'labels': ['test', 'self.hosted', 'autoscaler.created', 'linux'],
+                'name': 'good',
+                'oauth_client': {
+                    'audience': 'api.fake-api.com',
+                    'id': 'YgTQgBOdLVu0Ag9P4nYtM5miFgXopgVi',
+                    'token_endpoint': 'https://fake-api.auth0.com/oauth/token'},
+                'state': {
+                    'status': 'DISABLED',
+                    'updated_on': '2021-09-29T23:55:14.857790Z',
+                    'version': {'current': '1.184'},
+                    'step': {
+                        'type': 'PIPELINE_STEP',
+                        'uuid': '{aaaaaaaa-bbbb-cccc-dddd-ffffffffffff}'
+                    }
+                },
+                'updated_on': '2021-09-29T23:55:14.857791Z',
+                'uuid': '{dddddddd-dddd-dddd-dddd-dddddddddddd}'
             }
         ]
         mock_get_runners.return_value = get_runners
@@ -352,6 +388,15 @@ class CleanerTestCase(TestCase):
                       out.getvalue())
 
         self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
+                      ' on workspace workspace-test\n',
+                      out.getvalue())
+
+        self.assertIn('Successfully deleted runner UUID {abcdabcd-e64d-5923-8ccc-abcdabcdabcd}'
+                      ' on workspace workspace-test\n',
+                      out.getvalue())
+
+        self.assertNotIn(
+                      'Successfully deleted runner UUID {dddddddd-dddd-dddd-dddd-dddddddddddd}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
