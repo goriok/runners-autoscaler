@@ -216,8 +216,8 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
                       out.getvalue())
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.services.bitbucket.BitbucketService.delete_bitbucket_runner')
-    def test_delete_runners_reach_min(self, mock_delete_runner, mock_get_runners):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.disable_bitbucket_runner')
+    def test_disable_runners_reach_min(self, mock_disable_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -284,18 +284,18 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             kubernetes_service=KubernetesInMemoryService()
         )
 
-        mock_delete_runner.return_value = None
+        mock_disable_runner.return_value = None
 
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
+        self.assertIn('Successfully disabled runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 
     @mock.patch('autoscaler.strategy.pct_runners_idle.PctRunnersIdleScaler.get_runners')
-    @mock.patch('autoscaler.services.bitbucket.BitbucketService.delete_bitbucket_runner')
-    def test_delete_runners(self, mock_delete_runner, mock_get_runners):
+    @mock.patch('autoscaler.services.bitbucket.BitbucketService.disable_bitbucket_runner')
+    def test_disable_runners(self, mock_disable_runner, mock_get_runners):
         get_runners = [
             {
                 'created_on': '2021-09-29T23:28:04.683210Z',
@@ -378,12 +378,12 @@ class BitbucketRunnerAutoscalerTestCase(TestCase):
             kubernetes_service=KubernetesInMemoryService()
         )
 
-        mock_delete_runner.return_value = None
+        mock_disable_runner.return_value = None
 
         with capture_output() as out:
             service.run()
 
-        self.assertIn('Successfully deleted runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
+        self.assertIn('Successfully disabled runner UUID {670ea89c-e64d-5923-8ccc-06d67fae8039}'
                       ' on workspace workspace-test\n',
                       out.getvalue())
 

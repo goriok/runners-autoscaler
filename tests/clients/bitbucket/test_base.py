@@ -163,6 +163,19 @@ class BitbucketWorkspaceRunnerTestCase(TestCase):
             'foo'
         )
 
+    @mock.patch.object(BitbucketWorkspaceRunner, 'make_http_request')
+    def test_disable_runner(self, disable_runner_request):
+        disable_runner_request.return_value = (
+            'foo',
+            200
+        )
+        service = BitbucketWorkspaceRunner()
+        result = service.disable_runner('foo', 'bar')
+        self.assertEqual(
+            result,
+            'foo'
+        )
+
 
 @mock.patch.dict(os.environ, {'BITBUCKET_USERNAME': 'test', 'BITBUCKET_APP_PASSWORD': 'test'})
 class BitbucketRepositoryRunnerTestCase(TestCase):
@@ -224,6 +237,19 @@ class BitbucketRepositoryRunnerTestCase(TestCase):
         )
         service = BitbucketRepositoryRunner()
         result = service.delete_runner('foo', 'bar', 'baz')
+        self.assertEqual(
+            result,
+            'foo'
+        )
+
+    @mock.patch.object(BitbucketRepositoryRunner, 'make_http_request')
+    def test_disable_runner(self, disable_runner_request):
+        disable_runner_request.return_value = (
+            'foo',
+            200
+        )
+        service = BitbucketRepositoryRunner()
+        result = service.disable_runner('foo', 'bar', 'baz')
         self.assertEqual(
             result,
             'foo'

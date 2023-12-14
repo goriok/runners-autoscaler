@@ -220,6 +220,51 @@ class BitbucketServiceTestCase(TestCase):
             )
         )
 
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepositoryRunner.disable_runner')
+    def test_disable_bitbucket_runner(self, mock_disable_runner):
+        mock_disable_runner.return_value = None
+
+        workspace = NameUUIDData(
+            name='workspace-test',
+            uuid='{workspace-test-uuid}'
+        )
+
+        repository = NameUUIDData(
+            name='repository-test',
+            uuid='{repository-test-uuid}'
+        )
+
+        runner_uuid = 'test-uuid'
+
+        service: BitbucketService = BitbucketService('test')
+        service.disable_bitbucket_runner(
+            workspace,
+            runner_uuid,
+            repository=repository
+        )
+
+        mock_disable_runner.assert_called_once_with(
+            workspace.uuid,
+            repository.uuid,
+            runner_uuid
+        )
+
+    @mock.patch('autoscaler.clients.bitbucket.base.BitbucketWorkspaceRunner.disable_runner')
+    def test_disable_bitbucket_runner_no_repo(self, mock_disable_runner):
+        mock_disable_runner.return_value = None
+
+        workspace = NameUUIDData(
+            name='workspace-test',
+            uuid='{workspace-test-uuid}'
+        )
+
+        runner_uuid = 'test-uuid'
+
+        service: BitbucketService = BitbucketService('test')
+        service.disable_bitbucket_runner(workspace, runner_uuid)
+
+        mock_disable_runner.assert_called_once_with(workspace.uuid, 'test-uuid')
+
     @mock.patch('autoscaler.clients.bitbucket.base.BitbucketRepositoryRunner.delete_runner')
     def test_delete_bitbucket_runner(self, mock_delete_runner):
         mock_delete_runner.return_value = None

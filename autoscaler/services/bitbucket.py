@@ -81,6 +81,20 @@ class BitbucketService:
             workspace_runner_api = BitbucketWorkspaceRunner()
             workspace_runner_api.delete_runner(workspace.uuid, runner_uuid)
 
+    def disable_bitbucket_runner(self, workspace, runner_uuid, repository=None):
+        msg = f"Starting to disable runner {runner_uuid} from Bitbucket workspace: {workspace.name}"
+
+        if repository:
+            self.logger_adapter.info(f"{msg} repository: {repository.name} ...")
+
+            repository_runner_api = BitbucketRepositoryRunner()
+            repository_runner_api.disable_runner(workspace.uuid, repository.uuid, runner_uuid)
+        else:
+            self.logger_adapter.info(f"{msg} ...")
+
+            workspace_runner_api = BitbucketWorkspaceRunner()
+            workspace_runner_api.disable_runner(workspace.uuid, runner_uuid)
+
     @staticmethod
     def get_bitbucket_workspace_repository_uuids(workspace_name, repository_name):
         workspace_api = BitbucketWorkspace()

@@ -125,42 +125,39 @@ class PctRunnersIdleScaler(Strategy):
 
         sleep(self.runner_constants.default_sleep_time_runner_setup)
 
-    def delete_runners(self, runners_idle):
-        # delete only idle runners
+    def disable_runners(self, runners_idle):
+        # disable only idle runners
         if len(runners_idle) < 1:
-            self.logger_adapter.warning("Nothing to delete... All runners are BUSY (running jobs).")
+            self.logger_adapter.warning("Nothing to disable... All runners are BUSY (running jobs).")
             return
 
-        # delete only old runners
-        runners_uuid_to_delete = [
+        # disable only old runners
+        runners_uuid_to_disable = [
             r['uuid'] for r in runners_idle if du_parser.isoparse(r['created_on']) + timedelta(
                 seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
 
-        if runners_uuid_to_delete:
+        if runners_uuid_to_disable:
             self.logger_adapter.warning(
-                f"Runners count {len(runners_uuid_to_delete)} with the next UUID will be deleted:"
-                f" {runners_uuid_to_delete}"
+                f"Runners count {len(runners_uuid_to_disable)} with the next UUID will be disabled:"
+                f" {runners_uuid_to_disable}"
             )
         else:
             self.logger_adapter.warning(
-                f"Nothing to delete... "
+                f"Nothing to disable... "
                 f"All runners are created less than coolDownPeriod: "
                 f"{self.runner_constants.runner_cool_down_period} sec ago."
             )
 
-        for runner_uuid in runners_uuid_to_delete:
-            self.runner_service.delete_bitbucket_runner(
+        for runner_uuid in runners_uuid_to_disable:
+            self.runner_service.disable_bitbucket_runner(
                 workspace=self.runner_data.workspace,
                 runner_uuid=runner_uuid,
                 repository=self.runner_data.repository
             )
 
-            # Remove curly brackets, because for kubernetes service runners names are without them
-            self.kubernetes_service.delete_job(runner_uuid.strip('{}'), self.runner_data.namespace)
-
             success(
-                f"[{self.runner_data.name}] Successfully deleted runner UUID {runner_uuid} "
+                f"[{self.runner_data.name}] Successfully disabled runner UUID {runner_uuid} "
                 f"on workspace {self.runner_data.workspace.name}\n",
                 do_exit=False
             )
@@ -272,12 +269,12 @@ class PctRunnersIdleScaler(Strategy):
             )
 
             if desired_runners_count > self.runner_data.parameters.min:
-                count_runners_to_delete = len(runners_idle) - desired_runners_count
+                count_runners_to_disable = len(runners_idle) - desired_runners_count
             else:
-                count_runners_to_delete = len(runners_idle) - self.runner_data.parameters.min
+                count_runners_to_disable = len(runners_idle) - self.runner_data.parameters.min
                 desired_runners_count = self.runner_data.parameters.min
 
-            runners_idle_to_delete = runners_idle[:count_runners_to_delete]
+            runners_idle_to_disable = runners_idle[:count_runners_to_disable]
 
             msg_autoscaler = (
                 f"{msg_autoscaler}, "
@@ -288,7 +285,7 @@ class PctRunnersIdleScaler(Strategy):
             )
             self.logger_adapter.info(msg_autoscaler)
 
-            self.delete_runners(runners_idle_to_delete)
+            self.disable_runners(runners_idle_to_disable)
 
         else:
             # show message to user that ok
