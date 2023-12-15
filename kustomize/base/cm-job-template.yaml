@@ -40,6 +40,7 @@ data:
               containers:
                 - name: runner
                   image: docker-public.packages.atlassian.com/sox/atlassian/bitbucket-pipelines-runner:1  # This autoscaler needs the runner image to run, you can use the latest or pin any version you want.
+                  imagePullPolicy: Always
                   resources:  # This is memory and cpu resources section that you can configure via config map settings file.
                     requests:
                       memory: "<%requests_memory%>"  # mandatory, don't modify
