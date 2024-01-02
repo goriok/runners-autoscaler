@@ -71,13 +71,23 @@ class Cleaner:
         self.logger_adapter.debug(runners)
 
         # Delete runners that are not online, created by autoscaler tool, and created more than configured time ago.
-        runners_to_delete = [
+        runners_to_delete_not_online_or_disabled = [
             r for r in runners if
             r['state']['status'] != BitbucketRunnerStatuses.ONLINE and
+            r['state']['status'] != BitbucketRunnerStatuses.DISABLED and
             AUTOSCALER_RUNNER in r['labels'] and
             du_parser.isoparse(r['state']['updated_on']) + timedelta(
                 seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
         ]
+        runners_to_delete_disabled = [
+            r for r in runners if
+            r['state']['status'] == BitbucketRunnerStatuses.DISABLED and
+            r['state'].get('step') is None and
+            AUTOSCALER_RUNNER in r['labels'] and
+            du_parser.isoparse(r['state']['updated_on']) + timedelta(
+                seconds=self.runner_constants.runner_cool_down_period) < datetime.now(timezone.utc)
+        ]
+        runners_to_delete = runners_to_delete_not_online_or_disabled + runners_to_delete_disabled
 
         self.logger_adapter.info(f"Number of runners to delete found: {len(runners_to_delete)}.")
 

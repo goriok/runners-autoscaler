@@ -133,6 +133,12 @@ class BitbucketWorkspaceRunner(BitbucketAPIService):
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
         return runner
 
+    def disable_runner(self, workspace_uuid, runner_uuid):
+        url = f'{self.BASE_URL}/{workspace_uuid}/pipelines-config/runners/{runner_uuid}/state'
+        data = {'status': 'DISABLED'}
+        runner, _ = self.make_http_request(url, method='put', json=data, headers={'Content-Type': 'application/json'})
+        return runner
+
 
 class BitbucketRepositoryRunner(BitbucketAPIService):
     MAX_REQUEST_TIMEOUT = 10
@@ -164,4 +170,10 @@ class BitbucketRepositoryRunner(BitbucketAPIService):
     def delete_runner(self, workspace_uuid, repo_uuid, runner_uuid):
         url = f'{self.BASE_URL}/{workspace_uuid}/{repo_uuid}/pipelines-config/runners/{runner_uuid}'
         runner, _ = self.make_http_request(url, method='delete', headers={'Content-Type': 'application/json'})
+        return runner
+
+    def disable_runner(self, workspace_uuid, repo_uuid, runner_uuid):
+        url = f'{self.BASE_URL}/{workspace_uuid}/{repo_uuid}/pipelines-config/runners/{runner_uuid}/state'
+        data = {'status': 'DISABLED'}
+        runner, _ = self.make_http_request(url, method='put', json=data, headers={'Content-Type': 'application/json'})
         return runner
