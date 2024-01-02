@@ -1,4 +1,0 @@
-{
-  "type": "minor",
-  "description": "Disable runner first before deleting it. This fixes the racing condition on scaling down"
-}

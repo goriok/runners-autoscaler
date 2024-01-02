@@ -1,6 +1,10 @@
 # Changelog
 Note: version releases in the 0.x.y range may introduce breaking changes.
 
+## 3.7.0
+
+- minor: Disable runner first before deleting it. This fixes the racing condition on scaling down
+
 ## 3.6.0
 
 - minor: Remove Option 3 from Kustomize since it is not implemented yet

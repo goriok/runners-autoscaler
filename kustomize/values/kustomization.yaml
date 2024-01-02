@@ -20,7 +20,7 @@ commonLabels:
 
 images:
   - name: bitbucketpipelines/runners-autoscaler
-    newTag: 3.6.0
+    newTag: 3.7.0
 
 patches:
   - target:
