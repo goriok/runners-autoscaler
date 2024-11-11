@@ -78,11 +78,15 @@ class KubernetesJobResources(YamlModel):
     limits: MemoryCPUData = MemoryCPUData.parse_obj(dict())
 
 
+class ProjectDict(YamlModel):
+    uuid: str
+
 class GroupMeta(YamlModel):
     workspace: str
     name: str
     namespace: str
     strategy: str
+    project: Optional[ProjectDict] = None
     repository: Optional[str] = None
 
     class Strategy:
