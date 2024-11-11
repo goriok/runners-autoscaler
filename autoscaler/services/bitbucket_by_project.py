@@ -101,7 +101,7 @@ class BitbucketByProjectService:
         repository_data = None
         if project_uuid:
             repository_api = BitbucketRepository()
-            query = "project.uuid=\"" + project_uuid + "\""
+            query = "q=project.uuid=\"" + project_uuid + "\""
             repository_response = repository_api.get_repository_by_workspace(workspace_name, q=query )
             repository_data = {
                 'uuid': repository_response['uuid'],
