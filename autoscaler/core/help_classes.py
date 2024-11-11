@@ -12,6 +12,7 @@ class SEnum(Enum):
 
 class Strategies(Enum):
     PCT_RUNNER_IDLE = 'percentageRunnersIdle'
+    PCT_RUNNER_IDLE_BY_PROJECT = 'percentageRunnersIdleByProject'
 
 
 class BitbucketRunnerStatuses(SEnum):

@@ -86,7 +86,7 @@ class GroupMeta(YamlModel):
     repository: Optional[str] = None
 
     class Strategy:
-        supported_strategies = (Strategies.PCT_RUNNER_IDLE.value,)
+        supported_strategies = (Strategies.PCT_RUNNER_IDLE.value, Strategies.PCT_RUNNER_IDLE_BY_PROJECT.value)
 
     @validator('strategy')
     @classmethod

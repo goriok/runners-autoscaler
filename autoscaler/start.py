@@ -13,7 +13,9 @@ from autoscaler.core.logger import logger
 from autoscaler.core.exceptions import AutoscalerHTTPError
 from autoscaler.services.kubernetes import KubernetesService
 from autoscaler.services.bitbucket import BitbucketService
+from autoscaler.services.bitbucket_by_project import BitbucketByProjectService
 from autoscaler.strategy.pct_runners_idle import PctRunnersIdleScaler
+from autoscaler.strategy.pct_runners_idle_by_project import PctRunnersIdleByProjectScaler
 
 
 class StartPoller:
@@ -41,6 +43,14 @@ class StartPoller:
                         pctRunnersIdleScaler = PctRunnersIdleScaler(runner_data, runner_constants, kubernetes_service, runner_service)
 
                         futures.append(executor.submit(pctRunnersIdleScaler.process))
+                    if runner_data.strategy == Strategies.PCT_RUNNER_IDLE_BY_PROJECT.value:
+                        kubernetes_service = KubernetesService(runner_data.name)
+
+                        runner_service = BitbucketByProjectService(runner_data.name)
+
+                        autoscaler = PctRunnersIdleByProjectScaler(runner_data, runner_constants, kubernetes_service, runner_service)
+
+                        futures.append(executor.submit(autoscaler.process))
 
                 wait(futures)
                 for fut in futures:

@@ -6,7 +6,7 @@ from setuptools import setup, find_packages, Command
 
 # Package meta-data.
 NAME = 'bitbucket-runner-autoscaler'
-DESCRIPTION = 'Autoscale Bitbucket Pipelines runners using Kubernetes'
+DESCRIPTION = 'FAutoscale Bitbucket Pipelines runners using Kubernetes'
 URL = 'https://bitbucket.org/bitbucketpipelines/runners-autoscaler'
 EMAIL = 'pipelines-feedback@atlassian.com'
 AUTHOR = 'Bitbucket Pipelines'

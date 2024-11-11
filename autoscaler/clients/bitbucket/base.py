@@ -43,7 +43,6 @@ class Auth:
 
         return HTTPBasicAuth(username, app_password)
 
-    #  TODO: test this
     @classmethod
     def access_token_auth(cls):
         return BearerAuth(os.getenv('BITBUCKET_ACCESS_TOKEN'))
@@ -82,6 +81,16 @@ class BitbucketRepository(BitbucketAPIService):
             )
         else:
             repo, _ = self.make_http_request(f'{self.BASE_URL}/{workspace}/{repo_slug}')
+
+        return repo
+
+    def get_repository_by_workspace(self, workspace, **kwargs):
+        if kwargs:
+            repo, _ = self.make_http_request(
+                f'{self.BASE_URL}/{workspace}/?{urllib.parse.urlencode(kwargs)}'
+            )
+        else:
+            repo, _ = self.make_http_request(f'{self.BASE_URL}/{workspace}')
 
         return repo
 
