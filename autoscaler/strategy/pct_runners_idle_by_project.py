@@ -167,7 +167,7 @@ class PctRunnersIdleByProjectScaler(Strategy):
             repositories = self.get_repositories()
         except Exception as e:
             self.logger_adapter.error(f"error getting repositories: {e}")
-            return
+            raise
 
         for repo in repositories:
             try:
