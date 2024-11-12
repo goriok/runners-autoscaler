@@ -84,14 +84,10 @@ class BitbucketRepository(BitbucketAPIService):
 
         return repo
 
-    def get_repository_by_workspace(self, workspace, **kwargs):
-        if kwargs:
-            repo, _ = self.make_http_request(
-                f'{self.BASE_URL}/{workspace}/?{urllib.parse.urlencode(kwargs)}'
-            )
-        else:
-            repo, _ = self.make_http_request(f'{self.BASE_URL}/{workspace}')
-
+    def get_repository_by_workspace(self, workspace, filter_query):
+        repo, _ = self.make_http_request(
+            f'{self.BASE_URL}/{workspace}/?{urllib.parse.urlencode(filter_query)}'
+        )
         return repo
 
     def get_raw_content(self, workspace, repo_slug, path, ref='master', **kwargs):

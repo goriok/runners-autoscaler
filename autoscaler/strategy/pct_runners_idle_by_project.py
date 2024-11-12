@@ -76,8 +76,7 @@ class PctRunnersIdleByProjectScaler(Strategy):
         return self.runner_service.get_bitbucket_runners(self.runner_data.workspace, repository)
 
     def get_repositories(self):
-        # TODO optimize GET requests with filters by labels
-        return self.runner_service.get_bitbucket_workspace_repository_uuids(self.runner_data.workspace, self.runner_data.project.uuid)
+        return self.runner_service.get_bitbucket_workspace_repository_uuids(self.runner_data.workspace.uuid, self.runner_data.project.uuid)
 
     def create_runner(self, count_number, repository):
         runners = self.get_runners(repository)
@@ -164,131 +163,137 @@ class PctRunnersIdleByProjectScaler(Strategy):
             sleep(self.runner_constants.default_sleep_time_runner_delete)
 
     def run(self):
-        repositories = self.get_repositories()
+        try:
+            repositories = self.get_repositories()
+        except Exception as e:
+            self.logger_adapter.error(f"error getting repositories: {e}")
+            return
+
         for repo in repositories:
-            runners = self.get_runners(repo)
+            try:
+                runners = self.get_runners(repo)
 
-            msg = f"Found {len(runners)} runners on workspace {self.runner_data.workspace.name}"
-            if self.runner_data.project.uuid:
-                msg = f"{msg} project: {self.runner_data.project.uuid}, repository: {repo.uuid}"
+                msg = f"Found {len(runners)} runners on workspace {self.runner_data.workspace.name}"
+                if self.runner_data.project.uuid:
+                    msg = f"{msg} project: {self.runner_data.project.uuid}, repository: {repo.uuid}"
 
-            self.logger_adapter.info(msg)
+                self.logger_adapter.info(msg)
 
-            if runners:
-                runners_stats = dict(Counter([r['state'].get('status') for r in runners]))
-                self.logger_adapter.info(runners_stats)
+                if runners:
+                    runners_stats = dict(Counter([r['state'].get('status') for r in runners]))
+                    self.logger_adapter.info(runners_stats)
 
-            self.logger_adapter.debug(runners)
+                self.logger_adapter.debug(runners)
 
-            online_runners = [
-                r for r in runners if
-                set(r['labels']) == self.runner_data.labels and r['state']['status'] == BitbucketRunnerStatuses.ONLINE
-            ]
+                online_runners = [
+                    r for r in runners if
+                    set(r['labels']) == self.runner_data.labels and r['state']['status'] == BitbucketRunnerStatuses.ONLINE
+                ]
 
-            self.logger_adapter.info(f"Found ONLINE runners with labels {self.runner_data.labels}: {len(online_runners)}")
-            self.logger_adapter.debug(online_runners)
+                self.logger_adapter.info(f"Found ONLINE runners with labels {self.runner_data.labels}: {len(online_runners)}")
+                self.logger_adapter.debug(online_runners)
 
-            runners_idle = [r for r in online_runners if r['state'].get('step') is None]
-            runners_busy = [r for r in online_runners if 'step' in r['state']]
+                runners_idle = [r for r in online_runners if r['state'].get('step') is None]
+                runners_busy = [r for r in online_runners if 'step' in r['state']]
 
-            self.logger_adapter.info(f"Found IDLE runners with labels {self.runner_data.labels}: {len(runners_idle)}")
-            self.logger_adapter.debug(runners_idle)
+                self.logger_adapter.info(f"Found IDLE runners with labels {self.runner_data.labels}: {len(runners_idle)}")
+                self.logger_adapter.debug(runners_idle)
 
-            runners_scale_threshold = len(runners_busy) / len(online_runners) if online_runners else 0
-            self.logger_adapter.info(f'Current runners threshold: {round(runners_scale_threshold, 2)}')
-
-            msg_autoscaler = (
-                f"Runners Autoscaler. "
-                f"min: {self.runner_data.parameters.min}, "
-                f"max: {self.runner_data.parameters.max}, "
-                f"current: {len(online_runners)}"
-            )
-
-            if not online_runners and self.runner_data.parameters.min > 0:
-                # create new runners from 0
-                count_runners_to_create = self.runner_data.parameters.min
+                runners_scale_threshold = len(runners_busy) / len(online_runners) if online_runners else 0
+                self.logger_adapter.info(f'Current runners threshold: {round(runners_scale_threshold, 2)}')
 
                 msg_autoscaler = (
-                    f"{msg_autoscaler}, "
-                    f"desired: {count_runners_to_create}. "
-                    f"Changing the desired capacity "
-                    f"from {len(online_runners)} to {count_runners_to_create}.\n"
+                    f"Runners Autoscaler. "
+                    f"min: {self.runner_data.parameters.min}, "
+                    f"max: {self.runner_data.parameters.max}, "
+                    f"current: {len(online_runners)}"
                 )
-                self.logger_adapter.info(msg_autoscaler)
 
-                for i in range(count_runners_to_create):
-                    # Do not try to create new runners when total number of runners
-                    # reached max allowed by API. Still show the message warning
-                    # when total number of runners is equal the MAX_RUNNERS_COUNT.
-                    if len(runners) + i > MAX_RUNNERS_COUNT:
-                        break
+                if not online_runners and self.runner_data.parameters.min > 0:
+                    # create new runners from 0
+                    count_runners_to_create = self.runner_data.parameters.min
 
-                    self.create_runner(i, repo)
+                    msg_autoscaler = (
+                        f"{msg_autoscaler}, "
+                        f"desired: {count_runners_to_create}. "
+                        f"Changing the desired capacity "
+                        f"from {len(online_runners)} to {count_runners_to_create}.\n"
+                    )
+                    self.logger_adapter.info(msg_autoscaler)
 
-            # TODO add max_runners per repo or max_runners per workspace
-            elif (runners_scale_threshold > float(self.runner_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.parameters.min) \
-                    and len(online_runners) <= self.runner_data.parameters.max \
-                    and len(runners) <= MAX_RUNNERS_COUNT:
+                    for i in range(count_runners_to_create):
+                        # Do not try to create new runners when total number of runners
+                        # reached max allowed by API. Still show the message warning
+                        # when total number of runners is equal the MAX_RUNNERS_COUNT.
+                        if len(runners) + i > MAX_RUNNERS_COUNT:
+                            break
 
-                # TODO validate scaleDownFactor > 1
-                desired_runners_count = math.ceil(
-                    len(online_runners) * self.runner_data.parameters.scale_up_multiplier
-                )
-                if desired_runners_count <= self.runner_data.parameters.max:
-                    count_runners_to_create = desired_runners_count - len(online_runners)
+                        self.create_runner(i, repo)
+
+                # TODO add max_runners per repo or max_runners per workspace
+                elif (runners_scale_threshold > float(self.runner_data.parameters.scale_up_threshold) or len(online_runners) < self.runner_data.parameters.min) \
+                        and len(online_runners) <= self.runner_data.parameters.max \
+                        and len(runners) <= MAX_RUNNERS_COUNT:
+
+                    # TODO validate scaleDownFactor > 1
+                    desired_runners_count = math.ceil(
+                        len(online_runners) * self.runner_data.parameters.scale_up_multiplier
+                    )
+                    if desired_runners_count <= self.runner_data.parameters.max:
+                        count_runners_to_create = desired_runners_count - len(online_runners)
+                    else:
+                        count_runners_to_create = self.runner_data.parameters.max - len(online_runners)
+                        desired_runners_count = self.runner_data.parameters.max
+
+                    if count_runners_to_create == 0:
+                        self.logger_adapter.info(f"Max runners count: {self.runner_data.parameters.max} reached.")
+                        return
+
+                    msg_autoscaler = (
+                        f"{msg_autoscaler}, "
+                        f"desired: {desired_runners_count}. "
+                        f"Changing the desired capacity "
+                        f"from {len(online_runners)} to {desired_runners_count}.\n"
+                    )
+                    self.logger_adapter.info(msg_autoscaler)
+
+                    for i in range(count_runners_to_create):
+                        if len(runners) + i > MAX_RUNNERS_COUNT:
+                            break
+
+                        self.create_runner(i, repo)
+
+                elif runners_scale_threshold < float(self.runner_data.parameters.scale_down_threshold) and \
+                        len(runners_idle) > self.runner_data.parameters.min:
+
+                    # TODO validate 0 < scaleDownFactor < 1
+                    desired_runners_count = math.floor(
+                        len(runners_idle) * self.runner_data.parameters.scale_down_multiplier
+                    )
+
+                    if desired_runners_count > self.runner_data.parameters.min:
+                        count_runners_to_disable = len(runners_idle) - desired_runners_count
+                    else:
+                        count_runners_to_disable = len(runners_idle) - self.runner_data.parameters.min
+                        desired_runners_count = self.runner_data.parameters.min
+
+                    runners_idle_to_disable = runners_idle[:count_runners_to_disable]
+
+                    msg_autoscaler = (
+                        f"{msg_autoscaler}, "
+                        f"idle: {len(runners_idle)}, "
+                        f"desired: {desired_runners_count}. "
+                        f"Changing the desired capacity "
+                        f"from {len(runners_idle)} to {desired_runners_count}.\n"
+                    )
+                    self.logger_adapter.info(msg_autoscaler)
+
+                    self.disable_runners(runners_idle_to_disable)
+
                 else:
-                    count_runners_to_create = self.runner_data.parameters.max - len(online_runners)
-                    desired_runners_count = self.runner_data.parameters.max
+                    # show message to user that ok
+                    self.logger_adapter.info(msg_autoscaler)
+                    self.logger_adapter.warning("Nothing to do...\n")
+            except Exception as e:
+                self.logger_adapter.error(f"error in runner of repository:{repo.uuid}, details: {e}")
 
-                if count_runners_to_create == 0:
-                    self.logger_adapter.info(f"Max runners count: {self.runner_data.parameters.max} reached.")
-                    return
-
-                msg_autoscaler = (
-                    f"{msg_autoscaler}, "
-                    f"desired: {desired_runners_count}. "
-                    f"Changing the desired capacity "
-                    f"from {len(online_runners)} to {desired_runners_count}.\n"
-                )
-                self.logger_adapter.info(msg_autoscaler)
-
-                for i in range(count_runners_to_create):
-                    # Do not try to create new runners when total number of runners
-                    # reached max allowed by API. Still show the message warning
-                    # when total number of runners is equal the MAX_RUNNERS_COUNT.
-                    if len(runners) + i > MAX_RUNNERS_COUNT:
-                        break
-
-                    self.create_runner(i, repo)
-
-            elif runners_scale_threshold < float(self.runner_data.parameters.scale_down_threshold) and \
-                    len(runners_idle) > self.runner_data.parameters.min:
-
-                # TODO validate 0 < scaleDownFactor < 1
-                desired_runners_count = math.floor(
-                    len(runners_idle) * self.runner_data.parameters.scale_down_multiplier
-                )
-
-                if desired_runners_count > self.runner_data.parameters.min:
-                    count_runners_to_disable = len(runners_idle) - desired_runners_count
-                else:
-                    count_runners_to_disable = len(runners_idle) - self.runner_data.parameters.min
-                    desired_runners_count = self.runner_data.parameters.min
-
-                runners_idle_to_disable = runners_idle[:count_runners_to_disable]
-
-                msg_autoscaler = (
-                    f"{msg_autoscaler}, "
-                    f"idle: {len(runners_idle)}, "
-                    f"desired: {desired_runners_count}. "
-                    f"Changing the desired capacity "
-                    f"from {len(runners_idle)} to {desired_runners_count}.\n"
-                )
-                self.logger_adapter.info(msg_autoscaler)
-
-                self.disable_runners(runners_idle_to_disable)
-
-            else:
-                # show message to user that ok
-                self.logger_adapter.info(msg_autoscaler)
-                self.logger_adapter.warning("Nothing to do...\n")
