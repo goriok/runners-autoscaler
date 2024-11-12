@@ -145,6 +145,9 @@ class GroupData(GroupMeta):
         if strategy == Strategies.PCT_RUNNER_IDLE.value:
             parameters = PctRunnersIdleParameters.parse_obj(parameters)
 
+        if strategy == Strategies.PCT_RUNNER_IDLE_BY_PROJECT.value:
+            parameters = PctRunnersIdleParameters.parse_obj(parameters)
+
         return parameters
 
 

@@ -85,11 +85,22 @@ class BitbucketRepository(BitbucketAPIService):
         return repo
 
     def get_repository_by_workspace(self, workspace, filter_query):
+        filter_query = filter_query.replace('{', '').replace('}', '')
         logger.info(f"Fetching repositories for workspace {workspace} using filter: {filter_query}")
-        url = f'{self.BASE_URL}/{workspace}/?{urllib.parse.urlencode(filter_query)}'
-        logger.info(f"Fetching repositories using this url: {url}")
-        repo, _ = self.make_http_request(url)
-        return repo
+
+        repositories = {
+            'values': []
+        }
+        url = f'{self.BASE_URL}/{workspace}/?q={urllib.parse.quote(filter_query)}'
+
+        while url:
+            logger.info(f"Fetching repositories using this url: {url}")
+            response, _ = self.make_http_request(url)
+            if 'values' in response:
+                repositories["values"].extend(response['values'])
+            url = response.get('next')
+
+        return repositories
 
     def get_raw_content(self, workspace, repo_slug, path, ref='master', **kwargs):
         url = f'{self.BASE_URL}/{workspace}/{repo_slug}/src/{ref}/{path}'

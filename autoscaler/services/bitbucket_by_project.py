@@ -13,18 +13,28 @@ class BitbucketByProjectServiceData:
     oauth_client_id_base64: str
     oauth_client_secret_base64: str
 
+@dataclass
+class RepositoryData:
+    uuid: str
+    name: str
 
 class BitbucketByProjectService:
     def __init__(self, group_name):
         self.logger_adapter = GroupNamePrefixAdapter(logger, {'name': group_name})
 
-    def get_bitbucket_runners(self, workspace, project, **kwargs):
-        msg = f"Getting runners on Bitbucket workspace: {workspace.name} and project {project.uuid}"
+    def get_bitbucket_runners(self, workspace, repository=None):
+        msg = f"Getting runners on Bitbucket workspace: {workspace.name}"
 
-        self.logger_adapter.info(f"{msg} ...")
+        if repository:
+            self.logger_adapter.info(f"{msg} repository: {repository.name} ...")
 
-        workspace_runner_api = BitbucketWorkspaceRunner()
-        runners = workspace_runner_api.get_runners(workspace.uuid)
+            repository_runner_api = BitbucketRepositoryRunner()
+            runners = repository_runner_api.get_runners(workspace.uuid, repository.uuid)
+        else:
+            self.logger_adapter.info(f"{msg} ...")
+
+            workspace_runner_api = BitbucketWorkspaceRunner()
+            runners = workspace_runner_api.get_runners(workspace.uuid)
 
         return runners
 
@@ -98,14 +108,13 @@ class BitbucketByProjectService:
             'name': workspace_response['slug']
         }
 
-        repository_data = None
-        if project_uuid:
-            repository_api = BitbucketRepository()
-            query = "q=project.uuid=\"" + project_uuid + "\""
-            repository_response = repository_api.get_repository_by_workspace(workspace_name, query)
-            repository_data = {
-                'uuid': repository_response['uuid'],
-                'name': repository_response['slug']
-            }
+        repositories = []
+        repository_api = BitbucketRepository()
+        query = f"project.uuid=\"{project_uuid}\" AND description~\"#runner\""
+        repository_response = repository_api.get_repository_by_workspace(workspace_name, query)
+        if 'values' in repository_response:
+            for repository in repository_response['values']:
+                repository_data = RepositoryData(uuid=repository['uuid'], name=repository['name'])
+                repositories.append(repository_data)
 
-        return workspace_data, repository_data
+        return workspace_data, repositories
