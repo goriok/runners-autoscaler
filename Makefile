@@ -5,8 +5,8 @@ export DEST_TEMPLATE_PATH=/tmp/
 .PHONY: publish
 publish:
 	@head=$(shell git rev-parse --short=7 HEAD) && \
-	docker build -t citspikeacr.azurecr.io/bitbucket-runner-autoscaler:v0.1.4-$${head} . && \
-	docker push citspikeacr.azurecr.io/bitbucket-runner-autoscaler:v0.1.4-$${head}
+	docker build -t <CHANGE_ME>.io/bitbucket-runner-autoscaler:v0.1.4-$${head} . && \
+	docker push <CHANGE_ME>/bitbucket-runner-autoscaler:v0.1.4-$${head}
 
 .PHONY: all
 all: setup lint test
