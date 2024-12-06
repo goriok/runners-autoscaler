@@ -22,7 +22,7 @@ class PctRunnersIdleCleanerByProjectData:
     strategy: str
 
 
-class Cleaner:
+class CleanerByProject:
     def __init__(self, runner_data: PctRunnersIdleCleanerByProjectData, runner_constants: Constants, kubernetes_service=None, runner_service=None):
         self.runner_data = runner_data
         self.runner_constants = runner_constants
