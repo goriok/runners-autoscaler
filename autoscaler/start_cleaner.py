@@ -1,6 +1,9 @@
 from concurrent.futures import ThreadPoolExecutor, wait
 from time import sleep
 
+from autoscaler.services.bitbucket_by_project import BitbucketByProjectService
+from autoscaler.cleaner.pct_runner_idle_cleaner_by_project import CleanerByProject
+from autoscaler.cleaner.pct_runner_idle_cleaner import Cleaner
 from pydantic import ValidationError
 
 import autoscaler.core.constants as constants
@@ -39,6 +42,16 @@ class StartCleaner:
                         cleaner = Cleaner(runner_data, runner_constants, kubernetes_service, runner_service)
 
                         futures.append(executor.submit(cleaner.run))
+
+                    if runner_data.strategy == Strategies.PCT_RUNNER_IDLE_BY_PROJECT.value:
+                        kubernetes_service = KubernetesService(runner_data.name)
+
+                        runner_service = BitbucketByProjectService(runner_data.name)
+
+                        cleaner = CleanerByProject(runner_data, runner_constants, kubernetes_service, runner_service)
+
+                        futures.append(executor.submit(cleaner.run))
+
 
                 wait(futures)
                 for fut in futures:
